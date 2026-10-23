@@ -11,7 +11,7 @@ AWS-native · Event-driven · Built with Python
 ![CloudFormation](https://img.shields.io/badge/IaC-CloudFormation-E7157B?logo=amazonaws&logoColor=white)
 [![Deploy](https://github.com/<ORG>/<REPO>/actions/workflows/deploy.yml/badge.svg)](https://github.com/<ORG>/<REPO>/actions)
 
-[Overview](#-overview) · [Architecture](#-architecture) · [Tech Stack](#-tech-stack) · [Repo Structure](#-repository-structure) · [Workflow](#-development-workflow) · [Roadmap](#-roadmap)
+[Overview](#-overview) · [Architecture](#-architecture) · [Tech Stack](#-tech-stack) ·  · [Workflow](#-development-workflow) · [Roadmap](#-roadmap)
 
 </div>
 
@@ -63,16 +63,6 @@ flowchart LR
 
 ## 📁 Repository Structure
 
-```
-medislot/
-├── .github/workflows/   # CI/CD pipelines
-├── infra/               # CloudFormation stacks
-├── src/                 # Lambda source code
-├── web/                 # Flask portals (doctor and patient)
-├── tests/               # unit and integration tests
-├── docs/                # architecture, design notes, API docs
-└── scripts/             # packaging and helper scripts
-```
 
 ## 🔀 Development Workflow
 
