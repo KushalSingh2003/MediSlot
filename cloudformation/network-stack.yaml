@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: MediSlot network - VPC, subnets, routing, security groups, VPC endpoints
+Description: MediSlot network - VPC, subnets, routing, security groups, VPC endpoints and interface endpoints
 
 Parameters:
   Env:
