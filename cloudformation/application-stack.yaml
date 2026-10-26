@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: MediSlot application stack - auth Lambdas (register, login, refresh, logout) authentication system
+Description: MediSlot application stack - auth Lambdas (register, login, refresh, logout) authentication system along with the API Gateway and authorizer
 
 Parameters:
   Env:
