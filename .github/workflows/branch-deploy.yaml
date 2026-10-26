@@ -60,7 +60,7 @@ jobs:
             cloudformation/data-stack.yaml \
             cloudformation/iam-stack.yaml \
             cloudformation/application-stack.yaml \
-            cloudformation/api-stack.yaml \
+            cloudformation/api-stack.yaml 
           do
             echo "Linting ${template}"
             test -f "$template"
@@ -419,7 +419,7 @@ jobs:
             "medislot-${DEPLOY_ENV}-data" \
             "medislot-${DEPLOY_ENV}-iam" \
             "medislot-${DEPLOY_ENV}-application" \
-            "medislot-${DEPLOY_ENV}-api" \
+            "medislot-${DEPLOY_ENV}-api" 
           do
             status=$(aws cloudformation describe-stacks \
               --stack-name "$stack" \
