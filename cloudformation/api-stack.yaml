@@ -13,22 +13,6 @@ Parameters:
     Type: String
     Default: medislot
 
-  AuthRegisterLambdaArn:
-    Type: String
-    Description: ARN of the authentication registration Lambda
-
-  AuthLoginLambdaArn:
-    Type: String
-    Description: ARN of the authentication login Lambda
-
-  AuthRefreshLambdaArn:
-    Type: String
-    Description: ARN of the authentication refresh Lambda
-
-  AuthLogoutLambdaArn:
-    Type: String
-    Description: ARN of the authentication logout Lambda
-
 Resources:
 
   # --------------------------------------------------
@@ -119,7 +103,9 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref AuthRegisterLambdaArn
+      FunctionName:
+      Fn::ImportValue:
+      Fn::Sub: '${ProjectName}-${Env}-application-AuthRegisterFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
@@ -129,7 +115,9 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref AuthLoginLambdaArn
+      FunctionName:
+      Fn::ImportValue:
+      Fn::Sub: '${ProjectName}-${Env}-application-AuthLoginFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
@@ -139,7 +127,9 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref AuthRefreshLambdaArn
+      FunctionName:
+      Fn::ImportValue:
+      Fn::Sub: '${ProjectName}-${Env}-application-AuthRefreshFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
@@ -149,7 +139,9 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref AuthLogoutLambdaArn
+      FunctionName:
+      Fn::ImportValue:
+      Fn::Sub: '${ProjectName}-${Env}-application-AuthLogoutFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
@@ -169,7 +161,12 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthRegisterLambdaArn}/invocations'
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthRegisterFunctionArn'
 
   PatientLoginMethod:
     Type: AWS::ApiGateway::Method
@@ -181,7 +178,12 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthLoginLambdaArn}/invocations'
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthLoginFunctionArn'
 
   DoctorRegisterMethod:
     Type: AWS::ApiGateway::Method
@@ -193,7 +195,12 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthRegisterLambdaArn}/invocations'
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthRegisterFunctionArn'
 
   DoctorLoginMethod:
     Type: AWS::ApiGateway::Method
@@ -205,7 +212,12 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthLoginLambdaArn}/invocations'
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthLoginFunctionArn'
 
   RefreshMethod:
     Type: AWS::ApiGateway::Method
@@ -217,7 +229,12 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthRefreshLambdaArn}/invocations'
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthRefreshFunctionArn'
 
   LogoutMethod:
     Type: AWS::ApiGateway::Method
@@ -229,7 +246,12 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthLogoutLambdaArn}/invocations'
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthLogoutFunctionArn'
 
   # --------------------------------------------------
   # API DEPLOYMENT

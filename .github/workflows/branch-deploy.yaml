@@ -368,6 +368,9 @@ jobs:
             --template-file cloudformation/api-stack.yaml \
             --stack-name "medislot-${DEPLOY_ENV}-api" \
             --parameter-overrides \
+            "Env=${DEPLOY_ENV}" \
+            "ProjectName=medislot" \
+            
             --capabilities CAPABILITY_NAMED_IAM \
             --no-fail-on-empty-changeset \
             --region "$AWS_REGION"
