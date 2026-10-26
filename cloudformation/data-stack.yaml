@@ -442,3 +442,8 @@ Outputs:
     Value: !Ref JwtSigningSecret
     Export:
       Name: !Sub '${AWS::StackName}-JwtSigningSecretArn'
+  DatabaseSecretArn:
+    Description: ARN of the RDS-managed database credentials secret
+    Value: !GetAtt Database.MasterUserSecret.SecretArn
+    Export:
+      Name: !Sub '${AWS::StackName}-DatabaseSecretArn'
