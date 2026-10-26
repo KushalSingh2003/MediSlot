@@ -215,7 +215,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          for function in auth-register auth-login auth-refresh auth-logout; do
+          for function in auth-register auth-login auth-refresh auth-logout authorizer; do
             test -f "lambda/${function}/app.py" || {
               echo "Missing lambda/${function}/app.py"
               exit 1
@@ -251,7 +251,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          for function in auth-register auth-login auth-refresh auth-logout; do
+          for function in auth-register auth-login auth-refresh auth-logout authorizer; do
             (
               cd "lambda/${function}"
               zip -q "$RUNNER_TEMP/${function}.zip" app.py
@@ -263,14 +263,16 @@ jobs:
         run: |
           set -euo pipefail
 
-          test -n "$LAMBDA_BUCKET"
+          : "${LAMBDA_BUCKET:?LAMBDA_BUCKET is not set}"
+          : "${ARTIFACT_PREFIX:?ARTIFACT_PREFIX is not set}"
 
           for artifact in \
             auth-layer \
             auth-register \
             auth-login \
             auth-refresh \
-            auth-logout
+            auth-logout \
+            authorizer
           do
             aws s3 cp \
               "$RUNNER_TEMP/${artifact}.zip" \
@@ -299,6 +301,25 @@ jobs:
           aws cloudformation validate-template \
             --template-body file://cloudformation/application-stack.yaml \
             --region "$AWS_REGION"
+      - name: Verify Lambda Artifacts in S3
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for artifact in \
+            auth-layer \
+            auth-register \
+            auth-login \
+            auth-refresh \
+            auth-logout \
+            authorizer
+          do
+            echo "Checking ${artifact}.zip"
+            aws s3api head-object \
+              --bucket "$LAMBDA_BUCKET" \
+              --key "${ARTIFACT_PREFIX}/${artifact}.zip" \
+              --region "$AWS_REGION"
+          done
 
       - name: Deploy Application Stack
         shell: bash
