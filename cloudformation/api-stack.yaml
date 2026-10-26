@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: MediSlot API Gateway and Lambda integrations
+Description: MediSlot API Gateway and Lambda integrations also
 
 Parameters:
   Env:
