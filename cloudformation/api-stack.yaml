@@ -104,8 +104,8 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName:
-      Fn::ImportValue:
-      Fn::Sub: '${ProjectName}-${Env}-application-AuthRegisterFunctionArn'
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthRegisterFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
@@ -116,8 +116,8 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName:
-      Fn::ImportValue:
-      Fn::Sub: '${ProjectName}-${Env}-application-AuthLoginFunctionArn'
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthLoginFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
@@ -128,8 +128,8 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName:
-      Fn::ImportValue:
-      Fn::Sub: '${ProjectName}-${Env}-application-AuthRefreshFunctionArn'
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthRefreshFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
@@ -140,8 +140,8 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName:
-      Fn::ImportValue:
-      Fn::Sub: '${ProjectName}-${Env}-application-AuthLogoutFunctionArn'
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthLogoutFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
