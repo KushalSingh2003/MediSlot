@@ -1,0 +1,1 @@
+print("Hello From Auth Register App.py")

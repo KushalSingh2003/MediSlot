@@ -1,0 +1,261 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MediSlot network - VPC, subnets, routing, security groups, VPC endpoints
+
+Parameters:
+  Env:
+    Type: String
+    AllowedValues: [ dev, prod ]
+    Default: dev
+  ProjectName:
+    Type: String
+    Default: medislot
+  CreateInterfaceEndpoints:
+    Type: String
+    AllowedValues: [ 'true', 'false' ]
+    Default: 'true'
+    Description: Interface endpoints cost roughly 7 USD per month each
+
+Conditions:
+  UseInterfaceEndpoints: !Equals [ !Ref CreateInterfaceEndpoints, 'true' ]
+
+Resources:
+  # ---------- VPC ----------
+  MediSlotVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-vpc' } ]
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-igw' } ]
+
+  GatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      InternetGatewayId: !Ref InternetGateway
+
+  # ---------- Subnets ----------
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: true
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-public-a' } ]
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      CidrBlock: 10.0.11.0/24
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-private-a' } ]
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      CidrBlock: 10.0.12.0/24
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-private-b' } ]
+
+  # ---------- Routing ----------
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-public-rt' } ]
+
+  PublicDefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  # Private route table has NO default route: RDS and Lambdas cannot reach the internet
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-private-rt' } ]
+
+  PrivateSubnetAAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnetBAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTable
+
+  # ---------- Security groups ----------
+  WebSg:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W2, reason: Public web portal must accept HTTP/HTTPS from the internet }
+        - { id: W9, reason: Public web portal must accept HTTP/HTTPS from the internet }
+    Properties:
+      GroupDescription: Flask web portal on EC2
+      VpcId: !Ref MediSlotVpc
+      SecurityGroupIngress:
+      - { IpProtocol: tcp, FromPort: 80, ToPort: 80, CidrIp: 0.0.0.0/0 }
+      - { IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0 }
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-web-sg' } ]
+
+  LambdaSg:
+    Type: AWS::EC2::SecurityGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W5, reason: Private subnets have no internet route; 443 egress only reaches VPC endpoints }
+    Properties:
+      GroupDescription: Lambda functions attached to the VPC
+      VpcId: !Ref MediSlotVpc
+      SecurityGroupEgress:
+      # replaces the default allow-all egress
+      - { IpProtocol: tcp, FromPort: 443, ToPort: 443, CidrIp: 0.0.0.0/0 }
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-lambda-sg' } ]
+
+  RdsSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: RDS MySQL, reachable only from Lambda
+      VpcId: !Ref MediSlotVpc
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-rds-sg' } ]
+
+  EndpointSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: VPC interface endpoints
+      VpcId: !Ref MediSlotVpc
+      Tags: [ { Key: Name, Value: !Sub '${ProjectName}-${Env}-endpoint-sg' } ]
+
+  # Separate rule resources avoid a circular dependency between the groups
+  RdsIngressFromLambda:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref RdsSg
+      SourceSecurityGroupId: !Ref LambdaSg
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+
+  LambdaEgressToRds:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !Ref LambdaSg
+      DestinationSecurityGroupId: !Ref RdsSg
+      IpProtocol: tcp
+      FromPort: 3306
+      ToPort: 3306
+
+  EndpointIngressFromLambda:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref EndpointSg
+      SourceSecurityGroupId: !Ref LambdaSg
+      IpProtocol: tcp
+      FromPort: 443
+      ToPort: 443
+
+  # ---------- Gateway endpoints (free) ----------
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+      VpcEndpointType: Gateway
+      RouteTableIds: [ !Ref PrivateRouteTable ]
+
+  DynamoDbEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.dynamodb'
+      VpcEndpointType: Gateway
+      RouteTableIds: [ !Ref PrivateRouteTable ]
+
+  # ---------- Interface endpoints (paid, one AZ to limit cost) ----------
+  SsmEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: UseInterfaceEndpoints
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ssm'
+      VpcEndpointType: Interface
+      SubnetIds: [ !Ref PrivateSubnetA ]
+      SecurityGroupIds: [ !Ref EndpointSg ]
+      PrivateDnsEnabled: true
+
+  EventsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: UseInterfaceEndpoints
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.events'
+      VpcEndpointType: Interface
+      SubnetIds: [ !Ref PrivateSubnetA ]
+      SecurityGroupIds: [ !Ref EndpointSg ]
+      PrivateDnsEnabled: true
+
+  StatesEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: UseInterfaceEndpoints
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.states'
+      VpcEndpointType: Interface
+      SubnetIds: [ !Ref PrivateSubnetA ]
+      SecurityGroupIds: [ !Ref EndpointSg ]
+      PrivateDnsEnabled: true
+
+  SnsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: UseInterfaceEndpoints
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.sns'
+      VpcEndpointType: Interface
+      SubnetIds: [ !Ref PrivateSubnetA ]
+      SecurityGroupIds: [ !Ref EndpointSg ]
+      PrivateDnsEnabled: true
+
+Outputs:
+  VpcId:
+    Value: !Ref MediSlotVpc
+    Export: { Name: !Sub '${AWS::StackName}-VpcId' }
+  PublicSubnetId:
+    Value: !Ref PublicSubnet
+    Export: { Name: !Sub '${AWS::StackName}-PublicSubnetId' }
+  PrivateSubnetIds:
+    Description: Comma-separated, use Fn::Split to consume
+    Value: !Join [ ',', [ !Ref PrivateSubnetA, !Ref PrivateSubnetB ] ]
+    Export: { Name: !Sub '${AWS::StackName}-PrivateSubnetIds' }
+  WebSgId:
+    Value: !GetAtt WebSg.GroupId
+    Export: { Name: !Sub '${AWS::StackName}-WebSgId' }
+  LambdaSgId:
+    Value: !GetAtt LambdaSg.GroupId
+    Export: { Name: !Sub '${AWS::StackName}-LambdaSgId' }
+  RdsSgId:
+    Value: !GetAtt RdsSg.GroupId
+    Export: { Name: !Sub '${AWS::StackName}-RdsSgId' }

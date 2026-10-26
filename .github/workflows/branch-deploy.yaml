@@ -1,0 +1,438 @@
+name: MediSlot Branch Deployment
+
+on:
+  push:
+    branches:
+      - "**"
+      - "!main"
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: medislot-dev-deployment
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  DEPLOY_ENV: ${{vars.DEPLOY_ENV}}
+  AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+  DB_NAME: ${{ secrets.MEDISLOT_DB_NAME }}
+  DB_USERNAME: ${{ secrets.MEDISLOT_DB_USERNAME }}
+  ACCESS_TOKEN_TTL: ${{ vars.ACCESS_TOKEN_TTL_MINUTES }}
+  REFRESH_TOKEN_TTL: ${{ vars.REFRESH_TOKEN_TTL_DAYS }}
+  BCRYPT_WORK_FACTOR: ${{ vars.BCRYPT_WORK_FACTOR }}
+  PASSWORD_MIN_LENGTH: ${{ vars.PASSWORD_MIN_LENGTH }}
+  JWT_ISSUER: ${{ vars.JWT_ISSUER }}
+  LAMBDA_BUCKET: ${{ vars.LAMBDA_BUCKET }}
+  ARTIFACT_PREFIX: medislot/${{ github.sha }}
+
+
+jobs:
+
+  # ==========================================================
+  # LINT ALL STACKS
+  # ==========================================================
+  lint:
+    name: Lint CloudFormation Templates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install cfn-lint
+        run: pip install cfn-lint
+
+      - name: Lint Templates
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for template in \
+            cloudformation/network-stack.yaml \
+            cloudformation/data-stack.yaml \
+            cloudformation/iam-stack.yaml \
+            cloudformation/application-stack.yaml \
+            cloudformation/api-stack.yaml \
+          do
+            echo "Linting ${template}"
+            test -f "$template"
+            cfn-lint --non-zero-exit-code error "$template"
+          done
+
+          echo "All templates passed linting."
+
+  # ==========================================================
+  # NETWORK STACK
+  # ==========================================================
+  deploy-network:
+    needs: lint
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Validate Network Stack
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://cloudformation/network-stack.yaml \
+            --region "$AWS_REGION"
+
+      - name: Deploy Network Stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws cloudformation deploy \
+            --template-file cloudformation/network-stack.yaml \
+            --stack-name "medislot-${DEPLOY_ENV}-network" \
+            --parameter-overrides \
+             "Env=${DEPLOY_ENV}" \
+             "ProjectName=medislot"\
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --region "$AWS_REGION"
+
+  # ==========================================================
+  # DATA STACK
+  # ==========================================================
+  deploy-data:
+    needs: deploy-network
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Validate Data Stack
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://cloudformation/data-stack.yaml \
+            --region "$AWS_REGION"
+
+      - name: Deploy Data Stack
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          aws cloudformation deploy \
+            --template-file cloudformation/data-stack.yaml \
+            --stack-name "medislot-${DEPLOY_ENV}-data" \
+            --parameter-overrides \
+             "Env=${DEPLOY_ENV}" \
+             "ProjectName=medislot" \
+            DatabaseName="${DB_NAME}" \
+            MasterUsername="${DB_USERNAME}" \
+            AccessTokenTtlMinutes="${ACCESS_TOKEN_TTL}" \
+            RefreshTokenTtlDays="${REFRESH_TOKEN_TTL}" \
+            BcryptWorkFactor="${BCRYPT_WORK_FACTOR}" \
+            PasswordMinLength="${PASSWORD_MIN_LENGTH}" \
+            JwtIssuer="${JWT_ISSUER}" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --region "$AWS_REGION"
+
+  # ==========================================================
+  # IAM STACK
+  # ==========================================================
+  deploy-iam:
+    needs: deploy-data
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Validate IAM Stack
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://cloudformation/iam-stack.yaml \
+            --region "$AWS_REGION"
+
+      - name: Deploy IAM Stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws cloudformation deploy \
+            --template-file cloudformation/iam-stack.yaml \
+            --stack-name "medislot-${DEPLOY_ENV}-iam" \
+            --parameter-overrides \
+             "Env=${DEPLOY_ENV}" \
+             "ProjectName=medislot" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --region "$AWS_REGION"
+  package-lambdas:
+    name: Package and Upload Lambda Artifacts
+    needs: deploy-iam
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ZIP Utility
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Validate Lambda Source Files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for function in auth-register auth-login auth-refresh auth-logout; do
+            test -f "lambda/${function}/app.py" || {
+              echo "Missing lambda/${function}/app.py"
+              exit 1
+            }
+          done
+
+          test -f layers/auth-layer/python/requirements.txt
+
+      - name: Package Shared Lambda Layer
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          LAYER_DIR="$RUNNER_TEMP/auth-layer"
+          mkdir -p "$LAYER_DIR/python"
+
+          cp -R layers/auth-layer/python/. "$LAYER_DIR/python/"
+
+          python -m pip install \
+            --platform manylinux2014_x86_64 \
+            --only-binary=:all: \
+            --implementation cp \
+            --python-version 3.12 \
+            --abi cp312 \
+            --target "$LAYER_DIR/python" \
+            -r layers/auth-layer/python/requirements.txt
+
+          cd "$LAYER_DIR"
+          zip -qr "$RUNNER_TEMP/auth-layer.zip" python/
+
+      - name: Package Lambda Functions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for function in auth-register auth-login auth-refresh auth-logout; do
+            (
+              cd "lambda/${function}"
+              zip -q "$RUNNER_TEMP/${function}.zip" app.py
+            )
+          done
+
+      - name: Upload Artifacts to S3
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -n "$LAMBDA_BUCKET"
+
+          for artifact in \
+            auth-layer \
+            auth-register \
+            auth-login \
+            auth-refresh \
+            auth-logout
+          do
+            aws s3 cp \
+              "$RUNNER_TEMP/${artifact}.zip" \
+              "s3://${LAMBDA_BUCKET}/${ARTIFACT_PREFIX}/${artifact}.zip"
+          done
+
+  # ==========================================================
+  # APPLICATION STACK
+  # ==========================================================
+  deploy-application:
+    needs: package-lambdas
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Validate Application Stack
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://cloudformation/application-stack.yaml \
+            --region "$AWS_REGION"
+
+      - name: Deploy Application Stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws cloudformation deploy \
+            --template-file cloudformation/application-stack.yaml \
+            --stack-name "medislot-${DEPLOY_ENV}-application" \
+            --parameter-overrides \
+            "Env=${DEPLOY_ENV}" \
+            "ProjectName=medislot" \
+            "ArtifactBucket=${LAMBDA_BUCKET}" \
+            "ArtifactPrefix=${ARTIFACT_PREFIX}" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --region "$AWS_REGION"
+
+  # ==========================================================
+  # API STACK
+  # ==========================================================
+  deploy-api:
+    needs: deploy-application
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Validate API Stack
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://cloudformation/api-stack.yaml \
+            --region "$AWS_REGION"
+
+      - name: Deploy API Stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws cloudformation deploy \
+            --template-file cloudformation/api-stack.yaml \
+            --stack-name "medislot-${DEPLOY_ENV}-api" \
+            --parameter-overrides \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --region "$AWS_REGION"
+
+  # ==========================================================
+  # MONITORING STACK
+  # ==========================================================
+  # deploy-monitoring:
+  #   needs: deploy-api
+  #   runs-on: ubuntu-latest
+    #environment: #${{ vars.DEPLOY_ENV }}
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+  #         aws-region: ${{ vars.AWS_REGION }}
+
+  #     - name: Validate Monitoring Stack
+  #       run: |
+  #         aws cloudformation validate-template \
+  #           --template-body file://cloudformation/monitor-stack.yaml \
+  #           --region "$AWS_REGION"
+
+  #     - name: Deploy Monitoring Stack
+  #       shell: bash
+  #       run: |
+  #         set -euo pipefail
+  #         PARAM_FILE="parameters/monitoring-parameters.json"
+  #         test -f "$PARAM_FILE"
+
+  #         mapfile -t PARAM_OVERRIDES < <(
+  #           jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' "$PARAM_FILE"
+  #         )
+
+  #         aws cloudformation deploy \
+  #           --template-file cloudformation/monitor-stack.yaml \
+  #           --stack-name "medislot-${DEPLOY_ENV}-monitoring" \
+  #           --parameter-overrides "${PARAM_OVERRIDES[@]}" \
+  #           --capabilities CAPABILITY_NAMED_IAM \
+  #           --no-fail-on-empty-changeset \
+  #           --region "$AWS_REGION"
+
+  # ==========================================================
+  # VERIFY DEPLOYMENT
+  # ==========================================================
+  validate-deployment:
+    needs: deploy-api
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Verify All Stacks
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for stack in \
+            "medislot-${DEPLOY_ENV}-network" \
+            "medislot-${DEPLOY_ENV}-data" \
+            "medislot-${DEPLOY_ENV}-iam" \
+            "medislot-${DEPLOY_ENV}-application" \
+            "medislot-${DEPLOY_ENV}-api" \
+          do
+            status=$(aws cloudformation describe-stacks \
+              --stack-name "$stack" \
+              --query 'Stacks[0].StackStatus' \
+              --output text \
+              --region "$AWS_REGION")
+
+            echo "$stack: $status"
+
+            if [[ "$status" != "CREATE_COMPLETE" && "$status" != "UPDATE_COMPLETE" ]]; then
+              echo "Deployment validation failed for $stack"
+              exit 1
+            fi
+          done
+
+          echo "All MediSlot stacks deployed successfully."

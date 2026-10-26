@@ -1,0 +1,438 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MediSlot data stack - RDS MySQL, DynamoDB tables, S3 buckets and SSM configuration
+
+# ============================================================================
+# PARAMETERS
+# ============================================================================
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues: [ dev, prod ]
+    Description: Deployment environment.
+
+  ProjectName:
+    Type: String
+    Default: medislot
+
+  DBInstanceClass:
+    Type: String
+    Default: db.t3.micro
+
+  AllocatedStorage:
+    Type: Number
+    Default: 20
+    MinValue: 20
+    Description: RDS allocated storage in GB.
+
+  EngineVersion:
+    Type: String
+    Default: '8.0.46'
+    Description: MySQL engine version. Change it if this minor version is unavailable in your region.
+
+  DatabaseName:
+    Type: String
+    Description: Initial database name (from GitHub).
+
+  MasterUsername:
+    Type: String
+    Description: RDS master username (from GitHub).
+
+  MultiAZ:
+    Type: String
+    Default: 'false'
+    AllowedValues: [ 'true', 'false' ]
+
+  BackupRetentionPeriod:
+    Type: Number
+    MinValue: 1
+    Description: Days of automated backups. Document this value in the DR record.
+  AccessTokenTtlMinutes:
+    Type: Number
+    Description: Access token lifetime in minutes
+
+  RefreshTokenTtlDays:
+    Type: Number
+    Description: Refresh token lifetime in days
+
+  BcryptWorkFactor:
+    Type: Number
+    Description: Bcrypt password hashing work factor
+
+  PasswordMinLength:
+    Type: Number
+    Description: Minimum password length
+
+  JwtIssuer:
+    Type: String
+    Default: medislot
+    Description: JWT token issuer
+
+Conditions:
+  IsProd: !Equals [ !Ref Env, prod ]
+
+Resources:
+  # ==========================================================================
+  # RDS
+  # ==========================================================================
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Private subnets for MediSlot RDS
+      SubnetIds: !Split
+        - ','
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+
+  Database:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      Engine: mysql
+      EngineVersion: !Ref EngineVersion
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: !Ref AllocatedStorage
+      StorageType: gp3
+      StorageEncrypted: true # AWS-managed key aws/rds, no customer key
+      DBName: !Ref DatabaseName
+      MasterUsername: !Ref MasterUsername
+      ManageMasterUserPassword: true
+      Port: 3306
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+      - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-RdsSgId'
+      PubliclyAccessible: false
+      MultiAZ: !Ref MultiAZ
+      BackupRetentionPeriod: !Ref BackupRetentionPeriod
+      CopyTagsToSnapshot: true
+      AutoMinorVersionUpgrade: true
+      DeletionProtection: !If [ IsProd, true, false ]
+
+  # ==========================================================================
+  # DYNAMODB (on-demand, point-in-time recovery, TTL on attribute "ttl")
+  # ==========================================================================
+  SlotsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - { AttributeName: slot_id, AttributeType: S }
+      - { AttributeName: doctor_id, AttributeType: S }
+      - { AttributeName: slot_start_utc, AttributeType: S }
+      KeySchema:
+      - { AttributeName: slot_id, KeyType: HASH }
+      GlobalSecondaryIndexes:
+      - IndexName: doctor-start-index
+        KeySchema:
+        - { AttributeName: doctor_id, KeyType: HASH }
+        - { AttributeName: slot_start_utc, KeyType: RANGE }
+        Projection: { ProjectionType: ALL }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  IdempotencyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - { AttributeName: idem_key, AttributeType: S }
+      KeySchema:
+      - { AttributeName: idem_key, KeyType: HASH }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  WaitlistTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - { AttributeName: slot_id, AttributeType: S }
+      - { AttributeName: joined_key, AttributeType: S }
+      - { AttributeName: patient_id, AttributeType: S }
+      KeySchema:
+      - { AttributeName: slot_id, KeyType: HASH }
+      - { AttributeName: joined_key, KeyType: RANGE }
+      GlobalSecondaryIndexes:
+      - IndexName: patient-index
+        KeySchema:
+        - { AttributeName: patient_id, KeyType: HASH }
+        - { AttributeName: slot_id, KeyType: RANGE }
+        Projection: { ProjectionType: ALL }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  HoldOffersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - { AttributeName: offer_id, AttributeType: S }
+      - { AttributeName: patient_id, AttributeType: S }
+      - { AttributeName: slot_id, AttributeType: S }
+      - { AttributeName: status, AttributeType: S }
+      - { AttributeName: expires_at, AttributeType: S }
+      KeySchema:
+      - { AttributeName: offer_id, KeyType: HASH }
+      GlobalSecondaryIndexes:
+      - IndexName: patient-index
+        KeySchema:
+        - { AttributeName: patient_id, KeyType: HASH }
+        - { AttributeName: expires_at, KeyType: RANGE }
+        Projection: { ProjectionType: ALL }
+      - IndexName: slot-index
+        KeySchema:
+        - { AttributeName: slot_id, KeyType: HASH }
+        - { AttributeName: status, KeyType: RANGE }
+        Projection: { ProjectionType: ALL }
+      - IndexName: status-expiry-index
+        KeySchema:
+        - { AttributeName: status, KeyType: HASH }
+        - { AttributeName: expires_at, KeyType: RANGE }
+        Projection: { ProjectionType: ALL }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  RescheduleClaimsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - { AttributeName: execution_id, AttributeType: S }
+      KeySchema:
+      - { AttributeName: execution_id, KeyType: HASH }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  DispatchLogTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - { AttributeName: dispatch_key, AttributeType: S }
+      KeySchema:
+      - { AttributeName: dispatch_key, KeyType: HASH }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  RefreshTokensTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - { AttributeName: token_hash, AttributeType: S }
+      - { AttributeName: user_id, AttributeType: S }
+      KeySchema:
+      - { AttributeName: token_hash, KeyType: HASH }
+      GlobalSecondaryIndexes:
+      - IndexName: user-index
+        KeySchema:
+        - { AttributeName: user_id, KeyType: HASH }
+        Projection: { ProjectionType: KEYS_ONLY }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  TokenDenylistTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - { AttributeName: jti, AttributeType: S }
+      KeySchema:
+      - { AttributeName: jti, KeyType: HASH }
+      PointInTimeRecoverySpecification: { PointInTimeRecoveryEnabled: true }
+      TimeToLiveSpecification: { AttributeName: ttl, Enabled: true }
+
+  # ==========================================================================
+  # S3 (private, SSE-S3, TLS only)
+  # ==========================================================================
+  PhotosBucket:
+    Type: AWS::S3::Bucket
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W35, reason: Access logging is out of scope for this project }
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules: [ { ObjectOwnership: BucketOwnerEnforced } ]
+      LifecycleConfiguration:
+        Rules:
+        - { Id: abort-multipart, Status: Enabled, AbortIncompleteMultipartUpload: { DaysAfterInitiation: 1 } }
+
+  PhotosBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref PhotosBucket
+      PolicyDocument:
+        Statement:
+        - Sid: DenyInsecureTransport
+          Effect: Deny
+          Principal: '*'
+          Action: 's3:*'
+          Resource: [ !GetAtt PhotosBucket.Arn, !Sub '${PhotosBucket.Arn}/*' ]
+          Condition: { Bool: { 'aws:SecureTransport': 'false' } }
+
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W35, reason: Access logging is out of scope for this project }
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules: [ { ObjectOwnership: BucketOwnerEnforced } ]
+      LifecycleConfiguration:
+        Rules:
+        - { Id: abort-multipart, Status: Enabled, AbortIncompleteMultipartUpload: { DaysAfterInitiation: 1 } }
+
+  AssetsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AssetsBucket
+      PolicyDocument:
+        Statement:
+        - Sid: DenyInsecureTransport
+          Effect: Deny
+          Principal: '*'
+          Action: 's3:*'
+          Resource: [ !GetAtt AssetsBucket.Arn, !Sub '${AssetsBucket.Arn}/*' ]
+          Condition: { Bool: { 'aws:SecureTransport': 'false' } }
+
+  # ==========================================================================
+  # SSM: database connection details (non-secret)
+  # The password is NOT created here. See the pipeline step below.
+  # ==========================================================================
+  DbEndpointParam:
+    Type: AWS::SSM::Parameter
+    Properties: { Name: !Sub '/${ProjectName}/${Env}/db/endpoint', Type: String, Value: !GetAtt Database.Endpoint.Address }
+  DbPortParam:
+    Type: AWS::SSM::Parameter
+    Properties: { Name: !Sub '/${ProjectName}/${Env}/db/port', Type: String, Value: !GetAtt Database.Endpoint.Port }
+  DbNameParam:
+    Type: AWS::SSM::Parameter
+    Properties: { Name: !Sub '/${ProjectName}/${Env}/db/name', Type: String, Value: !Ref DatabaseName }
+  DbUsernameParam:
+    Type: AWS::SSM::Parameter
+    Properties: { Name: !Sub '/${ProjectName}/${Env}/db/username', Type: String, Value: !Ref MasterUsername }
+  DbSecretArnParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/db/secret-arn'
+      Type: String
+      Value: !GetAtt Database.MasterUserSecret.SecretArn
+      Description: ARN of the RDS-managed master password secret
+  # JWT Signing secret
+  JwtSigningSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/auth/jwt-signing-secret'
+      Description: JWT HS256 signing secret for MediSlot authentication
+      GenerateSecretString:
+        PasswordLength: 64
+        ExcludePunctuation: true
+
+  JwtSigningSecretArnParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/auth/jwt_signing_secret_arn'
+      Type: String
+      Value: !Ref JwtSigningSecret
+      Description: ARN of the JWT signing secret in Secrets Manager
+
+  # ==========================================================================
+  # SSM: business rules (frozen rule set). Code reads these, never hardcodes.
+  # ==========================================================================
+  # --- authentication ---
+  AccessTtlParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/auth/access_token_ttl_minutes'
+      Type: String
+      Value: !Ref AccessTokenTtlMinutes
+
+  RefreshTtlParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/auth/refresh_token_ttl_days'
+      Type: String
+      Value: !Ref RefreshTokenTtlDays
+
+  BcryptParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/auth/bcrypt_work_factor'
+      Type: String
+      Value: !Ref BcryptWorkFactor
+
+  PasswordMinParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/auth/password_min_length'
+      Type: String
+      Value: !Ref PasswordMinLength
+
+  JwtIssuerParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/auth/jwt_issuer'
+      Type: String
+      Value: !Ref JwtIssuer
+
+# ============================================================================
+# OUTPUTS (consumed by the iam, events, application and web stacks)
+# ============================================================================
+Outputs:
+  DbInstanceId:
+    Value: !Ref Database
+    Export: { Name: !Sub '${AWS::StackName}-DbInstanceId' }
+  DbEndpoint:
+    Value: !GetAtt Database.Endpoint.Address
+    Export: { Name: !Sub '${AWS::StackName}-DbEndpoint' }
+  DbPort:
+    Value: !GetAtt Database.Endpoint.Port
+    Export: { Name: !Sub '${AWS::StackName}-DbPort' }
+  SlotsTableName:
+    Value: !Ref SlotsTable
+    Export: { Name: !Sub '${AWS::StackName}-SlotsTableName' }
+  IdempotencyTableName:
+    Value: !Ref IdempotencyTable
+    Export: { Name: !Sub '${AWS::StackName}-IdempotencyTableName' }
+  WaitlistTableName:
+    Value: !Ref WaitlistTable
+    Export: { Name: !Sub '${AWS::StackName}-WaitlistTableName' }
+  HoldOffersTableName:
+    Value: !Ref HoldOffersTable
+    Export: { Name: !Sub '${AWS::StackName}-HoldOffersTableName' }
+  RescheduleClaimsTableName:
+    Value: !Ref RescheduleClaimsTable
+    Export: { Name: !Sub '${AWS::StackName}-RescheduleClaimsTableName' }
+  DispatchLogTableName:
+    Value: !Ref DispatchLogTable
+    Export: { Name: !Sub '${AWS::StackName}-DispatchLogTableName' }
+  RefreshTokensTableName:
+    Value: !Ref RefreshTokensTable
+    Export: { Name: !Sub '${AWS::StackName}-RefreshTokensTableName' }
+  TokenDenylistTableName:
+    Value: !Ref TokenDenylistTable
+    Export: { Name: !Sub '${AWS::StackName}-TokenDenylistTableName' }
+  PhotosBucketName:
+    Value: !Ref PhotosBucket
+    Export: { Name: !Sub '${AWS::StackName}-PhotosBucketName' }
+  AssetsBucketName:
+    Value: !Ref AssetsBucket
+    Export: { Name: !Sub '${AWS::StackName}-AssetsBucketName' }
