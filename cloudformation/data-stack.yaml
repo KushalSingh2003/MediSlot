@@ -45,6 +45,7 @@ Parameters:
 
   BackupRetentionPeriod:
     Type: Number
+    Default: 1
     MinValue: 1
     Description: Days of automated backups. Document this value in the DR record.
   AccessTokenTtlMinutes:
