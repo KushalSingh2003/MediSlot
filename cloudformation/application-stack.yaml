@@ -173,8 +173,11 @@ Resources:
     Metadata:
       cfn_nag:
         rules_to_suppress:
-        - { id: W89, reason: Only needs DynamoDB and SSM, no RDS access, so no VPC is required }
-        - { id: W92, reason: Reserved concurrency is deliberately not set; limiting concurrency would serialise requests }
+        - id: W89
+          reason: "Only needs DynamoDB and SSM, no RDS access, so no VPC is required"
+        - id: W92
+          reason: "Reserved concurrency is deliberately not set; limiting concurrency would serialise requests"
+
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-auth-refresh'
       Description: Rotate the refresh token and issue a new access JWT
@@ -208,8 +211,10 @@ Resources:
     Metadata:
       cfn_nag:
         rules_to_suppress:
-        - { id: W89, reason: Only needs DynamoDB, no RDS access, so no VPC is required }
-        - { id: W92, reason: Reserved concurrency is deliberately not set; limiting concurrency would serialise requests }
+        - id: W89
+          reason: "Only needs DynamoDB, no RDS access, so no VPC is required"
+        - id: W92
+          reason: "Reserved concurrency is deliberately not set; limiting concurrency would serialise requests"
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-auth-logout'
       Description: Delete the refresh token and denylist the access token jti
@@ -241,8 +246,10 @@ Resources:
     Metadata:
       cfn_nag:
         rules_to_suppress:
-        - { id: W89, reason: Only needs DynamoDB and SSM, no RDS access, so no VPC is required }
-        - { id: W92, reason: Reserved concurrency is deliberately not set; limiting concurrency would serialise requests }
+        - id: W89
+          reason: "Only needs DynamoDB and SSM, no RDS access, so no VPC is required"
+        - id: W92
+          reason: "Reserved concurrency is deliberately not set; limiting concurrency would serialise requests"
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-authorizer'
       Description: Verify the JWT, check the denylist, return a role-scoped policy
