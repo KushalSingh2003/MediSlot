@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: MediSlot data stack - RDS MySQL, DynamoDB tables, S3 buckets and SSM configuration milestone one
+Description: MediSlot data stack - RDS MySQL, DynamoDB tables, S3 buckets and SSM configuration milestone one also
 
 # ============================================================================
 # PARAMETERS
