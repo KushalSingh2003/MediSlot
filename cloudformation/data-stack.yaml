@@ -437,3 +437,8 @@ Outputs:
   AssetsBucketName:
     Value: !Ref AssetsBucket
     Export: { Name: !Sub '${AWS::StackName}-AssetsBucketName' }
+  JwtSigningSecretArn:
+    Description: ARN of the JWT signing secret
+    Value: !GetAtt JwtSigningSecret.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-JwtSigningSecretArn'

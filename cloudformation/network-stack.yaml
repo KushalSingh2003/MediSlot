@@ -15,6 +15,7 @@ Parameters:
     Default: 'true'
     Description: Interface endpoints cost roughly 7 USD per month each
 
+# it is like a cost control switch, but the interface endpoints are required for Lambda to reach SSM, EventBridge, Step Functions and SNS from private subnets
 Conditions:
   UseInterfaceEndpoints: !Equals [ !Ref CreateInterfaceEndpoints, 'true' ]
 
