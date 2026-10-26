@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: MediSlot IAM stack - least-privilege execution roles for the auth Lambdas for register, login, refresh, logout and the Lambda authorizer
+Description: MediSlot IAM stack - least-privilege execution roles for the auth Lambdas for register, login, refresh, logout and the Lambda authorizer more things
 
 Parameters:
   Env:
