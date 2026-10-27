@@ -349,14 +349,14 @@ Resources:
         - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
         - LambdaArn:
             Fn::ImportValue:
-              Fn::Sub: '${ProjectName}-${Env}-application-AuthorizerFunctionArn'
+              Fn::Sub: '${ProjectName}-${Env}-application-AuthAuthorizerFunctionArn'
   AuthorizerLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName:
         Fn::ImportValue:
-          Fn::Sub: '${ProjectName}-${Env}-application-AuthorizerFunctionArn'
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthAuthorizerFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/authorizers/${AuthorizerId}'
