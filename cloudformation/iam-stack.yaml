@@ -1,0 +1,490 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MediSlot IAM stack - least-privilege execution roles for the auth Lambdas for register, login, refresh, logout and the Lambda authorizer more things also
+
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues: [ dev, prod ]
+  ProjectName:
+    Type: String
+    Default: medislot
+
+Resources:
+  # ==========================================================================
+  # Register Lambda (in VPC: RDS). No DynamoDB access.
+  # ==========================================================================
+  AuthRegisterRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W28, reason: Explicit role names are required so other stacks can reference them by convention }
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-auth-register-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { Service: lambda.amazonaws.com }
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+      Policies:
+      - PolicyName: register-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action: [ logs:CreateLogStream, logs:PutLogEvents ]
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-auth-register:*'
+          - Sid: ReadConfigAndDbSettings
+            Effect: Allow
+            Action: [ ssm:GetParameter, ssm:GetParameters ]
+            Resource:
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/bcrypt_work_factor'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/password_min_length'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/endpoint'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/port'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/name'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/username'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/secret-arn'
+      - PolicyName: ReadDatabaseSecret
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: GetDatabaseCredentials
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+
+  # ==========================================================================
+  # Login Lambda (in VPC: RDS). Writes the refresh token. Reads the JWT secret.
+  # ==========================================================================
+  AuthLoginRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W28, reason: Explicit role names are required so other stacks can reference them by convention }
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-auth-login-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { Service: lambda.amazonaws.com }
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+      - PolicyName: login-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action: [ logs:CreateLogStream, logs:PutLogEvents ]
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-auth-login:*'
+          - Sid: ReadConfigSecretAndDbSettings
+            Effect: Allow
+            Action: [ ssm:GetParameter, ssm:GetParameters ]
+            Resource:
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/jwt_signing_secret_arn'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/jwt_issuer'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/access_token_ttl_minutes'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/refresh_token_ttl_days'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/endpoint'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/port'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/name'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/username'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/secret-arn'
+          - Sid: StoreRefreshToken
+            Effect: Allow
+            Action: [ dynamodb:PutItem ]
+            Resource: !Sub
+              - 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}'
+              - TableName:
+                  Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-RefreshTokensTableName'
+      - PolicyName: ReadAuthenticationSecrets
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: GetDatabaseCredentials
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+
+          - Sid: GetJwtSigningSecret
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-JwtSigningSecretArn'
+
+  # ==========================================================================
+  # Refresh Lambda (no VPC). Rotates the refresh token, signs a new access token.
+  # ==========================================================================
+  AuthRefreshRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W28, reason: Explicit role names are required so other stacks can reference them by convention }
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-auth-refresh-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { Service: lambda.amazonaws.com }
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+      - PolicyName: refresh-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action: [ logs:CreateLogStream, logs:PutLogEvents ]
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-auth-refresh:*'
+          - Sid: ReadConfigAndSecret
+            Effect: Allow
+            Action: [ ssm:GetParameter, ssm:GetParameters ]
+            Resource:
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/jwt_signing_secret_arn'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/jwt_issuer'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/access_token_ttl_minutes'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/refresh_token_ttl_days'
+          - Sid: RotateRefreshToken
+            Effect: Allow
+            Action: [ dynamodb:GetItem, dynamodb:PutItem, dynamodb:DeleteItem ]
+            Resource: !Sub
+              - 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}'
+              - TableName:
+                  Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-RefreshTokensTableName'
+      - PolicyName: ReadJwtSigningSecret
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: GetJwtSigningSecret
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-JwtSigningSecretArn'
+
+  # ==========================================================================
+  # Logout Lambda (no VPC). Deletes the refresh token, denylists the access jti.
+  # ==========================================================================
+  AuthLogoutRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W28, reason: Explicit role names are required so other stacks can reference them by convention }
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-auth-logout-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { Service: lambda.amazonaws.com }
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+      - PolicyName: logout-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action: [ logs:CreateLogStream, logs:PutLogEvents ]
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-auth-logout:*'
+          - Sid: DeleteRefreshToken
+            Effect: Allow
+            Action: [ dynamodb:DeleteItem ]
+            Resource: !Sub
+              - 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}'
+              - TableName:
+                  Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-RefreshTokensTableName'
+          - Sid: DenylistAccessToken
+            Effect: Allow
+            Action: [ dynamodb:PutItem ]
+            Resource: !Sub
+              - 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}'
+              - TableName:
+                  Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-TokenDenylistTableName'
+      - PolicyName: ReadJwtSigningSecret
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: GetJwtSigningSecret
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-JwtSigningSecretArn'
+
+  # ==========================================================================
+  # GetDoctorProfile Lambda (in VPC: RDS). Reads the doctor profile from the database.
+  # ==========================================================================
+  GetDoctorProfileRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W28
+          reason: Explicit role names are required so other stacks can reference them by convention
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-get-doctor-profile-role'
+
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+      Policies:
+      - PolicyName: get-doctor-profile-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-get-doctor-profile:*'
+
+          - Sid: ReadDatabaseSettings
+            Effect: Allow
+            Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+            Resource:
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/endpoint'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/port'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/name'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/username'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/secret-arn'
+
+      - PolicyName: ReadDatabaseSecret
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: GetDatabaseCredentials
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+  #============================================================================
+  # Patient Profile Lambda (in VPC: RDS). Reads the patient profile from the database.
+  # ==========================================================================
+  GetPatientProfileRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W28
+          reason: Explicit role names are required so other stacks can reference them by convention
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-get-patient-profile-role'
+
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+      Policies:
+      - PolicyName: get-patient-profile-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-get-patient-profile:*'
+
+          - Sid: ReadDatabaseSettings
+            Effect: Allow
+            Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+            Resource:
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/endpoint'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/port'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/name'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/username'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/secret-arn'
+
+      - PolicyName: ReadDatabaseSecret
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: GetDatabaseCredentials
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+  # ==========================================================================
+  # DbMigration Lambda (in VPC: RDS). Runs the database migrations.
+  # ==========================================================================
+
+  DbMigrationRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W28
+          reason: Explicit role name is required for cross-stack references.
+
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-db-migration-role'
+
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+      Policies:
+      - PolicyName: db-migration-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-db-migration:*'
+
+          - Sid: ReadDatabaseSettings
+            Effect: Allow
+            Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+            Resource:
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/endpoint'
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/port'
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/name'
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/username'
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/secret-arn'
+
+          - Sid: ReadDatabaseSecret
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+
+  # ==========================================================================
+  # Lambda Authorizer (no VPC). Verifies the JWT, checks the denylist.
+  # ==========================================================================
+  AuthorizerRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - { id: W28, reason: Explicit role names are required so other stacks can reference them by convention }
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-authorizer-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { Service: lambda.amazonaws.com }
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+      - PolicyName: authorizer-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action: [ logs:CreateLogStream, logs:PutLogEvents ]
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-authorizer:*'
+          - Sid: ReadSecretAndIssuer
+            Effect: Allow
+            Action: [ ssm:GetParameter, ssm:GetParameters ]
+            Resource:
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/jwt_signing_secret_arn'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/auth/jwt_issuer'
+          - Sid: CheckDenylist
+            Effect: Allow
+            Action: [ dynamodb:GetItem ]
+            Resource: !Sub
+              - 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/${TableName}'
+              - TableName:
+                  Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-TokenDenylistTableName'
+      - PolicyName: ReadJwtSigningSecret
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: GetJwtSigningSecret
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-JwtSigningSecretArn'
+
+Outputs:
+  AuthRegisterRoleArn:
+    Value: !GetAtt AuthRegisterRole.Arn
+    Export: { Name: !Sub '${AWS::StackName}-AuthRegisterRoleArn' }
+  AuthLoginRoleArn:
+    Value: !GetAtt AuthLoginRole.Arn
+    Export: { Name: !Sub '${AWS::StackName}-AuthLoginRoleArn' }
+  AuthRefreshRoleArn:
+    Value: !GetAtt AuthRefreshRole.Arn
+    Export: { Name: !Sub '${AWS::StackName}-AuthRefreshRoleArn' }
+  AuthLogoutRoleArn:
+    Value: !GetAtt AuthLogoutRole.Arn
+    Export: { Name: !Sub '${AWS::StackName}-AuthLogoutRoleArn' }
+  AuthorizerRoleArn:
+    Value: !GetAtt AuthorizerRole.Arn
+    Export: { Name: !Sub '${AWS::StackName}-AuthorizerRoleArn' }
+  GetDoctorProfileRoleArn:
+    Value: !GetAtt GetDoctorProfileRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-GetDoctorProfileRoleArn'
+  GetPatientProfileRoleArn:
+    Value: !GetAtt GetPatientProfileRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-GetPatientProfileRoleArn'
+  DbMigrationRoleArn:
+    Value: !GetAtt DbMigrationRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DbMigrationRoleArn'

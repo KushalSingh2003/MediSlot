@@ -1,0 +1,1 @@
+print("Auth refresh lambda initialized")

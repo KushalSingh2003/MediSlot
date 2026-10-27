@@ -1,0 +1,1 @@
+print("Authorizer lambda initialized")

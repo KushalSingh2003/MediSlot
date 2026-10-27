@@ -1,0 +1,414 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MediSlot API Gateway and Lambda integrations also
+
+Parameters:
+  Env:
+    Type: String
+    Default: dev
+    AllowedValues:
+    - dev
+    - prod
+
+  ProjectName:
+    Type: String
+    Default: medislot
+
+Resources:
+
+  # --------------------------------------------------
+  # REST API
+  # --------------------------------------------------
+
+  MediSlotApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub '${ProjectName}-${Env}-api'
+      Description: MediSlot authentication API
+      EndpointConfiguration:
+        Types:
+        - REGIONAL
+
+  # --------------------------------------------------
+  # API RESOURCES
+  # --------------------------------------------------
+
+  AuthResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !GetAtt MediSlotApi.RootResourceId
+      PathPart: auth
+
+  PatientsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref AuthResource
+      PathPart: patients
+
+  DoctorsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref AuthResource
+      PathPart: doctors
+
+  PatientRegisterResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref PatientsResource
+      PathPart: register
+
+  PatientLoginResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref PatientsResource
+      PathPart: login
+
+  DoctorRegisterResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref DoctorsResource
+      PathPart: register
+
+  DoctorLoginResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref DoctorsResource
+      PathPart: login
+
+  RefreshResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref AuthResource
+      PathPart: refresh
+
+  LogoutResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref AuthResource
+      PathPart: logout
+
+  DoctorsRootResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !GetAtt MediSlotApi.RootResourceId
+      PathPart: doctors
+
+  PatientsRootResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !GetAtt MediSlotApi.RootResourceId
+      PathPart: patients
+
+  DoctorMeResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref DoctorsRootResource
+      PathPart: me
+
+  PatientMeResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref PatientsRootResource
+      PathPart: me
+  # --------------------------------------------------
+  # LAMBDA PERMISSIONS
+  # --------------------------------------------------
+
+  RegisterLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthRegisterFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
+        - ApiId: !Ref MediSlotApi
+
+  LoginLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthLoginFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
+        - ApiId: !Ref MediSlotApi
+
+  RefreshLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthRefreshFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
+        - ApiId: !Ref MediSlotApi
+
+  LogoutLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthLogoutFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
+        - ApiId: !Ref MediSlotApi
+  GetDoctorProfileLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-DoctorProfileFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
+        - ApiId: !Ref MediSlotApi
+
+  GetPatientProfileLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-PatientProfileFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
+        - ApiId: !Ref MediSlotApi
+
+  # --------------------------------------------------
+  # API METHODS
+  # --------------------------------------------------
+
+  PatientRegisterMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref PatientRegisterResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthRegisterFunctionArn'
+
+  PatientLoginMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref PatientLoginResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthLoginFunctionArn'
+
+  DoctorRegisterMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorRegisterResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthRegisterFunctionArn'
+
+  DoctorLoginMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorLoginResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthLoginFunctionArn'
+
+  RefreshMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref RefreshResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthRefreshFunctionArn'
+
+  LogoutMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref LogoutResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AuthLogoutFunctionArn'
+  GetDoctorProfileMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorMeResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorProfileFunctionArn'
+
+  GetPatientProfileMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref PatientMeResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-PatientProfileFunctionArn'
+  LambdaAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: !Sub '${ProjectName}-${Env}-authorizer'
+      RestApiId: !Ref MediSlotApi
+      Type: REQUEST
+      IdentitySource: method.request.header.Authorization
+      AuthorizerUri:
+        Fn::Sub:
+        - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+        - LambdaArn:
+            Fn::ImportValue:
+              Fn::Sub: '${ProjectName}-${Env}-application-AuthAuthorizerFunctionArn'
+  AuthorizerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthAuthorizerFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/authorizers/${AuthorizerId}'
+        - ApiId: !Ref MediSlotApi
+          AuthorizerId: !Ref LambdaAuthorizer
+
+  # --------------------------------------------------
+  # API DEPLOYMENT
+  # --------------------------------------------------
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+    - PatientRegisterMethod
+    - PatientLoginMethod
+    - DoctorRegisterMethod
+    - DoctorLoginMethod
+    - RefreshMethod
+    - LogoutMethod
+    - GetDoctorProfileMethod
+    - GetPatientProfileMethod
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      Description: !Sub 'MediSlot ${Env} API deployment'
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      DeploymentId: !Ref ApiDeployment
+      StageName: !Ref Env
+      Description: !Sub 'MediSlot ${Env} stage'
+
+Outputs:
+  ApiId:
+    Description: API Gateway REST API ID
+    Value: !Ref MediSlotApi
+    Export:
+      Name: !Sub '${ProjectName}-${Env}-api-ApiId'
+
+  ApiBaseUrl:
+    Description: Base URL for the deployed API
+    Value: !Sub 'https://${MediSlotApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${Env}'
+
+  PatientRegisterUrl:
+    Value: !Sub 'https://${MediSlotApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${Env}/auth/patients/register'
+
+  PatientLoginUrl:
+    Value: !Sub 'https://${MediSlotApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${Env}/auth/patients/login'
+
+  DoctorRegisterUrl:
+    Value: !Sub 'https://${MediSlotApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${Env}/auth/doctors/register'
+
+  DoctorLoginUrl:
+    Value: !Sub 'https://${MediSlotApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/${Env}/auth/doctors/login'
