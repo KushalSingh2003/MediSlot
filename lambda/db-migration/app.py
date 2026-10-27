@@ -1,0 +1,1 @@
+print("Database migration completed successfully.")

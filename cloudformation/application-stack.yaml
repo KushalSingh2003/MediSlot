@@ -86,6 +86,37 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-auth-logout'
       RetentionInDays: !Ref LogRetentionDays
+  GetDoctorProfileLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-get-doctor-profile'
+      RetentionInDays: !Ref LogRetentionDays
+
+  GetPatientProfileLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-get-patient-profile'
+      RetentionInDays: !Ref LogRetentionDays
+  DbMigrationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-db-migration'
+      RetentionInDays: !Ref LogRetentionDays
 
   # ==========================================================================
   # Register Lambda (VPC: reaches RDS)
@@ -274,6 +305,141 @@ Resources:
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
           TOKEN_DENYLIST_TABLE:
             Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-TokenDenylistTableName'
+  #========================================================================
+  # Get Doctor Profile Lambda (in VPC: RDS). Reads the doctor profile from the database.
+  #========================================================================
+  GetDoctorProfileFunction:
+    Type: AWS::Lambda::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W92
+          reason: Reserved concurrency is deliberately not set
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-get-doctor-profile'
+      Description: Retrieve the authenticated doctor's profile
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-GetDoctorProfileRoleArn'
+
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/get-doctor-profile.zip'
+
+      Layers:
+      - !Ref AuthDependenciesLayer
+
+      MemorySize: 256
+      Timeout: 10
+      TracingConfig:
+        Mode: Active
+
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref GetDoctorProfileLogGroup
+
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+  #========================================================================
+  # Get Patient Profile Lambda (in VPC: RDS). Reads the patient profile from the database.
+  #========================================================================
+  GetPatientProfileFunction:
+    Type: AWS::Lambda::Function
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W92
+          reason: Reserved concurrency is deliberately not set
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-get-patient-profile'
+      Description: Retrieve the authenticated patient's profile
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-GetPatientProfileRoleArn'
+
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/get-patient-profile.zip'
+
+      Layers:
+      - !Ref AuthDependenciesLayer
+
+      MemorySize: 256
+      Timeout: 10
+      TracingConfig:
+        Mode: Active
+
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref GetPatientProfileLogGroup
+
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+  DbMigrationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-db-migration'
+      Description: Initialize the MediSlot RDS MySQL database schema
+      Runtime: python3.12
+      Architectures:
+      - x86_64
+      Handler: app.lambda_handler
+
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DbMigrationRoleArn'
+
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/db-migration.zip'
+
+      Layers:
+      - !Ref AuthDependenciesLayer
+
+      MemorySize: 256
+      Timeout: 60
+
+      TracingConfig:
+        Mode: Active
+
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref DbMigrationLogGroup
+
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
 
 Outputs:
   RegisterFunctionArn:
@@ -291,3 +457,16 @@ Outputs:
   AuthorizerFunctionArn:
     Value: !GetAtt AuthorizerFunction.Arn
     Export: { Name: !Sub '${AWS::StackName}-AuthAuthorizerFunctionArn' }
+  DoctorProfileFunctionArn:
+    Value: !GetAtt GetDoctorProfileFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorProfileFunctionArn'
+
+  PatientProfileFunctionArn:
+    Value: !GetAtt GetPatientProfileFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-PatientProfileFunctionArn'
+  DbMigrationFunctionArn:
+    Value: !GetAtt DbMigrationFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DbMigrationFunctionArn'

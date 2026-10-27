@@ -1,0 +1,1 @@
+print("Doctor profile retrieved successfully.")

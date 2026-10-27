@@ -95,6 +95,33 @@ Resources:
       ParentId: !Ref AuthResource
       PathPart: logout
 
+  DoctorsRootResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !GetAtt MediSlotApi.RootResourceId
+      PathPart: doctors
+
+  PatientsRootResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !GetAtt MediSlotApi.RootResourceId
+      PathPart: patients
+
+  DoctorMeResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref DoctorsRootResource
+      PathPart: me
+
+  PatientMeResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref PatientsRootResource
+      PathPart: me
   # --------------------------------------------------
   # LAMBDA PERMISSIONS
   # --------------------------------------------------
@@ -142,6 +169,29 @@ Resources:
       FunctionName:
         Fn::ImportValue:
           Fn::Sub: '${ProjectName}-${Env}-application-AuthLogoutFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
+        - ApiId: !Ref MediSlotApi
+  GetDoctorProfileLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-DoctorProfileFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
+        - ApiId: !Ref MediSlotApi
+
+  GetPatientProfileLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-PatientProfileFunctionArn'
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/*'
@@ -252,6 +302,41 @@ Resources:
           - LambdaArn:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-AuthLogoutFunctionArn'
+  GetDoctorProfileMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorMeResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorProfileFunctionArn'
+
+  GetPatientProfileMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref PatientMeResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-PatientProfileFunctionArn'
 
   # --------------------------------------------------
   # API DEPLOYMENT
@@ -266,6 +351,8 @@ Resources:
     - DoctorLoginMethod
     - RefreshMethod
     - LogoutMethod
+    - GetDoctorProfileMethod
+    - GetPatientProfileMethod
     Properties:
       RestApiId: !Ref MediSlotApi
       Description: !Sub 'MediSlot ${Env} API deployment'

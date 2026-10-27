@@ -215,7 +215,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          for function in auth-register auth-login auth-refresh auth-logout authorizer; do
+          for function in auth-register auth-login auth-refresh auth-logout authorizer get-doctor-profile 
+            get-patient-profile db-migration; do
             test -f "lambda/${function}/app.py" || {
               echo "Missing lambda/${function}/app.py"
               exit 1
@@ -223,6 +224,7 @@ jobs:
           done
 
           test -f layers/auth-layer/python/requirements.txt
+          test -f database/schema.sql
 
       - name: Package Shared Lambda Layer
         shell: bash
@@ -251,12 +253,26 @@ jobs:
         run: |
           set -euo pipefail
 
-          for function in auth-register auth-login auth-refresh auth-logout authorizer; do
+          for function in auth-register auth-login auth-refresh auth-logout authorizer get-doctor-profile 
+            get-patient-profile; do
             (
               cd "lambda/${function}"
               zip -q "$RUNNER_TEMP/${function}.zip" app.py
             )
           done
+           # Package the migration Lambda with its database schema
+          MIGRATION_DIR="$RUNNER_TEMP/db-migration"
+          mkdir -p "$MIGRATION_DIR"
+
+          cp lambda/db-migration/app.py "$MIGRATION_DIR/app.py"
+          cp database/schema.sql "$MIGRATION_DIR/schema.sql"
+
+          (
+            cd "$MIGRATION_DIR"
+            zip -q "$RUNNER_TEMP/db-migration.zip" app.py schema.sql
+          )
+
+          echo "All Lambda packages created successfully."
 
       - name: Upload Artifacts to S3
         shell: bash
@@ -272,7 +288,10 @@ jobs:
             auth-login \
             auth-refresh \
             auth-logout \
-            authorizer
+            authorizer \
+            get-doctor-profile \
+            get-patient-profile \
+            db-migration
           do
             aws s3 cp \
               "$RUNNER_TEMP/${artifact}.zip" \
@@ -370,52 +389,54 @@ jobs:
             --parameter-overrides \
             "Env=${DEPLOY_ENV}" \
             "ProjectName=medislot" \
-            
-            --capabilities CAPABILITY_NAMED_IAM \
+             --capabilities CAPABILITY_NAMED_IAM \
             --no-fail-on-empty-changeset \
             --region "$AWS_REGION"
-
   # ==========================================================
-  # MONITORING STACK
+  # RUN DATABASE MIGRATION
   # ==========================================================
-  # deploy-monitoring:
-  #   needs: deploy-api
-  #   runs-on: ubuntu-latest
-    #environment: #${{ vars.DEPLOY_ENV }}
 
-  #   steps:
-  #     - uses: actions/checkout@v4
+  run-db-migration:
+    name: Run Database Migration
+    needs: deploy-application
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
 
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v4
-  #       with:
-  #         role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-  #         aws-region: ${{ vars.AWS_REGION }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
 
-  #     - name: Validate Monitoring Stack
-  #       run: |
-  #         aws cloudformation validate-template \
-  #           --template-body file://cloudformation/monitor-stack.yaml \
-  #           --region "$AWS_REGION"
+      - name: Execute Database Migration
+        shell: bash
+        env:
+          DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
+        run: |
+          set -euo pipefail
 
-  #     - name: Deploy Monitoring Stack
-  #       shell: bash
-  #       run: |
-  #         set -euo pipefail
-  #         PARAM_FILE="parameters/monitoring-parameters.json"
-  #         test -f "$PARAM_FILE"
+          FUNCTION_NAME="medislot-${DEPLOY_ENV}-db-migration"
 
-  #         mapfile -t PARAM_OVERRIDES < <(
-  #           jq -r '.[] | "\(.ParameterKey)=\(.ParameterValue)"' "$PARAM_FILE"
-  #         )
+          echo "Running database migration: ${FUNCTION_NAME}"
 
-  #         aws cloudformation deploy \
-  #           --template-file cloudformation/monitor-stack.yaml \
-  #           --stack-name "medislot-${DEPLOY_ENV}-monitoring" \
-  #           --parameter-overrides "${PARAM_OVERRIDES[@]}" \
-  #           --capabilities CAPABILITY_NAMED_IAM \
-  #           --no-fail-on-empty-changeset \
-  #           --region "$AWS_REGION"
+          aws lambda invoke \
+            --function-name "$FUNCTION_NAME" \
+            --payload '{}' \
+            --cli-binary-format raw-in-base64-out \
+            --log-type Tail \
+            response.json \
+            > invoke-metadata.json
+
+          cat response.json
+
+          if grep -q '"FunctionError"' invoke-metadata.json; then
+            echo "Database migration Lambda execution failed."
+            cat invoke-metadata.json
+            exit 1
+          fi
+
+          echo "Database migration Lambda invocation completed."
 
   # ==========================================================
   # VERIFY DEPLOYMENT
