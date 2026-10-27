@@ -337,6 +337,31 @@ Resources:
           - LambdaArn:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-PatientProfileFunctionArn'
+  LambdaAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: !Sub '${ProjectName}-${Env}-authorizer'
+      RestApiId: !Ref MediSlotApi
+      Type: REQUEST
+      IdentitySource: method.request.header.Authorization
+      AuthorizerUri:
+        Fn::Sub:
+        - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+        - LambdaArn:
+            Fn::ImportValue:
+              Fn::Sub: '${ProjectName}-${Env}-application-AuthorizerFunctionArn'
+  AuthorizerLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-AuthorizerFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/authorizers/${AuthorizerId}'
+        - ApiId: !Ref MediSlotApi
+          AuthorizerId: !Ref LambdaAuthorizer
 
   # --------------------------------------------------
   # API DEPLOYMENT
