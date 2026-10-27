@@ -263,8 +263,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          for function in auth-register auth-login auth-refresh auth-logout authorizer get-doctor-profile 
-            get-patient-profile; do
+          for function in 
+            auth-register \
+            auth-login \
+            auth-refresh \
+            auth-logout \
+            authorizer \
+            get-doctor-profile \
+            get-patient-profile 
+          do
             (
               cd "lambda/${function}"
               zip -q "$RUNNER_TEMP/${function}.zip" app.py
