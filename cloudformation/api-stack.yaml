@@ -354,7 +354,7 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName:``
+      FunctionName:
         Fn::ImportValue:
           Fn::Sub: '${ProjectName}-${Env}-application-AuthAuthorizerFunctionArn'
       Principal: apigateway.amazonaws.com
