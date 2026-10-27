@@ -258,26 +258,28 @@ jobs:
           cd "$LAYER_DIR"
           zip -qr "$RUNNER_TEMP/auth-layer.zip" python/
 
+    
       - name: Package Lambda Functions
         shell: bash
         run: |
           set -euo pipefail
 
-          for function in 
+          for function in \
             auth-register \
             auth-login \
             auth-refresh \
             auth-logout \
             authorizer \
             get-doctor-profile \
-            get-patient-profile 
+            get-patient-profile
           do
             (
               cd "lambda/${function}"
               zip -q "$RUNNER_TEMP/${function}.zip" app.py
             )
           done
-           # Package the migration Lambda with its database schema
+
+          # Package the migration Lambda with its database schema
           MIGRATION_DIR="$RUNNER_TEMP/db-migration"
           mkdir -p "$MIGRATION_DIR"
 
@@ -290,6 +292,7 @@ jobs:
           )
 
           echo "All Lambda packages created successfully."
+
 
       - name: Upload Artifacts to S3
         shell: bash
