@@ -264,7 +264,7 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
-        ReservedConcurrentExecutions: 10
+      ReservedConcurrentExecutions: 10
 
   AuthorizerFunction:
     Type: AWS::Lambda::Function
@@ -304,11 +304,6 @@ Resources:
   #========================================================================
   GetDoctorProfileFunction:
     Type: AWS::Lambda::Function
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-        - id: W92
-          reason: Reserved concurrency is deliberately not set
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-get-doctor-profile'
       Description: Retrieve the authenticated doctor's profile
@@ -352,11 +347,6 @@ Resources:
   #========================================================================
   GetPatientProfileFunction:
     Type: AWS::Lambda::Function
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-        - id: W92
-          reason: Reserved concurrency is deliberately not set
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-get-patient-profile'
       Description: Retrieve the authenticated patient's profile
