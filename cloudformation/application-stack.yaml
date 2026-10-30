@@ -298,6 +298,7 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+      ReservedConcurrentExecutions: 50
   #========================================================================
   # Get Doctor Profile Lambda (in VPC: RDS). Reads the doctor profile from the database.
   #========================================================================
@@ -345,6 +346,7 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+      ReservedConcurrentExecutions: 20
   #========================================================================
   # Get Patient Profile Lambda (in VPC: RDS). Reads the patient profile from the database.
   #========================================================================
@@ -392,6 +394,7 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+      ReservedConcurrentExecutions: 20
   DbMigrationFunction:
     Type: AWS::Lambda::Function
     Properties:
