@@ -123,10 +123,6 @@ Resources:
   # ==========================================================================
   RegisterFunction:
     Type: AWS::Lambda::Function
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-        - { id: W92, reason: Reserved concurrency is deliberately not set; limiting concurrency would serialise requests }
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-auth-register'
       Description: Register a doctor or patient (role comes from the route)
@@ -155,16 +151,13 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+      ReservedConcurrentExecutions: 10
 
   # ==========================================================================
   # Login Lambda (VPC: reaches RDS)
   # ==========================================================================
   LoginFunction:
     Type: AWS::Lambda::Function
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-        - { id: W92, reason: Reserved concurrency is deliberately not set; limiting concurrency would serialise requests }
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-auth-login'
       Description: Verify credentials and issue an access JWT and a refresh token
@@ -195,20 +188,13 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+      ReservedConcurrentExecutions: 20
 
   # ==========================================================================
   # Refresh Lambda (no VPC)
   # ==========================================================================
   RefreshFunction:
     Type: AWS::Lambda::Function
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-        - id: W89
-          reason: "Only needs DynamoDB and SSM, no RDS access, so no VPC is required"
-        - id: W92
-          reason: "Reserved concurrency is deliberately not set; limiting concurrency would serialise requests"
-
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-auth-refresh'
       Description: Rotate the refresh token and issue a new access JWT
@@ -233,19 +219,19 @@ Resources:
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
           REFRESH_TOKENS_TABLE:
             Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-RefreshTokensTableName'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+      ReservedConcurrentExecutions: 20
 
   # ==========================================================================
   # Logout Lambda (no VPC)
   # ==========================================================================
   LogoutFunction:
     Type: AWS::Lambda::Function
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-        - id: W89
-          reason: "Only needs DynamoDB, no RDS access, so no VPC is required"
-        - id: W92
-          reason: "Reserved concurrency is deliberately not set; limiting concurrency would serialise requests"
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-auth-logout'
       Description: Delete the refresh token and denylist the access token jti
@@ -272,15 +258,16 @@ Resources:
             Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-RefreshTokensTableName'
           TOKEN_DENYLIST_TABLE:
             Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-TokenDenylistTableName'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+        ReservedConcurrentExecutions: 10
+
   AuthorizerFunction:
     Type: AWS::Lambda::Function
-    Metadata:
-      cfn_nag:
-        rules_to_suppress:
-        - id: W89
-          reason: "Only needs DynamoDB and SSM, no RDS access, so no VPC is required"
-        - id: W92
-          reason: "Reserved concurrency is deliberately not set; limiting concurrency would serialise requests"
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-authorizer'
       Description: Verify the JWT, check the denylist, return a role-scoped policy
@@ -305,6 +292,12 @@ Resources:
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
           TOKEN_DENYLIST_TABLE:
             Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-TokenDenylistTableName'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
   #========================================================================
   # Get Doctor Profile Lambda (in VPC: RDS). Reads the doctor profile from the database.
   #========================================================================

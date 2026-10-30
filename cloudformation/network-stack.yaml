@@ -207,6 +207,19 @@ Resources:
       SecurityGroupIds: [ !Ref EndpointSg ]
       PrivateDnsEnabled: true
 
+  SsmEndpointForSystemManager:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: UseInterfaceEndpoints
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.ssm'
+      VpcEndpointType: Interface
+      SubnetIds:
+      - !Ref PrivateSubnetA
+      SecurityGroupIds:
+      - !Ref EndpointSg
+      PrivateDnsEnabled: true
+
   EventsEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Condition: UseInterfaceEndpoints
