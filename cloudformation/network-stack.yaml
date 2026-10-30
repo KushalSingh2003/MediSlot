@@ -207,19 +207,19 @@ Resources:
       SecurityGroupIds: [ !Ref EndpointSg ]
       PrivateDnsEnabled: true
 
-SecretsManagerEndpoint:
-  Type: AWS::EC2::VPCEndpoint
-  Condition: UseInterfaceEndpoints
-  Properties:
-    VpcId: !Ref MediSlotVpc
-    ServiceName: !Sub 'com.amazonaws.${AWS::Region}.secretsmanager'
-    VpcEndpointType: Interface
-    SubnetIds:
-    - !Ref PrivateSubnetA
-    - !Ref PrivateSubnetB
-    SecurityGroupIds:
-    - !Ref EndpointSg
-    PrivateDnsEnabled: true
+  SecretsManagerEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: UseInterfaceEndpoints
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.secretsmanager'
+      VpcEndpointType: Interface
+      SubnetIds:
+      - !Ref PrivateSubnetA
+      - !Ref PrivateSubnetB
+      SecurityGroupIds:
+      - !Ref EndpointSg
+      PrivateDnsEnabled: true
 
   EventsEndpoint:
     Type: AWS::EC2::VPCEndpoint
