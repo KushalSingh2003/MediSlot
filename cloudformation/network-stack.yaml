@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: MediSlot network - VPC, subnets, routing, security groups, VPC endpoints and interface endpoints
+Description: MediSlot network - VPC, subnets, routing, security groups, VPC endpoints and interface endpoints annd their security groups. Interface endpoints are required for Lambda to reach SSM, EventBridge, Step Functions and SNS from private subnets.
 
 Parameters:
   Env:
