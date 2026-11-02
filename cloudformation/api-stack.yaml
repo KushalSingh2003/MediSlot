@@ -362,7 +362,7 @@ Resources:
         - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/authorizers/${AuthorizerId}'
         - ApiId: !Ref MediSlotApi
           AuthorizerId: !Ref LambdaAuthorizer
-    DoctorPhotoResource:
+  DoctorPhotoResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       RestApiId: !Ref MediSlotApi
@@ -551,10 +551,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorPhotoFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorPhotoFunctionArn'
 
   DoctorConsultationTypesPostMethod:
     Type: AWS::ApiGateway::Method
@@ -569,10 +569,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
 
   DoctorConsultationTypesGetMethod:
     Type: AWS::ApiGateway::Method
@@ -587,10 +587,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
 
   DoctorConsultationTypesPutMethod:
     Type: AWS::ApiGateway::Method
@@ -605,10 +605,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
 
   DoctorConsultationTypesDeleteMethod:
     Type: AWS::ApiGateway::Method
@@ -623,10 +623,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
 
   DoctorAvailabilityPutMethod:
     Type: AWS::ApiGateway::Method
@@ -641,10 +641,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorScheduleFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorScheduleFunctionArn'
 
   DoctorBlackoutsPostMethod:
     Type: AWS::ApiGateway::Method
@@ -659,10 +659,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorBlackoutsFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorBlackoutsFunctionArn'
 
   DoctorBlackoutsGetMethod:
     Type: AWS::ApiGateway::Method
@@ -677,10 +677,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorBlackoutsFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorBlackoutsFunctionArn'
 
   DoctorBlackoutsDeleteMethod:
     Type: AWS::ApiGateway::Method
@@ -695,10 +695,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorBlackoutsFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorBlackoutsFunctionArn'
 
   DoctorScheduleGetMethod:
     Type: AWS::ApiGateway::Method
@@ -715,10 +715,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorScheduleFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorScheduleFunctionArn'
 
   DoctorAppointmentsGetMethod:
     Type: AWS::ApiGateway::Method
@@ -737,10 +737,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorAppointmentsFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorAppointmentsFunctionArn'
 
   DoctorSlotCancellationDeleteMethod:
     Type: AWS::ApiGateway::Method
@@ -755,10 +755,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorSlotCancellationFunctionArn'
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorSlotCancellationFunctionArn'
 
   AppointmentOutcomePostMethod:
     Type: AWS::ApiGateway::Method
@@ -773,11 +773,10 @@ Resources:
         IntegrationHttpMethod: POST
         Uri:
           Fn::Sub:
-            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-            - LambdaArn:
-                Fn::ImportValue:
-                  Fn::Sub: '${ProjectName}-${Env}-application-AppointmentOutcomeFunctionArn'
-
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-AppointmentOutcomeFunctionArn'
 
   # --------------------------------------------------
   # API DEPLOYMENT
