@@ -1,15 +1,16 @@
-import os
+import base64
 import json
+import logging
+import os
 import re
 import uuid
-import logging
-import base64
-import boto3
-import pymysql
-import bcrypt
-
 from datetime import date
+
+import boto3
+import bcrypt
+import pymysql
 from botocore.exceptions import ClientError
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -26,13 +27,13 @@ PARAMETER_PREFIX = f"/medislot/{ENVIRONMENT}/db"
 
 
 # --------------------------------------------------
-# DATABASE CONNECTION: SAME AS DB-MIGRATIONS LAMBDA
+# DATABASE CONNECTION
 # --------------------------------------------------
 
 def get_parameter(name):
     response = ssm.get_parameter(
         Name=f"{PARAMETER_PREFIX}/{name}",
-        WithDecryption=True
+        WithDecryption=True,
     )
     return response["Parameter"]["Value"]
 
@@ -47,14 +48,10 @@ def get_db_connection():
     secret_arn = get_parameter("secret-arn")
 
     logger.info("Retrieving database credentials")
-
-    secret_response = secretsmanager.get_secret_value(
-        SecretId=secret_arn
-    )
+    secret_response = secretsmanager.get_secret_value(SecretId=secret_arn)
     secret = json.loads(secret_response["SecretString"])
 
     logger.info("Connecting to RDS MySQL")
-
     return pymysql.connect(
         host=endpoint,
         port=port,
@@ -65,7 +62,7 @@ def get_db_connection():
         read_timeout=30,
         write_timeout=30,
         autocommit=False,
-        charset="utf8mb4"
+        charset="utf8mb4",
     )
 
 
@@ -75,16 +72,15 @@ def get_db_connection():
 
 def response(status_code, message, data=None):
     body = {"message": message}
-
     if data is not None:
         body["data"] = data
 
     return {
         "statusCode": status_code,
         "headers": {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         },
-        "body": json.dumps(body, default=str)
+        "body": json.dumps(body, default=str),
     }
 
 
@@ -112,17 +108,15 @@ def get_string(data, key, label=None, required=False, max_length=255):
         return None
 
     if len(value) > max_length:
-        raise ValueError(
-            f"{label} must not exceed {max_length} characters."
-        )
+        raise ValueError(f"{label} must not exceed {max_length} characters.")
 
-    if any(ord(c) < 32 or ord(c) == 127 for c in value):
+    if any(ord(char) < 32 or ord(char) == 127 for char in value):
         raise ValueError(f"{label} contains invalid characters.")
 
     return value
 
 
-def validate_name(value, label="name", max_length=150):
+def validate_name(value, label="name", max_length=255):
     if not isinstance(value, str):
         raise ValueError(f"{label} is required.")
 
@@ -133,10 +127,7 @@ def validate_name(value, label="name", max_length=150):
             f"{label} must contain 2 to {max_length} characters."
         )
 
-    if not all(
-        char.isalpha() or char in " .'-"
-        for char in value
-    ):
+    if not all(char.isalpha() or char in " .'-" for char in value):
         raise ValueError(f"{label} contains invalid characters.")
 
     return value
@@ -155,7 +146,6 @@ def validate_email(value):
         r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@"
         r"[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$"
     )
-
     if not re.fullmatch(pattern, value):
         raise ValueError("Enter a valid email address.")
 
@@ -167,36 +157,23 @@ def validate_password(value):
         raise ValueError("password is required.")
 
     if not 12 <= len(value) <= 72:
-        raise ValueError(
-            "Password must contain 12 to 72 characters."
-        )
+        raise ValueError("Password must contain 12 to 72 characters.")
 
     if len(value.encode("utf-8")) > 72:
-        raise ValueError(
-            "Password must not exceed 72 UTF-8 bytes."
-        )
+        raise ValueError("Password must not exceed 72 UTF-8 bytes.")
 
     if not re.search(r"[a-z]", value):
-        raise ValueError(
-            "Password must contain a lowercase letter."
-        )
-
+        raise ValueError("Password must contain a lowercase letter.")
     if not re.search(r"[A-Z]", value):
-        raise ValueError(
-            "Password must contain an uppercase letter."
-        )
-
+        raise ValueError("Password must contain an uppercase letter.")
     if not re.search(r"[0-9]", value):
         raise ValueError("Password must contain a number.")
-
     if not re.search(r"[^A-Za-z0-9]", value):
-        raise ValueError(
-            "Password must contain a special character."
-        )
+        raise ValueError("Password must contain a special character.")
 
     return bcrypt.hashpw(
         value.encode("utf-8"),
-        bcrypt.gensalt(rounds=12)
+        bcrypt.gensalt(rounds=12),
     ).decode("utf-8")
 
 
@@ -211,18 +188,15 @@ def validate_phone(value, required=False):
 
     value = value.strip()
 
-    if len(value) > 20:
-        raise ValueError("Phone must not exceed 20 characters.")
+    if len(value) > 30:
+        raise ValueError("Phone must not exceed 30 characters.")
 
     if not re.fullmatch(r"\+?[0-9()\s.-]+", value):
         raise ValueError("Phone number format is invalid.")
 
     digits = re.sub(r"\D", "", value)
-
     if not 7 <= len(digits) <= 15:
-        raise ValueError(
-            "Phone must contain between 7 and 15 digits."
-        )
+        raise ValueError("Phone must contain between 7 and 15 digits.")
 
     return value
 
@@ -232,26 +206,18 @@ def validate_date_of_birth(value):
         return None
 
     if not isinstance(value, str):
-        raise ValueError(
-            "dateOfBirth must use YYYY-MM-DD format."
-        )
+        raise ValueError("dateOfBirth must use YYYY-MM-DD format.")
 
     try:
         parsed = date.fromisoformat(value)
     except ValueError:
-        raise ValueError(
-            "dateOfBirth must use YYYY-MM-DD format."
-        )
+        raise ValueError("dateOfBirth must use YYYY-MM-DD format.")
 
     if parsed.isoformat() != value:
-        raise ValueError(
-            "dateOfBirth must use YYYY-MM-DD format."
-        )
+        raise ValueError("dateOfBirth must use YYYY-MM-DD format.")
 
     if parsed > date.today():
-        raise ValueError(
-            "Date of birth cannot be in the future."
-        )
+        raise ValueError("Date of birth cannot be in the future.")
 
     return parsed
 
@@ -261,37 +227,30 @@ def validate_experience(value):
         return None
 
     if type(value) is not int or not 0 <= value <= 80:
-        raise ValueError(
-            "yearsExperience must be an integer between 0 and 80."
-        )
+        raise ValueError("yearsExperience must be an integer between 0 and 80.")
 
     return value
 
 
 # --------------------------------------------------
 # LOOKUP TABLE HELPER
+# Table/column names are fixed by internal calls.
 # --------------------------------------------------
 
 def get_or_create_lookup(cursor, table, id_column, name, max_length):
-    """
-    Get an existing lookup record or create one.
-    Table and column names are fixed by internal calls,
-    never supplied directly by the request.
-    """
     name = get_string(
         {"value": name},
         "value",
         label=f"{table} name",
         required=True,
-        max_length=max_length
+        max_length=max_length,
     )
 
     cursor.execute(
         f"SELECT `{id_column}` FROM `{table}` "
         "WHERE LOWER(`name`) = LOWER(%s) LIMIT 1",
-        (name,)
+        (name,),
     )
-
     row = cursor.fetchone()
 
     if row:
@@ -299,185 +258,135 @@ def get_or_create_lookup(cursor, table, id_column, name, max_length):
 
     cursor.execute(
         f"INSERT INTO `{table}` (`name`) VALUES (%s)",
-        (name,)
+        (name,),
     )
-
     return cursor.lastrowid
 
 
 # --------------------------------------------------
 # DOCTOR VALIDATION
+# Matches: doctor, doctor_licence, doctor_specialisation,
+# doctor_qualification, doctor_address, doctor_language,
+# doctor_hospital and the schema's lookup tables.
 # --------------------------------------------------
 
 def validate_doctor(data):
     if not isinstance(data, dict):
         raise ValueError("Request body must be a JSON object.")
 
-    name = validate_name(
-        data.get("name"),
-        "name",
-        150
-    )
-
+    name = validate_name(data.get("name"), "name", 255)
     email = validate_email(data.get("email"))
     password_hash = validate_password(data.get("password"))
-
-    phone = validate_phone(
-        data.get("phone"),
-        required=False
-    )
-
-    experience = validate_experience(
-        data.get("yearsExperience")
-    )
+    phone = validate_phone(data.get("phone"), required=False)
+    experience = validate_experience(data.get("yearsExperience"))
 
     licence_number = get_string(
         data,
         "licenceNumber",
         required=True,
-        max_length=50
+        max_length=100,  # doctor_licence.licence_no is VARCHAR(100)
     )
-
     if len(licence_number) < 2:
-        raise ValueError(
-            "licenceNumber must contain at least 2 characters."
-        )
+        raise ValueError("licenceNumber must contain at least 2 characters.")
 
     authority = get_string(
         data,
         "licenceAuthority",
         required=False,
-        max_length=150
+        max_length=255,  # doctor_licence.authority
     )
 
     specialisation = get_string(
         data,
         "specialisation",
         required=True,
-        max_length=100
+        max_length=255,  # specialisations.name
     )
 
-    # Qualifications must be a list of objects.
     qualifications = data.get("qualifications", [])
-
     if not isinstance(qualifications, list):
         raise ValueError("qualifications must be a list.")
-
     if len(qualifications) > 20:
         raise ValueError("Maximum 20 qualifications are allowed.")
 
     validated_qualifications = []
-
     for item in qualifications:
         if not isinstance(item, dict):
-            raise ValueError(
-                "Each qualification must be a JSON object."
-            )
+            raise ValueError("Each qualification must be a JSON object.")
 
-        degree = get_string(
-            item, "degree",
-            required=True,
-            max_length=100
-        )
-
-        institution = get_string(
-            item, "institution",
-            required=False,
-            max_length=150
-        )
-
+        degree = get_string(item, "degree", required=True, max_length=255)
+        institution = get_string(item, "institution", max_length=255)
         year = item.get("year")
 
         if year is not None:
             if type(year) is not int:
-                raise ValueError(
-                    "Qualification year must be an integer."
-                )
-
+                raise ValueError("Qualification year must be an integer.")
             if not 1900 <= year <= date.today().year:
-                raise ValueError(
-                    "Qualification year is outside the valid range."
-                )
+                raise ValueError("Qualification year is outside the valid range.")
 
         validated_qualifications.append({
             "degree": degree,
             "institution": institution,
-            "year": year
+            "year": year,
         })
 
-    # Address is optional.
     address = data.get("address", {})
-
     if address is None:
         address = {}
-
     if not isinstance(address, dict):
         raise ValueError("address must be a JSON object.")
 
+    address_line_1 = get_string(
+        address, "addressLine1", max_length=255
+    )
+    address_line_2 = get_string(
+        address, "addressLine2", max_length=255
+    )
+    city = get_string(address, "city", max_length=100)
+    postal_code = get_string(address, "postalCode", max_length=20)
+
+    # Schema requires address_line_1 and city to be non-NULL.
+    if any((address_line_1, address_line_2, city, postal_code)):
+        if not address_line_1:
+            raise ValueError("addressLine1 is required when providing an address.")
+        if not city:
+            raise ValueError("address.city is required when providing an address.")
+
     validated_address = {
-        "address_line_1": get_string(
-            address, "addressLine1", max_length=255
-        ),
-        "address_line_2": get_string(
-            address, "addressLine2", max_length=255
-        ),
-        "city": get_string(
-            address, "city", max_length=100
-        ),
-        "postal_code": get_string(
-            address, "postalCode", max_length=20
-        )
+        "address_line_1": address_line_1,
+        "address_line_2": address_line_2,
+        "city": city,
+        "postal_code": postal_code,
     }
 
-    # Languages are optional.
     languages = data.get("languagesSpoken", [])
-
     if not isinstance(languages, list):
         raise ValueError("languagesSpoken must be a list.")
-
     if len(languages) > 30:
         raise ValueError("Maximum 30 languages are allowed.")
 
     validated_languages = []
-
     for language in languages:
         if not isinstance(language, str):
             raise ValueError("Each language must be a string.")
-
         language = language.strip()
-
-        if not 1 <= len(language) <= 50:
-            raise ValueError(
-                "Each language must contain 1 to 50 characters."
-            )
-
-        if any(ord(c) < 32 or ord(c) == 127 for c in language):
+        if not 1 <= len(language) <= 100:
+            raise ValueError("Each language must contain 1 to 100 characters.")
+        if any(ord(char) < 32 or ord(char) == 127 for char in language):
             raise ValueError("Language contains invalid characters.")
-
         validated_languages.append(language)
 
-    # Hospital and department are optional.
     hospital = data.get("hospital")
-
     if hospital is not None and not isinstance(hospital, dict):
         raise ValueError("hospital must be a JSON object.")
 
     hospital_name = None
     department_name = None
-
     if hospital:
-        hospital_name = get_string(
-            hospital, "name", max_length=150
-        )
-
-        department_name = get_string(
-            hospital, "department", max_length=100
-        )
-
+        hospital_name = get_string(hospital, "name", max_length=255)
+        department_name = get_string(hospital, "department", max_length=255)
         if bool(hospital_name) != bool(department_name):
-            raise ValueError(
-                "Provide both hospital name and department."
-            )
+            raise ValueError("Provide both hospital name and department.")
 
     return {
         "doctor_id": str(uuid.uuid4()),
@@ -493,28 +402,23 @@ def validate_doctor(data):
         "address": validated_address,
         "languages": list(dict.fromkeys(validated_languages)),
         "hospital_name": hospital_name,
-        "department_name": department_name
+        "department_name": department_name,
     }
 
 
 # --------------------------------------------------
 # DOCTOR DATABASE INSERTION
+# SQL names match the supplied schema.sql exactly.
 # --------------------------------------------------
 
 def register_doctor(connection, doctor):
     with connection.cursor() as cursor:
         doctor_id = doctor["doctor_id"]
 
-        # 1. Insert core doctor profile.
         cursor.execute(
             """
-            INSERT INTO doctors (
-                doctor_id,
-                email,
-                password_hash,
-                name,
-                phone,
-                years_experience
+            INSERT INTO doctor (
+                doctor_id, email, password_hash, name, phone, years_experience
             )
             VALUES (%s, %s, %s, %s, %s, %s)
             """,
@@ -524,18 +428,14 @@ def register_doctor(connection, doctor):
                 doctor["password_hash"],
                 doctor["name"],
                 doctor["phone"],
-                doctor["years_experience"]
-            )
+                doctor["years_experience"],
+            ),
         )
 
-        # 2. Insert licence.
         cursor.execute(
             """
-            INSERT INTO doctor_licences (
-                doctor_id,
-                licence_no,
-                authority,
-                verification_status
+            INSERT INTO doctor_licence (
+                doctor_id, licence_no, authority, verification_status
             )
             VALUES (%s, %s, %s, %s)
             """,
@@ -543,39 +443,30 @@ def register_doctor(connection, doctor):
                 doctor_id,
                 doctor["licence_number"],
                 doctor["licence_authority"],
-                "PENDING"
-            )
+                "PENDING",
+            ),
         )
 
-        # 3. Link specialisation.
         specialisation_id = get_or_create_lookup(
             cursor,
             "specialisations",
             "specialisation_id",
             doctor["specialisation"],
-            100
+            255,
         )
-
         cursor.execute(
             """
-            INSERT INTO doctor_specialisations (
-                doctor_id,
-                specialisation_id
-            )
+            INSERT INTO doctor_specialisation (doctor_id, specialisation_id)
             VALUES (%s, %s)
             """,
-            (doctor_id, specialisation_id)
+            (doctor_id, specialisation_id),
         )
 
-        # 4. Insert qualifications.
         for qualification in doctor["qualifications"]:
             cursor.execute(
                 """
-                INSERT INTO doctor_qualifications (
-                    doctor_id,
-                    degree,
-                    institution,
-                    year
+                INSERT INTO doctor_qualification (
+                    doctor_id, degree, institution, year
                 )
                 VALUES (%s, %s, %s, %s)
                 """,
@@ -583,22 +474,16 @@ def register_doctor(connection, doctor):
                     doctor_id,
                     qualification["degree"],
                     qualification["institution"],
-                    qualification["year"]
-                )
+                    qualification["year"],
+                ),
             )
 
-        # 5. Insert address.
         address = doctor["address"]
-
-        if any(address.values()):
+        if address["address_line_1"] and address["city"]:
             cursor.execute(
                 """
-                INSERT INTO doctor_addresses (
-                    doctor_id,
-                    address_line_1,
-                    address_line_2,
-                    city,
-                    postal_code
+                INSERT INTO doctor_address (
+                    doctor_id, address_line_1, address_line_2, city, postal_code
                 )
                 VALUES (%s, %s, %s, %s, %s)
                 """,
@@ -607,59 +492,37 @@ def register_doctor(connection, doctor):
                     address["address_line_1"],
                     address["address_line_2"],
                     address["city"],
-                    address["postal_code"]
-                )
+                    address["postal_code"],
+                ),
             )
 
-        # 6. Link languages.
         for language in doctor["languages"]:
             language_id = get_or_create_lookup(
-                cursor,
-                "languages",
-                "language_id",
-                language,
-                50
+                cursor, "language", "language_id", language, 100
             )
-
             cursor.execute(
                 """
-                INSERT INTO doctor_languages (
-                    doctor_id,
-                    language_id
-                )
+                INSERT INTO doctor_language (doctor_id, language_id)
                 VALUES (%s, %s)
                 """,
-                (doctor_id, language_id)
+                (doctor_id, language_id),
             )
 
-        # 7. Link hospital and department.
         if doctor["hospital_name"]:
             hospital_id = get_or_create_lookup(
-                cursor,
-                "hospitals",
-                "hospital_id",
-                doctor["hospital_name"],
-                150
+                cursor, "hospitals", "hospital_id", doctor["hospital_name"], 255
             )
-
             department_id = get_or_create_lookup(
-                cursor,
-                "departments",
-                "department_id",
-                doctor["department_name"],
-                100
+                cursor, "department", "department_id", doctor["department_name"], 255
             )
-
             cursor.execute(
                 """
-                INSERT INTO doctor_hospitals (
-                    doctor_id,
-                    hospital_id,
-                    department_id
+                INSERT INTO doctor_hospital (
+                    doctor_id, hospital_id, department_id
                 )
                 VALUES (%s, %s, %s)
                 """,
-                (doctor_id, hospital_id, department_id)
+                (doctor_id, hospital_id, department_id),
             )
 
     return doctor_id
@@ -667,69 +530,45 @@ def register_doctor(connection, doctor):
 
 # --------------------------------------------------
 # PATIENT VALIDATION
+# Schema uses one `name` column and a UUID patient_id.
 # --------------------------------------------------
 
 def validate_patient(data):
     if not isinstance(data, dict):
         raise ValueError("Request body must be a JSON object.")
 
-    first_name = validate_name(
-        data.get("firstName"),
-        "firstName",
-        100
-    )
+    first_name = validate_name(data.get("firstName"), "firstName", 100)
+    last_name = validate_name(data.get("lastName"), "lastName", 100)
+    full_name = f"{first_name} {last_name}"
 
-    last_name = validate_name(
-        data.get("lastName"),
-        "lastName",
-        100
-    )
+    if len(full_name) > 255:
+        raise ValueError("Full name must not exceed 255 characters.")
 
     email = validate_email(data.get("email"))
     password_hash = validate_password(data.get("password"))
+    phone = validate_phone(data.get("phone"), required=False)
+    city = get_string(data, "city", required=False, max_length=100)
+    dob = validate_date_of_birth(data.get("dateOfBirth"))
+    gender = get_string(data, "gender", required=False, max_length=20)
 
-    phone = validate_phone(
-        data.get("phone"),
-        required=False
-    )
-
-    city = get_string(
-        data,
-        "city",
-        required=False,
-        max_length=100
-    )
-
-    dob = validate_date_of_birth(
-        data.get("dateOfBirth")
-    )
-
-    gender = get_string(
-        data,
-        "gender",
-        required=False,
-        max_length=20
-    )
-
-    if gender and not re.fullmatch(
-        r"[A-Za-z][A-Za-z '\-]*", gender
-    ):
+    if gender and not re.fullmatch(r"[A-Za-z][A-Za-z '\-]*", gender):
         raise ValueError("gender contains invalid characters.")
 
     return {
-        "first_name": first_name,
-        "last_name": last_name,
+        "patient_id": str(uuid.uuid4()),
+        "name": full_name,
         "email": email,
         "password_hash": password_hash,
         "phone": phone,
         "city": city,
         "date_of_birth": dob,
-        "gender": gender
+        "gender": gender,
     }
 
 
 # --------------------------------------------------
 # PATIENT DATABASE INSERTION
+# SQL names match the supplied schema.sql exactly.
 # --------------------------------------------------
 
 def register_patient(connection, patient):
@@ -737,42 +576,41 @@ def register_patient(connection, patient):
         cursor.execute(
             """
             INSERT INTO patients (
-                email,
-                password_hash,
-                first_name,
-                last_name,
-                phone,
-                city,
-                date_of_birth,
-                gender
+                patient_id, name, phone, email, password_hash,
+                city, date_of_birth, gender
             )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
+                patient["patient_id"],
+                patient["name"],
+                patient["phone"],
                 patient["email"],
                 patient["password_hash"],
-                patient["first_name"],
-                patient["last_name"],
-                patient["phone"],
                 patient["city"],
                 patient["date_of_birth"],
-                patient["gender"]
-            )
+                patient["gender"],
+            ),
         )
 
-        return cursor.lastrowid
+    return patient["patient_id"]
 
 
 # --------------------------------------------------
 # LAMBDA HANDLER
+# Supports API Gateway HTTP API and REST API event shapes.
+# Routes:
+#   POST /auth/doctors/register
+#   POST /auth/patients/register
 # --------------------------------------------------
 
 def lambda_handler(event, context):
     connection = None
+    registration_type = None
 
     try:
-        request_context = event.get("requestContext", {})
-        http_context = request_context.get("http", {})
+        request_context = event.get("requestContext") or {}
+        http_context = request_context.get("http") or {}
 
         method = (
             http_context.get("method")
@@ -784,6 +622,7 @@ def lambda_handler(event, context):
             event.get("rawPath")
             or event.get("path")
             or event.get("routeKey", "").split(" ", 1)[-1]
+            or ""
         ).rstrip("/").lower()
 
         if method != "POST":
@@ -791,20 +630,20 @@ def lambda_handler(event, context):
 
         if route == "/auth/doctors/register":
             registration_type = "doctor"
-
         elif route == "/auth/patients/register":
             registration_type = "patient"
-
         else:
             return response(404, "Registration route not found.")
 
         body = event.get("body")
-
         if not body:
             return response(400, "Request body is required.")
 
         if event.get("isBase64Encoded"):
-            body = base64.b64decode(body).decode("utf-8")
+            try:
+                body = base64.b64decode(body).decode("utf-8")
+            except (ValueError, UnicodeDecodeError):
+                return response(400, "Request body is not valid base64-encoded UTF-8.")
 
         try:
             data = json.loads(body) if isinstance(body, str) else body
@@ -814,7 +653,7 @@ def lambda_handler(event, context):
         if not isinstance(data, dict):
             return response(400, "Request body must be a JSON object.")
 
-        # Validate before connecting to the database.
+        # Validate before opening the database connection.
         if registration_type == "doctor":
             record = validate_doctor(data)
         else:
@@ -829,22 +668,23 @@ def lambda_handler(event, context):
             record_id = register_patient(connection, record)
             id_field = "patientId"
 
-        # Commit all inserts as one transaction.
         connection.commit()
 
         logger.info(
             "Registration succeeded: type=%s request_id=%s",
             registration_type,
-            getattr(context, "aws_request_id", "unknown")
+            getattr(context, "aws_request_id", "unknown"),
         )
 
         return response(
             201,
             f"{registration_type.capitalize()} registered successfully.",
-            {id_field: record_id}
+            {id_field: record_id},
         )
 
     except ValueError as exc:
+        if connection:
+            connection.rollback()
         return response(400, str(exc))
 
     except pymysql.err.IntegrityError as exc:
@@ -852,10 +692,11 @@ def lambda_handler(event, context):
             connection.rollback()
 
         if exc.args and exc.args[0] == 1062:
-            return response(
-                409,
-                "Email or licence number already exists."
-            )
+            if registration_type == "doctor":
+                return response(409, "Email or licence number already exists.")
+            if registration_type == "patient":
+                return response(409, "Email already exists.")
+            return response(409, "A record with this unique value already exists.")
 
         logger.exception("Database integrity error.")
         return response(500, "Registration could not be completed.")
@@ -863,14 +704,12 @@ def lambda_handler(event, context):
     except (ClientError, pymysql.MySQLError):
         if connection:
             connection.rollback()
-
         logger.exception("AWS or database operation failed.")
         return response(500, "Registration could not be completed.")
 
     except Exception:
         if connection:
             connection.rollback()
-
         logger.exception("Unexpected registration error.")
         return response(500, "An internal error occurred.")
 

@@ -447,3 +447,7 @@ Outputs:
     Value: !GetAtt Database.MasterUserSecret.SecretArn
     Export:
       Name: !Sub '${AWS::StackName}-DatabaseSecretArn'
+  PhotosBucketArn:
+    Value: !GetAtt PhotosBucket.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-PhotosBucketArn'

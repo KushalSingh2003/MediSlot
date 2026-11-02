@@ -304,17 +304,13 @@ def verify_password(password, stored_hash):
 # ============================================================
 
 def find_user(connection, email, role):
-    """
-    Query only the table associated with the requested role.
-    """
-
     if role == "doctor":
         query = """
             SELECT
                 doctor_id AS user_id,
                 password_hash,
                 name
-            FROM doctors
+            FROM doctor
             WHERE email = %s
             LIMIT 1
         """
@@ -324,7 +320,7 @@ def find_user(connection, email, role):
             SELECT
                 patient_id AS user_id,
                 password_hash,
-                first_name AS name
+                name
             FROM patients
             WHERE email = %s
             LIMIT 1

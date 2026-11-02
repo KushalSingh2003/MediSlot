@@ -47,6 +47,16 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-auth-register'
       RetentionInDays: !Ref LogRetentionDays
+  DoctorPhotoLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-doctor-photo'
+      RetentionInDays: !Ref LogRetentionDays
 
   LoginLogGroup:
     Type: AWS::Logs::LogGroup
@@ -422,6 +432,386 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+  DoctorPhotoFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-doctor-photo'
+      Description: Create a presigned S3 upload URL for doctor profile photos
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorPhotoRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/doctor-photo.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref DoctorPhotoLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+          PHOTOS_BUCKET:
+            Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-PhotosBucketName'
+
+  DoctorConsultationTypesLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-doctor-consultation-types'
+      RetentionInDays: !Ref LogRetentionDays
+
+  DoctorConsultationTypesFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-doctor-consultation-types'
+      Description: Manage the authenticated doctor's consultation types
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorConsultationTypesRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/doctor-consultation-types.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref DoctorConsultationTypesLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+
+  DoctorBlackoutsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-doctor-blackouts'
+      RetentionInDays: !Ref LogRetentionDays
+
+  DoctorBlackoutsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-doctor-blackouts'
+      Description: Manage doctor blackout dates
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorBlackoutsRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/doctor-blackouts.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref DoctorBlackoutsLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+
+  DoctorScheduleLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-doctor-schedule'
+      RetentionInDays: !Ref LogRetentionDays
+
+  DoctorScheduleFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-doctor-schedule'
+      Description: Retrieve a doctor's daily schedule and booked patients
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorScheduleRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/doctor-schedule.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref DoctorScheduleLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+
+  DoctorAppointmentsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-doctor-appointments'
+      RetentionInDays: !Ref LogRetentionDays
+
+  DoctorAppointmentsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-doctor-appointments'
+      Description: List the authenticated doctor's appointments
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorAppointmentsRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/doctor-appointments.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref DoctorAppointmentsLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+
+  DoctorSlotCancellationLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-doctor-slot-cancellation'
+      RetentionInDays: !Ref LogRetentionDays
+
+  DoctorSlotCancellationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-doctor-slot-cancellation'
+      Description: Cancel a doctor slot and process related appointment updates
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorSlotCancellationRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/doctor-slot-cancellation.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref DoctorSlotCancellationLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+
+  AppointmentOutcomeLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-appointment-outcome'
+      RetentionInDays: !Ref LogRetentionDays
+
+  AppointmentOutcomeFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-appointment-outcome'
+      Description: Mark an appointment completed or no-show
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-AppointmentOutcomeRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/appointment-outcome.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref AppointmentOutcomeLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+
+  SlotTemplateAdminLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-slot-template-admin'
+      RetentionInDays: !Ref LogRetentionDays
+
+  SlotTemplateAdminFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-slot-template-admin'
+      Description: Create or update the global slot template and consultation rules
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-SlotTemplateAdminRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/slot-template-admin.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref SlotTemplateAdminLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+
+  SlotMaterializerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-slot-materializer'
+      RetentionInDays: !Ref LogRetentionDays
+
+  SlotMaterializerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-slot-materializer'
+      Description: Materialize slots from the global template for the rolling availability window
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-SlotMaterializerRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/slot-materializer.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 256
+      Timeout: 15
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref SlotMaterializerLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
 
 Outputs:
   RegisterFunctionArn:
@@ -452,3 +842,48 @@ Outputs:
     Value: !GetAtt DbMigrationFunction.Arn
     Export:
       Name: !Sub '${AWS::StackName}-DbMigrationFunctionArn'
+
+  DoctorPhotoFunctionArn:
+    Value: !GetAtt DoctorPhotoFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorPhotoFunctionArn'
+
+  DoctorConsultationTypesFunctionArn:
+    Value: !GetAtt DoctorConsultationTypesFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorConsultationTypesFunctionArn'
+
+  DoctorBlackoutsFunctionArn:
+    Value: !GetAtt DoctorBlackoutsFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorBlackoutsFunctionArn'
+
+  DoctorScheduleFunctionArn:
+    Value: !GetAtt DoctorScheduleFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorScheduleFunctionArn'
+
+  DoctorAppointmentsFunctionArn:
+    Value: !GetAtt DoctorAppointmentsFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorAppointmentsFunctionArn'
+
+  DoctorSlotCancellationFunctionArn:
+    Value: !GetAtt DoctorSlotCancellationFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorSlotCancellationFunctionArn'
+
+  AppointmentOutcomeFunctionArn:
+    Value: !GetAtt AppointmentOutcomeFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-AppointmentOutcomeFunctionArn'
+
+  SlotTemplateAdminFunctionArn:
+    Value: !GetAtt SlotTemplateAdminFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-SlotTemplateAdminFunctionArn'
+
+  SlotMaterializerFunctionArn:
+    Value: !GetAtt SlotMaterializerFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-SlotMaterializerFunctionArn'
