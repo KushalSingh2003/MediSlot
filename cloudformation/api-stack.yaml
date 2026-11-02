@@ -319,6 +319,23 @@ Resources:
           - LambdaArn:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-DoctorProfileFunctionArn'
+  PutDoctorProfileMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorMeResource
+      HttpMethod: PUT
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorProfileFunctionArn'
 
   GetPatientProfileMethod:
     Type: AWS::ApiGateway::Method
@@ -792,6 +809,7 @@ Resources:
     - RefreshMethod
     - LogoutMethod
     - GetDoctorProfileMethod
+    - PutDoctorProfileMethod
     - GetPatientProfileMethod
     - DoctorPhotoMethod
     - DoctorConsultationTypesPostMethod

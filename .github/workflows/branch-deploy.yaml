@@ -420,47 +420,47 @@ jobs:
   # RUN DATABASE MIGRATION
   # ==========================================================
 
-  run-db-migration:
-    name: Run Database Migration
-    needs: deploy-application
-    runs-on: ubuntu-latest
-    environment: ${{ vars.DEPLOY_ENV }}
+  # run-db-migration:
+  #   name: Run Database Migration
+  #   needs: deploy-application
+  #   runs-on: ubuntu-latest
+  #   environment: ${{ vars.DEPLOY_ENV }}
 
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
+  #   steps:
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+  #         aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Execute Database Migration
-        shell: bash
-        env:
-          DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
-        run: |
-          set -euo pipefail
+  #     - name: Execute Database Migration
+  #       shell: bash
+  #       env:
+  #         DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
+  #       run: |
+  #         set -euo pipefail
 
-          FUNCTION_NAME="medislot-${DEPLOY_ENV}-db-migration"
+  #         FUNCTION_NAME="medislot-${DEPLOY_ENV}-db-migration"
 
-          echo "Running database migration: ${FUNCTION_NAME}"
+  #         echo "Running database migration: ${FUNCTION_NAME}"
 
-          aws lambda invoke \
-            --function-name "$FUNCTION_NAME" \
-            --payload '{}' \
-            --cli-binary-format raw-in-base64-out \
-            --log-type Tail \
-            response.json \
-            > invoke-metadata.json
+  #         aws lambda invoke \
+  #           --function-name "$FUNCTION_NAME" \
+  #           --payload '{}' \
+  #           --cli-binary-format raw-in-base64-out \
+  #           --log-type Tail \
+  #           response.json \
+  #           > invoke-metadata.json
 
-          cat response.json
+  #         cat response.json
 
-          if grep -q '"FunctionError"' invoke-metadata.json; then
-            echo "Database migration Lambda execution failed."
-            cat invoke-metadata.json
-            exit 1
-          fi
+  #         if grep -q '"FunctionError"' invoke-metadata.json; then
+  #           echo "Database migration Lambda execution failed."
+  #           cat invoke-metadata.json
+  #           exit 1
+  #         fi
 
-          echo "Database migration Lambda invocation completed."
+  #         echo "Database migration Lambda invocation completed."
 
 
   # ==========================================================
