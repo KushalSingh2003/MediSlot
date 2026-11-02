@@ -1,0 +1,1 @@
+print("Hello from slot-template-admin/app.py")

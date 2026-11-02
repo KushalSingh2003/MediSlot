@@ -224,7 +224,16 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
-            db-migration
+            db-migration \
+            doctor-photo \
+            doctor-consultation-types \
+            doctor-blackouts \
+            doctor-schedule \
+            doctor-appointments \
+            doctor-slot-cancellation \
+            appointment-outcome \
+            slot-template-admin \
+            slot-materializer
           do
             test -f "lambda/${function}/app.py" || {
               echo "Missing lambda/${function}/app.py"
@@ -271,7 +280,16 @@ jobs:
             auth-logout \
             authorizer \
             get-doctor-profile \
-            get-patient-profile
+            get-patient-profile \
+            doctor-photo \
+            doctor-consultation-types \
+            doctor-blackouts \
+            doctor-schedule \
+            doctor-appointments \
+            doctor-slot-cancellation \
+            appointment-outcome \
+            slot-template-admin \
+            slot-materializer
           do
             (
               cd "lambda/${function}"
@@ -311,12 +329,23 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
-            db-migration
+            db-migration \
+            doctor-photo \
+            doctor-consultation-types \
+            doctor-blackouts \
+            doctor-schedule \
+            doctor-appointments \
+            doctor-slot-cancellation \
+            appointment-outcome \
+            slot-template-admin \
+            slot-materializer
           do
             aws s3 cp \
               "$RUNNER_TEMP/${artifact}.zip" \
               "s3://${LAMBDA_BUCKET}/${ARTIFACT_PREFIX}/${artifact}.zip"
           done
+
+          
 
   # ==========================================================
   # APPLICATION STACK
@@ -351,7 +380,19 @@ jobs:
             auth-login \
             auth-refresh \
             auth-logout \
-            authorizer
+            authorizer \
+            get-doctor-profile \
+            get-patient-profile \
+            db-migration \
+            doctor-photo \
+            doctor-consultation-types \
+            doctor-blackouts \
+            doctor-schedule \
+            doctor-appointments \
+            doctor-slot-cancellation \
+            appointment-outcome \
+            slot-template-admin \
+            slot-materializer
           do
             echo "Checking ${artifact}.zip"
             aws s3api head-object \

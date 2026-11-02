@@ -34,8 +34,11 @@ CREATE TABLE consultation_type (
 CREATE TABLE slot_template (
     template_id  INT AUTO_INCREMENT PRIMARY KEY,
     name         VARCHAR(255) NOT NULL,
-    is_active    BOOLEAN NOT NULL DEFAULT TRUE
+    is_active    BOOLEAN NOT NULL DEFAULT TRUE,
+    working_start_time TIME NOT NULL DEFAULT '09:00:00',
+    working_end_time TIME NOT NULL DEFAULT '16:00:00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 
 -- =========================================================
 -- Doctor and doctor-related tables
@@ -127,21 +130,37 @@ CREATE TABLE doctor_consultation_type (
 -- =========================================================
 -- Slot templates
 -- =========================================================
+CREATE TABLE template_consultation_rule (
+    rule_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    template_id INT NOT NULL,
+    day_of_week TINYINT NOT NULL,
+    consultation_type_id INT NOT NULL,
+    allocation_weight INT NOT NULL DEFAULT 1,
+    time_period ENUM('MORNING', 'AFTERNOON', 'ANY')
+        NOT NULL DEFAULT 'ANY',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
 
-CREATE TABLE template_slot (
-    template_slot_id      INT AUTO_INCREMENT PRIMARY KEY,
-    template_id           INT NOT NULL,
-    consultation_type_id  INT NOT NULL,
-    start_time            TIME NOT NULL,
-    end_time              TIME NOT NULL,
-    FOREIGN KEY (template_id) REFERENCES slot_template(template_id) ON DELETE CASCADE,
-    FOREIGN KEY (consultation_type_id) REFERENCES consultation_type(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    CONSTRAINT fk_rule_template
+        FOREIGN KEY (template_id)
+        REFERENCES slot_template(template_id)
+        ON DELETE CASCADE,
 
-CREATE TABLE template_date (
-    slot_date    DATE PRIMARY KEY,
-    template_id  INT NOT NULL,
-    FOREIGN KEY (template_id) REFERENCES slot_template(template_id) ON DELETE CASCADE
+    CONSTRAINT fk_rule_consultation_type
+        FOREIGN KEY (consultation_type_id)
+        REFERENCES consultation_type(id),
+
+    CONSTRAINT chk_rule_weekday
+        CHECK (day_of_week BETWEEN 1 AND 7),
+
+    CONSTRAINT chk_rule_weight
+        CHECK (allocation_weight > 0),
+
+    UNIQUE (
+        template_id,
+        day_of_week,
+        consultation_type_id,
+        time_period
+    )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =========================================================
@@ -162,14 +181,39 @@ CREATE TABLE patients (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE appointment_slot (
-    slot_id           BIGINT AUTO_INCREMENT PRIMARY KEY,
-    doctor_id         VARCHAR(36) NOT NULL,
-    template_slot_id  INT NOT NULL,
-    slot_date         DATE NOT NULL,
-    status            VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE',
-    hold_expires_at   DATETIME NULL,
-    FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id),
-    FOREIGN KEY (template_slot_id) REFERENCES template_slot(template_slot_id)
+    slot_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id VARCHAR(36) NOT NULL,
+    consultation_type_id INT NOT NULL,
+    slot_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE',
+    hold_expires_at DATETIME NULL,
+    capacity INT NOT NULL DEFAULT 1,
+    booked_count INT NOT NULL DEFAULT 0,
+
+    CONSTRAINT fk_slot_doctor
+        FOREIGN KEY (doctor_id)
+        REFERENCES doctor(doctor_id),
+
+    CONSTRAINT fk_slot_consultation_type
+        FOREIGN KEY (consultation_type_id)
+        REFERENCES consultation_type(id),
+
+    CONSTRAINT chk_slot_time
+        CHECK (end_time > start_time),
+
+    CONSTRAINT chk_slot_capacity
+        CHECK (
+            capacity > 0
+            AND booked_count >= 0
+            AND booked_count <= capacity
+        ),
+
+    UNIQUE (doctor_id, slot_date, start_time, end_time),
+
+    INDEX idx_slot_availability
+        (doctor_id, slot_date, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE appointments (
