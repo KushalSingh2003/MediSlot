@@ -101,6 +101,12 @@ Resources:
       RestApiId: !Ref MediSlotApi
       ParentId: !GetAtt MediSlotApi.RootResourceId
       PathPart: doctors
+  DoctorConsultationTypesPublicResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref DoctorsRootResource
+      PathPart: consultation-types
 
   PatientsRootResource:
     Type: AWS::ApiGateway::Resource
@@ -572,6 +578,23 @@ Resources:
           - LambdaArn:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-DoctorPhotoFunctionArn'
+  DoctorPhotoGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorPhotoResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorProfileFunctionArn'
 
   DoctorConsultationTypesPostMethod:
     Type: AWS::ApiGateway::Method
@@ -599,6 +622,25 @@ Resources:
       HttpMethod: GET
       AuthorizationType: CUSTOM
       AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
+  DoctorConsultationTypesPublicGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorConsultationTypesPublicResource
+      HttpMethod: GET
+
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
@@ -824,6 +866,8 @@ Resources:
     - DoctorAppointmentsGetMethod
     - DoctorSlotCancellationDeleteMethod
     - AppointmentOutcomePostMethod
+    - DoctorConsultationTypesPublicGetMethod
+    - DoctorPhotoGetMethod
     Properties:
       RestApiId: !Ref MediSlotApi
       Description: !Sub 'MediSlot ${Env} API deployment'

@@ -266,6 +266,17 @@ Resources:
       LifecycleConfiguration:
         Rules:
         - { Id: abort-multipart, Status: Enabled, AbortIncompleteMultipartUpload: { DaysAfterInitiation: 1 } }
+      CorsConfiguration:
+        CorsRules:
+        - AllowedOrigins:
+          - '*'
+          AllowedMethods:
+          - PUT
+          AllowedHeaders:
+          - '*'
+          ExposedHeaders:
+          - ETag
+          MaxAge: 3000
 
   PhotosBucketPolicy:
     Type: AWS::S3::BucketPolicy

@@ -19,6 +19,10 @@ Parameters:
     Type: Number
     Default: 14
     AllowedValues: [ 1, 3, 5, 7, 14, 30, 60, 90 ]
+  ApiBaseUrl:
+    Type: String
+    Default: "https://placeholder.execute-api.ap-south-1.amazonaws.com/dev"
+    Description: Temporary API Gateway URL, to be updated after API deployment
 
 Resources:
   # ==========================================================================
@@ -340,6 +344,8 @@ Resources:
         Variables:
           ENV: !Ref Env
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+          PHOTOS_BUCKET:
+            Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-PhotosBucketName'
 
       VpcConfig:
         SubnetIds: !Split
@@ -812,6 +818,182 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+    # ============================================================
+    # FRONTEND EC2 IAM ROLE
+    # ============================================================
+
+  FrontendEC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-frontend-ec2-role'
+
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+      Policies:
+      - PolicyName: FrontendS3Access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - s3:GetObject
+
+            Resource:
+            - !Sub 'arn:${AWS::Partition}:s3:::${ArtifactBucket}/${ArtifactPrefix}/frontend.zip'
+    # ============================================================
+    # MEDISLOT FRONTEND EC2
+    # ============================================================
+
+  FrontendEC2:
+    Type: AWS::EC2::Instance
+
+    Properties:
+      ImageId: '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64}}'
+
+      InstanceType: t3.micro
+
+      IamInstanceProfile: !Ref FrontendInstanceProfile
+
+      SubnetId:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PublicSubnetId'
+
+      SecurityGroupIds:
+      - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-WebSgId'
+      BlockDeviceMappings:
+      - DeviceName: /dev/xvda
+        Ebs:
+          VolumeSize: 8
+          VolumeType: gp3
+          Encrypted: true
+          DeleteOnTermination: true
+
+      UserData:
+        Fn::Base64:
+          Fn::Sub:
+          - |
+            #!/bin/bash
+            set -eux
+
+            # Install required packages
+            dnf update -y
+            dnf install -y python3 python3-pip nginx unzip awscli-2
+
+            # Start SSM agent
+            systemctl enable amazon-ssm-agent
+            systemctl start amazon-ssm-agent
+
+            # Create application directory
+            mkdir -p /opt/medislot-frontend
+            cd /opt/medislot-frontend
+
+            # Download frontend package from S3
+            aws s3 cp \
+              s3://${ArtifactBucket}/${ArtifactPrefix}/frontend.zip \
+              /tmp/frontend.zip
+
+            # Extract frontend
+            unzip -o /tmp/frontend.zip -d /opt/medislot-frontend
+
+            # Create Python virtual environment
+            python3 -m venv venv
+
+            # Install dependencies
+            venv/bin/pip install --upgrade pip
+            venv/bin/pip install -r requirements.txt
+            venv/bin/pip install gunicorn
+
+            # Create Flask session and instance directories
+            mkdir -p flask_session instance
+
+            # Generate a persistent Flask secret
+            FLASK_SECRET=$(openssl rand -hex 32)
+
+            # Store application configuration
+            cat > /etc/medislot-frontend.env <<EOF
+            API_BASE_URL=${ApiBaseUrl}
+            FLASK_SECRET_KEY=$FLASK_SECRET
+            FLASK_ENV=production
+            EOF
+
+            chmod 600 /etc/medislot-frontend.env
+
+            # Configure Gunicorn systemd service
+            cat > /etc/systemd/system/medislot-frontend.service <<'EOF'
+            [Unit]
+            Description=MediSlot Flask Frontend
+            After=network.target
+
+            [Service]
+            User=root
+            WorkingDirectory=/opt/medislot-frontend
+            EnvironmentFile=/etc/medislot-frontend.env
+            ExecStart=/opt/medislot-frontend/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:8000 app:app
+            Restart=always
+            RestartSec=5
+
+            [Install]
+            WantedBy=multi-user.target
+            EOF
+
+            # Configure Nginx reverse proxy
+            cat > /etc/nginx/conf.d/medislot.conf <<'EOF'
+            server {
+                listen 80;
+                server_name _;
+
+                location / {
+                    proxy_pass http://127.0.0.1:8000;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                }
+            }
+            EOF
+
+            # Start services
+            nginx -t
+            systemctl enable nginx
+            systemctl restart nginx
+
+            systemctl daemon-reload
+            systemctl enable medislot-frontend
+            systemctl start medislot-frontend
+
+          - ArtifactBucket: !Ref ArtifactBucket
+            ArtifactPrefix: !Ref ArtifactPrefix
+            ApiBaseUrl: !Ref ApiBaseUrl
+
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${Env}-frontend-ec2'
+
+      - Key: Project
+        Value: !Ref ProjectName
+
+      - Key: Environment
+        Value: !Ref Env
+
+  # ============================================================
+  # FRONTEND EC2 INSTANCE PROFILE
+  # ============================================================
+
+  FrontendInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+      - !Ref FrontendEC2Role
 
 Outputs:
   RegisterFunctionArn:
@@ -887,3 +1069,24 @@ Outputs:
     Value: !GetAtt SlotMaterializerFunction.Arn
     Export:
       Name: !Sub '${AWS::StackName}-SlotMaterializerFunctionArn'
+  FrontendInstanceId:
+    Description: MediSlot frontend EC2 instance ID
+    Value: !Ref FrontendEC2
+    Export:
+      Name: !Sub '${AWS::StackName}-FrontendInstanceId'
+
+  FrontendPublicIP:
+    Description: MediSlot frontend public IP
+    Value: !GetAtt FrontendEC2.PublicIp
+    Export:
+      Name: !Sub '${AWS::StackName}-FrontendPublicIP'
+
+  FrontendPublicDNS:
+    Description: MediSlot frontend public DNS
+    Value: !GetAtt FrontendEC2.PublicDnsName
+    Export:
+      Name: !Sub '${AWS::StackName}-FrontendPublicDNS'
+
+  FrontendURL:
+    Description: MediSlot frontend URL
+    Value: !Sub 'http://${FrontendEC2.PublicIp}'

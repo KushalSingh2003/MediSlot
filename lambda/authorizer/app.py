@@ -35,6 +35,7 @@ SSM_PREFIX = os.environ.get("SSM_PREFIX", f"/medislot/{ENV}")
 
 TOKEN_DENYLIST_TABLE = os.environ["TOKEN_DENYLIST_TABLE"]
 denylist_table = dynamodb.Table(TOKEN_DENYLIST_TABLE)
+DOCTOR_API_PREFIX = "/doctors"
 
 
 # ============================================================
@@ -98,6 +99,35 @@ def get_jwt_secret():
 
     logger.info("JWT signing secret retrieved successfully")
     return secret_string
+# ============================================================
+# ROLE-BASED API ACCESS
+# ============================================================
+
+def is_doctor_api(method_arn):
+
+    try:
+        # REST API ARN:
+        # arn:aws:execute-api:region:account:api-id/stage/METHOD/path
+
+        arn_parts = method_arn.split("/", 3)
+
+        if len(arn_parts) < 3:
+            return False
+
+        resource_path = (
+            "/" + arn_parts[3]
+            if len(arn_parts) == 4
+            else "/"
+        )
+
+        return (
+            resource_path == DOCTOR_API_PREFIX
+            or resource_path.startswith(DOCTOR_API_PREFIX + "/")
+        )
+
+    except (AttributeError, IndexError):
+        logger.error("Unable to parse API Gateway method ARN")
+        return False
 
 
 # ============================================================
@@ -290,6 +320,21 @@ def lambda_handler(event, context):
         except jwt.InvalidTokenError:
             logger.warning("Authorization denied: JWT validation failed")
             raise Exception("Unauthorized")
+        # 3. Enforce doctor-only API access.
+        role = claims["role"].lower()
+
+        if is_doctor_api(resource) and role != "doctor":
+
+            logger.warning(
+                "Access denied: role=%s attempted to access doctor API",
+                role
+            )
+
+            return generate_policy(
+                principal_id=claims["sub"],
+                effect="Deny",
+                resource=resource
+            )
 
         # 3. Check revocation.
         if is_token_revoked(claims["jti"]):

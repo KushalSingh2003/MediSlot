@@ -400,6 +400,74 @@ jobs:
               --key "${ARTIFACT_PREFIX}/${artifact}.zip" \
               --region "$AWS_REGION"
           done
+        # ==========================================================
+  # PACKAGE AND UPLOAD FRONTEND
+  # ==========================================================
+
+  package-frontend:
+    name: Package and Upload Frontend
+    needs: lint
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Install ZIP Utility
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Validate Frontend Files
+        run: |
+          set -euo pipefail
+
+          test -f frontend/app.py
+          test -f frontend/config.py
+          test -f frontend/requirements.txt
+          test -d frontend/routes
+          test -d frontend/services
+          test -d frontend/templates
+          test -d frontend/static
+
+      - name: Package Frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd frontend
+
+          zip -qr "$RUNNER_TEMP/frontend.zip" . \
+            -x ".env" \
+               ".env.*" \
+               "__pycache__/*" \
+               "**/__pycache__/*" \
+               "flask_session/*" \
+               "instance/*" \
+               "venv/*" \
+               ".venv/*" \
+               ".git/*"
+
+      - name: Upload Frontend to S3
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          : "${LAMBDA_BUCKET:?LAMBDA_BUCKET is not set}"
+          : "${ARTIFACT_PREFIX:?ARTIFACT_PREFIX is not set}"
+
+          aws s3 cp \
+            "$RUNNER_TEMP/frontend.zip" \
+            "s3://${LAMBDA_BUCKET}/${ARTIFACT_PREFIX}/frontend.zip" \
+            --sse AES256 \
+            --region "$AWS_REGION"
+
+          echo "Frontend uploaded successfully."
 
       - name: Deploy Application Stack
         shell: bash

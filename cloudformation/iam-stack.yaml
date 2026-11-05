@@ -310,6 +310,19 @@ Resources:
             - secretsmanager:GetSecretValue
             Resource:
               Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+      - PolicyName: ReadDoctorPhotos
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: ReadDoctorProfilePhotos
+            Effect: Allow
+            Action:
+            - s3:GetObject
+            Resource:
+              Fn::Sub:
+              - '${BucketArn}/doctors/*'
+              - BucketArn:
+                  Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-PhotosBucketArn'
   #============================================================================
   # Patient Profile Lambda (in VPC: RDS). Reads the patient profile from the database.
   # ==========================================================================
@@ -556,7 +569,7 @@ Resources:
             - s3:PutObject
             Resource:
             - Fn::Sub:
-              - '${BucketArn}/doctor-photos/*'
+              - '${BucketArn}/doctors/*'
               - BucketArn:
                   Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-PhotosBucketArn'
 

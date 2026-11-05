@@ -92,10 +92,17 @@ CREATE TABLE doctor_qualification (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE blackout (
-    id             INT AUTO_INCREMENT PRIMARY KEY,
-    doctor_id      VARCHAR(36) NOT NULL,
-    blackout_date  DATE NOT NULL,
-    FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id VARCHAR(36) NOT NULL,
+    blackout_date DATE NOT NULL,
+
+    CONSTRAINT fk_blackout_doctor
+        FOREIGN KEY (doctor_id)
+        REFERENCES doctor(doctor_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT unique_doctor_blackout
+        UNIQUE (doctor_id, blackout_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE doctor_language (
@@ -213,7 +220,7 @@ CREATE TABLE appointment_slot (
     UNIQUE (doctor_id, slot_date, start_time, end_time),
 
     INDEX idx_slot_availability
-        (doctor_id, slot_date, status)
+        (doctor_id, slot_date, status)  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE appointments (
