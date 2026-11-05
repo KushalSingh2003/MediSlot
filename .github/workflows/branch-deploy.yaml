@@ -400,13 +400,28 @@ jobs:
               --key "${ARTIFACT_PREFIX}/${artifact}.zip" \
               --region "$AWS_REGION"
           done
+      - name: Deploy Application Stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws cloudformation deploy \
+            --template-file cloudformation/application-stack.yaml \
+            --stack-name "medislot-${DEPLOY_ENV}-application" \
+            --parameter-overrides \
+            "Env=${DEPLOY_ENV}" \
+            "ProjectName=medislot" \
+            "ArtifactBucket=${LAMBDA_BUCKET}" \
+            "ArtifactPrefix=${ARTIFACT_PREFIX}" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --region "$AWS_REGION"
         # ==========================================================
   # PACKAGE AND UPLOAD FRONTEND
   # ==========================================================
 
   package-frontend:
     name: Package and Upload Frontend
-    needs: lint
+    needs: deploy-application
     runs-on: ubuntu-latest
     environment: ${{ vars.DEPLOY_ENV }}
 
@@ -469,21 +484,7 @@ jobs:
 
           echo "Frontend uploaded successfully."
 
-      - name: Deploy Application Stack
-        shell: bash
-        run: |
-          set -euo pipefail
-          aws cloudformation deploy \
-            --template-file cloudformation/application-stack.yaml \
-            --stack-name "medislot-${DEPLOY_ENV}-application" \
-            --parameter-overrides \
-            "Env=${DEPLOY_ENV}" \
-            "ProjectName=medislot" \
-            "ArtifactBucket=${LAMBDA_BUCKET}" \
-            "ArtifactPrefix=${ARTIFACT_PREFIX}" \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --no-fail-on-empty-changeset \
-            --region "$AWS_REGION"
+      
   # ==========================================================
   # RUN DATABASE MIGRATION
   # ==========================================================
@@ -535,7 +536,7 @@ jobs:
   # API STACK
   # ==========================================================
   deploy-api:
-    needs: deploy-application
+    needs: package-frontend
     runs-on: ubuntu-latest
     environment: ${{ vars.DEPLOY_ENV }}
 
