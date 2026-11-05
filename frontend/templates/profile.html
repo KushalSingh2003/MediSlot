@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MediSlot | My Profile</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --pink-primary: #F8B4C8;
+            --pink-blush: #FCE4EC;
+            --pink-rose: #D81B60;
+            --pink-deep: #AD1457;
+            --pink-bg: #FFF5F8;
+            --pink-border: #F9D3DF;
+            --pink-text: #4A2A36;
+            --pink-muted: #9A7584;
+            --pink-shadow: 0 6px 20px rgba(216, 27, 96, 0.08);
+            --pink-shadow-hover: 0 12px 28px rgba(216, 27, 96, 0.16);
+        }
+
+        html, body {
+            background: linear-gradient(180deg, #FFF5F8 0%, #FFFFFF 100%) !important;
+            color: var(--pink-text) !important;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .dashboard-wrapper {
+            display: flex !important;
+            min-height: 100vh;
+            background: transparent !important;
+        }
+
+        /* ---------- Sidebar ---------- */
+        .sidebar {
+            width: 260px !important;
+            flex-shrink: 0;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FFF5F8 100%) !important;
+            border-right: 1px solid var(--pink-border) !important;
+            box-shadow: 4px 0 24px rgba(248, 180, 200, 0.18);
+            padding: 24px 16px !important;
+            display: flex !important;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--pink-rose) !important;
+            padding: 6px 12px 22px;
+            letter-spacing: 0.3px;
+        }
+
+        .sidebar .brand i {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #F8B4C8, #D81B60);
+            color: #FFFFFF !important;
+            font-size: 1.2rem;
+            box-shadow: 0 6px 14px rgba(216, 27, 96, 0.28);
+        }
+
+        .sidebar-label {
+            font-size: 0.7rem !important;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            color: var(--pink-muted) !important;
+            padding: 6px 14px;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar a.nav-item,
+        .sidebar .logout-btn {
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px !important;
+            border-radius: 12px !important;
+            color: var(--pink-text) !important;
+            font-weight: 500;
+            font-size: 0.95rem;
+            text-decoration: none !important;
+            border: 1px solid transparent;
+            background: transparent;
+            transition: all 0.25s ease;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .nav-item i {
+            color: var(--pink-rose);
+            font-size: 1.1rem;
+            transition: transform 0.25s ease;
+        }
+
+        .sidebar a.nav-item:hover,
+        .sidebar .logout-btn:hover {
+            background: var(--pink-blush) !important;
+            border-color: var(--pink-border);
+            color: var(--pink-rose) !important;
+            transform: translateX(3px);
+        }
+
+        .sidebar a.nav-item:hover i,
+        .sidebar .logout-btn:hover i {
+            transform: scale(1.12);
+        }
+
+        .sidebar a.nav-item.active {
+            background: linear-gradient(135deg, #F8B4C8 0%, #F48FB1 100%) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 8px 18px rgba(216, 27, 96, 0.25);
+        }
+
+        .sidebar a.nav-item.active i {
+            color: #FFFFFF !important;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--pink-border);
+        }
+
+        .sidebar .logout-btn {
+            cursor: pointer;
+        }
+
+        /* ---------- Main + topbar ---------- */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            background: transparent !important;
+        }
+
+        .topbar {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 32px !important;
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--pink-border) !important;
+            box-shadow: 0 4px 16px rgba(248, 180, 200, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .topbar h5 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--pink-deep) !important;
+        }
+
+        .topbar p {
+            margin: 2px 0 0;
+            color: var(--pink-muted) !important;
+            font-size: 0.9rem;
+        }
+
+        .profile-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #F8B4C8, #D81B60) !important;
+            color: #FFFFFF !important;
+            font-size: 1.3rem;
+            box-shadow: 0 6px 14px rgba(216, 27, 96, 0.3);
+            border: 2px solid #FFFFFF;
+        }
+
+        .dashboard-content {
+            padding: 28px 32px 40px !important;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .page-heading {
+            margin-bottom: 24px;
+        }
+
+        .page-heading h2 {
+            font-weight: 700;
+            color: var(--pink-deep) !important;
+            margin-bottom: 2px;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: var(--pink-muted) !important;
+        }
+
+        /* ---------- Cards ---------- */
+        .content-card {
+            background: #FFFFFF !important;
+            border: 1px solid var(--pink-border) !important;
+            border-radius: 20px !important;
+            box-shadow: var(--pink-shadow);
+            padding: 26px !important;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .content-card:hover {
+            box-shadow: var(--pink-shadow-hover);
+        }
+
+        .card-heading {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px dashed var(--pink-border);
+        }
+
+        .card-heading h5 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--pink-deep) !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-heading h5 i {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--pink-blush);
+            color: var(--pink-rose);
+            font-size: 1rem;
+            margin-right: 10px !important;
+        }
+
+        .card-heading p {
+            margin: 4px 0 0;
+            color: var(--pink-muted) !important;
+            font-size: 0.88rem;
+        }
+
+        /* ---------- Hero profile card ---------- */
+        .content-card:has(.profile-picture-section) {
+            position: relative;
+            overflow: hidden;
+            padding: 0 !important;
+            margin-bottom: 24px !important;
+        }
+
+        .content-card:has(.profile-picture-section)::before {
+            content: "";
+            display: block;
+            height: 110px;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0) 45%),
+                linear-gradient(120deg, #F8B4C8 0%, #F48FB1 55%, #D81B60 120%);
+        }
+
+        .content-card:has(.profile-picture-section) > .d-flex {
+            padding: 0 28px 26px;
+            align-items: flex-end !important;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px !important;
+        }
+
+        .profile-picture-section {
+            display: flex;
+            align-items: flex-end;
+            gap: 22px;
+            flex: 1 1 420px;
+            min-width: 0;
+        }
+
+        .profile-picture-preview {
+            width: 124px;
+            height: 124px;
+            flex-shrink: 0;
+            margin-top: -62px;
+            border-radius: 50%;
+            padding: 5px;
+            background: linear-gradient(135deg, #FFFFFF, #FCE4EC);
+            box-shadow: 0 10px 26px rgba(216, 27, 96, 0.28);
+            position: relative;
+        }
+
+        .profile-picture-preview img,
+        #profilePreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #FFFFFF;
+            background: var(--pink-blush);
+            display: block;
+        }
+
+        .profile-picture-controls {
+            padding-top: 14px;
+            min-width: 0;
+        }
+
+        .profile-picture-controls h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--pink-deep);
+            margin: 0 0 2px;
+        }
+
+        .profile-picture-controls p {
+            margin: 0 0 10px;
+            color: var(--pink-muted);
+            font-size: 0.85rem;
+        }
+
+        .profile-picture-controls p#photoUploadStatus {
+            margin: 10px 0 0;
+            min-height: 1.1em;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--pink-rose);
+        }
+
+        #choosePhotoBtn,
+        #uploadPhotoBtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-right: 6px;
+        }
+
+        #choosePhotoBtn {
+            background: #FFFFFF;
+            color: var(--pink-rose);
+            border: 1.5px solid var(--pink-primary);
+        }
+
+        #choosePhotoBtn:hover {
+            background: var(--pink-blush);
+            border-color: var(--pink-rose);
+            transform: translateY(-1px);
+        }
+
+        #uploadPhotoBtn {
+            background: linear-gradient(135deg, #F48FB1, #D81B60);
+            color: #FFFFFF;
+            border: 1.5px solid transparent;
+            box-shadow: 0 8px 16px rgba(216, 27, 96, 0.25);
+        }
+
+        #uploadPhotoBtn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(216, 27, 96, 0.35);
+        }
+
+        #uploadPhotoBtn:disabled {
+            background: var(--pink-blush);
+            color: #D9A5B7;
+            box-shadow: none;
+            cursor: not-allowed;
+            border-color: var(--pink-border);
+        }
+
+        /* Name / email block in hero */
+        .content-card:has(.profile-picture-section) > .d-flex > div:last-child {
+            padding: 16px 22px;
+            background: var(--pink-bg);
+            border: 1px solid var(--pink-border);
+            border-radius: 16px;
+            min-width: 240px;
+        }
+
+        .content-card:has(.profile-picture-section) > .d-flex > div:last-child h4 {
+            color: var(--pink-deep);
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .content-card:has(.profile-picture-section) .text-muted {
+            color: var(--pink-muted) !important;
+            word-break: break-word;
+        }
+
+        /* ---------- Form layout ---------- */
+        form[method="POST"] {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+            align-items: start;
+        }
+
+        form[method="POST"] > .content-card {
+            margin: 0 !important;
+        }
+
+        form[method="POST"] > .content-card:nth-child(1) {
+            grid-column: 1 / -1;
+        }
+
+        form[method="POST"] > .content-card:nth-child(2) .col-md-6,
+        form[method="POST"] > .content-card:nth-child(3) .col-md-6 {
+            width: 100%;
+        }
+
+        form[method="POST"] > .content-card:nth-child(3) {
+            background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F8 100%) !important;
+        }
+
+        form[method="POST"] > .d-flex {
+            grid-column: 1 / -1;
+            margin: 0 !important;
+            padding: 18px 22px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--pink-border);
+            border-radius: 18px;
+            box-shadow: var(--pink-shadow);
+            position: sticky;
+            bottom: 16px;
+            z-index: 5;
+            backdrop-filter: blur(8px);
+        }
+
+        /* ---------- Form controls ---------- */
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--pink-deep);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border: 1.5px solid var(--pink-border);
+            border-radius: 12px;
+            padding: 11px 14px;
+            background: #FFFFFF;
+            color: var(--pink-text);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .form-control:hover {
+            border-color: var(--pink-primary);
+        }
+
+        .form-control:focus {
+            border-color: var(--pink-rose) !important;
+            box-shadow: 0 0 0 0.25rem rgba(248, 180, 200, 0.45) !important;
+            background: #FFFFFF;
+            outline: none;
+        }
+
+        .form-control[readonly] {
+            background: var(--pink-bg);
+            color: var(--pink-muted);
+            border-style: dashed;
+            cursor: not-allowed;
+        }
+
+        .form-control[readonly]:focus {
+            box-shadow: none !important;
+            border-color: var(--pink-border) !important;
+        }
+
+        .form-control::placeholder {
+            color: #D7B3C1;
+        }
+
+        .content-card small.text-muted {
+            display: block;
+            margin-top: 6px;
+            color: var(--pink-muted) !important;
+            font-size: 0.78rem;
+        }
+
+        /* ---------- Buttons ---------- */
+        .btn {
+            border-radius: 12px;
+            padding: 10px 22px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #F48FB1 0%, #D81B60 100%) !important;
+            border: none !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 8px 18px rgba(216, 27, 96, 0.28);
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background: linear-gradient(135deg, #D81B60 0%, #AD1457 100%) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(216, 27, 96, 0.38);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline-secondary {
+            background: #FFFFFF !important;
+            color: var(--pink-rose) !important;
+            border: 1.5px solid var(--pink-primary) !important;
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--pink-blush) !important;
+            border-color: var(--pink-rose) !important;
+            color: var(--pink-deep) !important;
+            transform: translateY(-2px);
+        }
+
+        /* ---------- Badges ---------- */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.74rem;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .badge.bg-success {
+            background-color: #FCE4EC !important;
+            color: #AD1457 !important;
+            border-color: #F8B4C8;
+        }
+
+        /* ---------- Alerts ---------- */
+        .alert {
+            border-radius: 14px;
+            border: 1px solid var(--pink-border);
+            box-shadow: var(--pink-shadow);
+            padding: 14px 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #FCE4EC;
+            color: #AD1457;
+            border-color: #F8B4C8;
+        }
+
+        .alert-danger {
+            background: #FFEBEE;
+            color: #C62828;
+            border-color: #FFCDD2;
+        }
+
+        .alert-warning {
+            background: #FFF3E0;
+            color: #E65100;
+            border-color: #FFE0B2;
+        }
+
+        .alert-info {
+            background: #F3E5F5;
+            color: #7B1FA2;
+            border-color: #E1BEE7;
+        }
+
+        .btn-close:focus {
+            box-shadow: 0 0 0 0.2rem rgba(248, 180, 200, 0.5);
+        }
+
+        /* ---------- Misc ---------- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--pink-primary);
+            border-radius: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--pink-bg);
+        }
+
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid var(--pink-rose);
+            outline-offset: 2px;
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 991.98px) {
+            .dashboard-wrapper {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100% !important;
+                height: auto;
+                position: relative;
+                padding: 16px !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--pink-border) !important;
+            }
+
+            .sidebar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .sidebar a.nav-item {
+                width: auto;
+                padding: 9px 12px !important;
+                font-size: 0.88rem;
+            }
+
+            .sidebar-bottom {
+                margin-top: 12px;
+            }
+
+            .sidebar .logout-btn {
+                width: auto;
+            }
+
+            .topbar {
+                position: relative;
+            }
+
+            form[method="POST"] {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            form[method="POST"] > .content-card:nth-child(1) {
+                grid-column: auto;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .topbar,
+            .dashboard-content {
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+
+            .content-card {
+                padding: 18px !important;
+            }
+
+            .content-card:has(.profile-picture-section) > .d-flex {
+                padding: 0 18px 20px;
+                justify-content: center;
+            }
+
+            .profile-picture-section {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-picture-controls {
+                padding-top: 0;
+            }
+
+            #choosePhotoBtn,
+            #uploadPhotoBtn {
+                margin: 4px;
+            }
+
+            .content-card:has(.profile-picture-section) > .d-flex > div:last-child {
+                width: 100%;
+                text-align: center;
+            }
+
+            form[method="POST"] > .d-flex {
+                position: static;
+                flex-direction: column-reverse;
+            }
+
+            form[method="POST"] > .d-flex .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body style="background: linear-gradient(180deg, #FFF5F8 0%, #FFFFFF 100%); color: #4A2A36; margin: 0;">
+
+<div class="dashboard-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <i class="bi bi-heart-pulse-fill"></i>
+            <span>MediSlot</span>
+        </div>
+
+        <div class="sidebar-label">MAIN MENU</div>
+
+        <nav class="sidebar-nav">
+
+            <a href="{{ url_for('dashboard.index') }}" class="nav-item">
+                <i class="bi bi-grid"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('profile.index') }}" class="nav-item active">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <i class="bi bi-clipboard2-pulse"></i>
+                <span>Consultation Types</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <i class="bi bi-calendar-x"></i>
+                <span>Blackout Dates</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <i class="bi bi-calendar-week"></i>
+                <span>My Schedule</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <i class="bi bi-calendar-check"></i>
+                <span>Appointments</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <form action="{{ url_for('auth.logout') }}" method="POST">
+                <button type="submit" class="nav-item logout-btn">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h5 style="color: #AD1457; font-weight: 700;">My Profile</h5>
+                <p style="color: #9A7584;">Manage your professional information.</p>
+            </div>
+
+            <div class="topbar-right">
+                <div class="profile-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+            </div>
+
+        </header>
+
+
+        <section class="dashboard-content">
+
+            <div class="page-heading">
+                <div>
+                    <h2 style="color: #AD1457; font-weight: 700;">Doctor Profile</h2>
+                    <p style="color: #9A7584;">Manage your registered information.</p>
+                </div>
+            </div>
+
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show"
+                             role="alert">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+
+            <!-- Profile Header -->
+            <div class="content-card mb-4">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="profile-picture-section">
+    <div class="profile-picture-preview">
+        <img
+    id="profilePreview"
+    src="{{ profile.photoUrl or url_for('static', filename='images/default-profile.png') }}"
+    alt="Profile Picture"
+>
+    </div>
+
+    <div class="profile-picture-controls">
+        <h4>Profile Picture</h4>
+        <p>Upload a JPG, PNG, or WebP image.</p>
+
+        <input
+            type="file"
+            id="photoInput"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+        >
+
+        <button type="button" id="choosePhotoBtn">
+            Change Picture
+        </button>
+
+        <button type="button" id="uploadPhotoBtn" disabled>
+            Upload Picture
+        </button>
+
+        <p id="photoUploadStatus"></p>
+    </div>
+</div>
+
+                    <div>
+                        <h4 class="mb-1">
+                            {{ profile.get('fullName', 'Doctor') }}
+                        </h4>
+
+                        <p class="text-muted mb-1">
+                            {{ profile.get('email', 'N/A') }}
+                        </p>
+
+                        <span class="badge bg-success">
+                            Registered Doctor
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Editable Profile Form -->
+            <form method="POST"
+                  action="{{ url_for('profile.index') }}">
+
+                <!-- Personal Information -->
+                <div class="content-card mb-4">
+
+                    <div class="card-heading">
+                        <div>
+                            <h5>
+                                <i class="bi bi-person me-2"></i>
+                                Personal Information
+                            </h5>
+
+                            <p>Update your basic contact information.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Full Name
+                            </label>
+
+                            <input type="text"
+                                   name="fullName"
+                                   class="form-control"
+                                   value="{{ profile.get('fullName', '') }}"
+                                   maxlength="255"
+                                   required>
+                        </div>
+
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Email Address
+                            </label>
+
+                            <input type="email"
+                                   class="form-control"
+                                   value="{{ profile.get('email', '') }}"
+                                   readonly>
+
+                            <small class="text-muted">
+                                Email cannot currently be changed.
+                            </small>
+                        </div>
+
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Phone Number
+                            </label>
+
+                            <input type="tel"
+                                   name="phone"
+                                   class="form-control"
+                                   value="{{ profile.get('phone', '') }}"
+                                   required>
+                        </div>
+
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Doctor ID
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ profile.get('doctorId', '') }}"
+                                   readonly>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Professional Information -->
+                <div class="content-card mb-4">
+
+                    <div class="card-heading">
+                        <div>
+                            <h5>
+                                <i class="bi bi-briefcase me-2"></i>
+                                Professional Information
+                            </h5>
+
+                            <p>Update your professional experience.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Years of Experience
+                            </label>
+
+                            <input type="number"
+                                   name="yearsExperience"
+                                   class="form-control"
+                                   value="{{ profile.get('yearsExperience', 0) }}"
+                                   min="0"
+                                   max="80"
+                                   step="1"
+                                   required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Profile Photo
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ 'Uploaded' if profile.get('photoKey') else 'Not uploaded' }}"
+                                   readonly>
+
+                            <small class="text-muted">
+                                Photo management will be implemented separately.
+                            </small>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Account Information -->
+                <div class="content-card mb-4">
+
+                    <div class="card-heading">
+                        <div>
+                            <h5>
+                                <i class="bi bi-shield-check me-2"></i>
+                                Account Information
+                            </h5>
+
+                            <p>Your MediSlot account details.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Account Created
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ profile.get('createdAt', 'N/A') }}"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Account Status
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="Registered"
+                                   readonly>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-end gap-3 mb-4">
+
+                    <a href="{{ url_for('dashboard.index') }}"
+                       class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+
+</body>
+</html>

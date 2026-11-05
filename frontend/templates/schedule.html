@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Schedule | MediSlot</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+
+    <style>
+        :root {
+            --pink-50:  #fff5f9;
+            --pink-100: #ffe8f1;
+            --pink-200: #ffd0e2;
+            --pink-300: #ffadcc;
+            --pink-400: #f783ae;
+            --pink-500: #e8528f;
+            --pink-600: #c93a76;
+            --plum:     #4a2040;
+            --plum-soft:#8a6380;
+            --lavender: #f1eaff;
+            --lavender-text: #7048c9;
+            --mint:     #e4f8ee;
+            --mint-text:#1a8f5c;
+            --peach:    #fff0e3;
+            --peach-text:#d4601f;
+            --line:     #f6dce8;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+            background:
+                radial-gradient(circle at 0% 0%, #ffe3ef 0, transparent 40%),
+                radial-gradient(circle at 100% 100%, #efe6ff 0, transparent 45%),
+                #fff7fb;
+            background-attachment: fixed;
+            color: var(--plum);
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+
+        .sidebar {
+            width: 265px;
+            min-width: 265px;
+            background: linear-gradient(180deg, #ffffff 0%, #fff0f6 100%);
+            border-right: 1px solid var(--line);
+            padding: 28px 20px;
+            box-shadow: 4px 0 24px rgba(232, 82, 143, 0.06);
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 800;
+            color: var(--pink-500);
+            margin-bottom: 55px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            background: linear-gradient(135deg, var(--pink-300), var(--pink-500));
+            color: #ffffff;
+            font-size: 20px;
+            box-shadow: 0 8px 18px rgba(232, 82, 143, 0.3);
+        }
+
+        .menu-heading {
+            color: var(--pink-400);
+            font-size: 12px;
+            font-weight: 700;
+            margin: 25px 12px 15px;
+            letter-spacing: 1.2px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--plum-soft);
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 500;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+        }
+
+        .nav-link i {
+            font-size: 17px;
+        }
+
+        .nav-link:hover {
+            background: var(--pink-100);
+            color: var(--pink-600);
+            transform: translateX(3px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--pink-400), var(--pink-500));
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(232, 82, 143, 0.28);
+        }
+
+        /* Main content */
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topbar {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(10px);
+            padding: 22px 38px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .topbar h3 {
+            margin: 0 0 6px;
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--plum);
+        }
+
+        .topbar p {
+            margin: 0;
+            color: var(--plum-soft);
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 36px 38px;
+        }
+
+        .page-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 28px 30px;
+            border-radius: 22px;
+            background: linear-gradient(120deg, #ffd9e8 0%, #ffe9f2 45%, #f1eaff 100%);
+            border: 1px solid #ffffff;
+            box-shadow: 0 14px 34px rgba(232, 82, 143, 0.12);
+        }
+
+        .page-heading h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0 0 8px;
+            color: var(--plum);
+            letter-spacing: -0.5px;
+        }
+
+        .page-heading p {
+            color: var(--plum-soft);
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Date filter */
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            padding: 12px 18px;
+            border: 1px solid var(--pink-200);
+            border-radius: 14px;
+            box-shadow: 0 6px 16px rgba(232, 82, 143, 0.1);
+        }
+
+        .date-filter label {
+            color: var(--pink-600);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .date-filter input {
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--plum);
+            cursor: pointer;
+            background: transparent;
+        }
+
+        .date-filter:focus-within {
+            border-color: var(--pink-400);
+            box-shadow: 0 0 0 4px rgba(247, 131, 174, 0.2);
+        }
+
+        /* Flash messages */
+
+        .flash-message {
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            border-left: 5px solid transparent;
+        }
+
+        .flash-message.danger {
+            background: #ffe9ec;
+            color: #c0304a;
+            border-left-color: #f2647b;
+        }
+
+        .flash-message.warning {
+            background: #fff4e0;
+            color: #a06512;
+            border-left-color: #f5b041;
+        }
+
+        .flash-message.success {
+            background: var(--mint);
+            color: var(--mint-text);
+            border-left-color: #4fcf92;
+        }
+
+        .flash-message.info {
+            background: var(--lavender);
+            color: var(--lavender-text);
+            border-left-color: #a58af0;
+        }
+
+        /* Summary cards */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            padding: 24px;
+            border: 1px solid #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 26px rgba(232, 82, 143, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 34px rgba(232, 82, 143, 0.18);
+        }
+
+        .summary-card .label {
+            color: var(--plum-soft);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .summary-card .value {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .summary-card.total {
+            background: linear-gradient(145deg, #ffe0ee, #ffc9de);
+        }
+
+        .summary-card.total .value {
+            color: var(--pink-600);
+        }
+
+        .summary-card.available {
+            background: linear-gradient(145deg, #e9faf2, #cff2e1);
+        }
+
+        .summary-card.available .value {
+            color: var(--mint-text);
+        }
+
+        .summary-card.booked {
+            background: linear-gradient(145deg, #f5efff, #e4d8ff);
+        }
+
+        .summary-card.booked .value {
+            color: var(--lavender-text);
+        }
+
+        .summary-card.closed {
+            background: linear-gradient(145deg, #fff3e8, #ffe0c8);
+        }
+
+        .summary-card.closed .value {
+            color: var(--peach-text);
+        }
+
+        /* Schedule table */
+
+        .schedule-card {
+            background: #ffffff;
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            padding: 28px;
+            box-shadow: 0 14px 34px rgba(232, 82, 143, 0.08);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 2px dashed var(--pink-100);
+        }
+
+        .schedule-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--plum);
+        }
+
+        .schedule-header p {
+            color: var(--pink-500);
+            font-size: 13px;
+            font-weight: 600;
+            margin: 7px 0 0;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 14px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            min-width: 950px;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 14px;
+            background: var(--pink-100);
+            color: var(--pink-600);
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: 0.4px;
+        }
+
+        th:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        th:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        td {
+            padding: 17px 14px;
+            border-bottom: 1px solid var(--pink-100);
+            font-size: 14px;
+            color: #5b3a54;
+            vertical-align: middle;
+        }
+
+        tbody tr:hover td {
+            background: var(--pink-50);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .consultation-name {
+            font-weight: 700;
+            color: var(--plum);
+        }
+
+        /* Status badges */
+
+        .status {
+            display: inline-block;
+            padding: 6px 13px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+        }
+
+        .status.available {
+            background: var(--mint);
+            color: var(--mint-text);
+        }
+
+        .status.booked {
+            background: var(--lavender);
+            color: var(--lavender-text);
+        }
+
+        .status.closed,
+        .status.cancelled {
+            background: var(--peach);
+            color: var(--peach-text);
+        }
+
+        .status.other {
+            background: #f3eef2;
+            color: #8a7585;
+        }
+
+        .capacity {
+            color: var(--plum-soft);
+        }
+
+        /* Cancel button */
+
+        .cancel-slot-btn {
+            background: #ffffff;
+            color: var(--pink-600);
+            border: 1.5px solid var(--pink-300);
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+
+        .cancel-slot-btn:hover {
+            background: linear-gradient(135deg, var(--pink-400), var(--pink-500));
+            border-color: transparent;
+            color: #ffffff;
+            box-shadow: 0 8px 16px rgba(232, 82, 143, 0.3);
+        }
+
+        .cancel-slot-btn:focus-visible {
+            outline: 3px solid rgba(247, 131, 174, 0.5);
+            outline-offset: 2px;
+        }
+
+        .cancel-slot-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .cancelled-label {
+            color: #b79aae;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* Patient information */
+
+        .patient-list {
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--plum-soft);
+            line-height: 1.8;
+            background: var(--pink-50);
+            border-left: 4px solid var(--pink-300);
+            border-radius: 0 10px 10px 0;
+            padding: 10px 14px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 65px 20px;
+            color: var(--plum-soft);
+        }
+
+        .empty-state .icon {
+            font-size: 40px;
+            margin: 0 auto 18px;
+            width: 88px;
+            height: 88px;
+            line-height: 88px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--pink-100), var(--lavender));
+            color: var(--pink-500);
+        }
+
+        .empty-state h3 {
+            color: var(--plum);
+            font-size: 19px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 1100px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                padding: 15px;
+            }
+
+            .logo {
+                margin-bottom: 15px;
+            }
+
+            .menu-heading {
+                display: none;
+            }
+
+            .nav-link {
+                display: inline-flex;
+                padding: 10px 12px;
+                margin: 3px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .topbar {
+                padding: 18px;
+            }
+
+            .page-heading {
+                padding: 20px;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .summary-card {
+                padding: 16px;
+            }
+
+            .summary-card .value {
+                font-size: 26px;
+            }
+
+            .schedule-card {
+                padding: 16px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <i class="bi bi-heart-pulse-fill"></i> MediSlot
+        </div>
+
+        <div class="menu-heading">MAIN MENU</div>
+
+        <nav>
+
+            <a href="{{ url_for('dashboard.index') }}"
+               class="nav-link">
+                <i class="bi bi-grid"></i>
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('profile.index') }}"
+               class="nav-link">
+                <i class="bi bi-person"></i>
+                My Profile
+            </a>
+
+            <a href="{{ url_for('consultation_types.consultation_types') }}"
+               class="nav-link">
+                <i class="bi bi-clipboard2-plus"></i>
+                Consultation Types
+            </a>
+
+            <a href="/blackouts" class="nav-link">
+                <i class="bi bi-calendar-x"></i>
+                Blackout Dates
+            </a>
+
+            <a href="{{ url_for('schedule.index') }}"
+               class="nav-link active">
+                <i class="bi bi-calendar-week"></i>
+                My Schedule
+            </a>
+
+            <a href="/appointments" class="nav-link">
+                <i class="bi bi-calendar-check"></i>
+                Appointments
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- Main content -->
+    <main class="main">
+
+        <header class="topbar">
+            <h3>My Schedule</h3>
+            <p>View your generated consultation slots and bookings.</p>
+        </header>
+
+
+        <section class="content">
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+
+            <!-- Page heading and date filter -->
+            <div class="page-heading">
+
+                <div>
+                    <h1>My Schedule</h1>
+                    <p>
+                        View and manage your generated consultation slots.
+                    </p>
+                </div>
+
+                <form method="GET"
+                      action="{{ url_for('schedule.index') }}"
+                      class="date-filter">
+
+                    <label for="scheduleDate">Select Date</label>
+
+                    <input
+                        type="date"
+                        id="scheduleDate"
+                        name="date"
+                        value="{{ selected_date }}"
+                        required
+                        onchange="this.form.submit()"
+                    >
+
+                </form>
+
+            </div>
+
+
+            <!-- Summary cards -->
+            <div class="summary-grid">
+
+                <div class="summary-card total">
+                    <div class="label">Total Slots</div>
+                    <div class="value">
+                        {{ summary.get('totalSlots', 0) }}
+                    </div>
+                </div>
+
+                <div class="summary-card available">
+                    <div class="label">Available Slots</div>
+                    <div class="value">
+                        {{ summary.get('availableSlots', 0) }}
+                    </div>
+                </div>
+
+                <div class="summary-card booked">
+                    <div class="label">Booked Slots</div>
+                    <div class="value">
+                        {{ summary.get('bookedSlots', 0) }}
+                    </div>
+                </div>
+
+                <div class="summary-card closed">
+                    <div class="label">Closed Slots</div>
+                    <div class="value">
+                        {{ summary.get('closedSlots', 0) }}
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- Slots table -->
+            <div class="schedule-card">
+
+                <div class="schedule-header">
+
+                    <div>
+                        <h2>Generated Slots</h2>
+                        <p>
+                            Schedule for {{ selected_date }}
+                        </p>
+                    </div>
+
+                </div>
+
+
+                {% if slots %}
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Consultation Type</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                    <th>Capacity</th>
+                                    <th>Booked</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                {% for slot in slots %}
+
+                                    {% set status = slot.get('status', 'UNKNOWN')|upper %}
+
+                                    <tr>
+
+                                        <td>
+                                            <span class="consultation-name">
+                                                {{ slot.get('consultationType', 'N/A') }}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            {{ slot.get('startTime', 'N/A') }}
+                                        </td>
+
+                                        <td>
+                                            {{ slot.get('endTime', 'N/A') }}
+                                        </td>
+
+                                        <td>
+                                            {{ slot.get('durationMinutes', 'N/A') }} min
+                                        </td>
+
+                                        <td class="capacity">
+                                            {{ slot.get('capacity', 0) }}
+                                        </td>
+
+                                        <td>
+                                            {{ slot.get('bookedCount', 0) }}
+                                        </td>
+
+                                        <td>
+                                            <span class="status
+                                                {% if status == 'AVAILABLE' %}
+                                                    available
+                                                {% elif status in ['BOOKED', 'FULLY_BOOKED'] %}
+                                                    booked
+                                                {% elif status in ['CLOSED', 'CANCELLED'] %}
+                                                    closed
+                                                {% else %}
+                                                    other
+                                                {% endif %}
+                                            ">
+                                                {{ status.replace('_', ' ') }}
+                                            </span>
+                                        </td>
+
+                                        <!-- Cancel slot action -->
+                                        <td>
+
+                                            {% if status not in ['CLOSED', 'CANCELLED'] %}
+
+                                                <form
+                                                    method="POST"
+                                                    action="{{ url_for(
+                                                        'schedule.cancel_slot',
+                                                        slot_id=slot.get('slotId')
+                                                    ) }}"
+                                                    onsubmit="return confirm(
+                                                        'Are you sure you want to cancel this slot? Associated appointments may also be cancelled and refunds may be initiated.'
+                                                    );"
+                                                >
+
+                                                    <input
+                                                        type="hidden"
+                                                        name="date"
+                                                        value="{{ selected_date }}"
+                                                    >
+
+                                                    <button
+                                                        type="submit"
+                                                        class="cancel-slot-btn"
+                                                    >
+                                                        <i class="bi bi-x-circle"></i>
+                                                        Cancel Slot
+                                                    </button>
+
+                                                </form>
+
+                                            {% else %}
+
+                                                <span class="cancelled-label">
+                                                    <i class="bi bi-check-circle"></i>
+                                                    Cancelled
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+                                    </tr>
+
+
+                                    <!-- Patient information -->
+                                    {% if slot.get('patients') %}
+
+                                        <tr>
+                                            <td colspan="8">
+
+                                                <strong>Patients:</strong>
+
+                                                <div class="patient-list">
+
+                                                    {% for patient in slot.get('patients', []) %}
+
+                                                        <div>
+                                                            {{ patient.get('name', patient.get('fullName', 'Patient')) }}
+
+                                                            {% if patient.get('email') %}
+                                                                — {{ patient.get('email') }}
+                                                            {% endif %}
+
+                                                            {% if patient.get('phone') %}
+                                                                — {{ patient.get('phone') }}
+                                                            {% endif %}
+                                                        </div>
+
+                                                    {% endfor %}
+
+                                                </div>
+
+                                            </td>
+                                        </tr>
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <div class="icon">
+                            <i class="bi bi-calendar2-x"></i>
+                        </div>
+
+                        <h3>No Slots Available</h3>
+
+                        <p>
+                            No generated consultation slots were found
+                            for {{ selected_date }}.
+                        </p>
+
+                        <p>
+                            Select another date to view your schedule.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

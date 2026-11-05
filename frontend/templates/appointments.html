@@ -1,0 +1,736 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Appointments | MediSlot</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fc;
+            color: #172b4d;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+
+        .sidebar {
+            width: 265px;
+            min-width: 265px;
+            background: #ffffff;
+            border-right: 1px solid #e5eaf3;
+            padding: 25px 20px;
+        }
+
+        .logo {
+            font-size: 25px;
+            font-weight: 700;
+            color: #2864ee;
+            margin-bottom: 65px;
+        }
+
+        .menu-heading {
+            color: #91a0b8;
+            font-size: 12px;
+            font-weight: 700;
+            margin: 25px 12px 15px;
+        }
+
+        .nav-link {
+            display: block;
+            text-decoration: none;
+            color: #536985;
+            padding: 17px 14px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            font-size: 15px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: #edf4ff;
+            color: #2864ee;
+        }
+
+        /* Main content */
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topbar {
+            background: #ffffff;
+            padding: 22px 35px;
+            border-bottom: 1px solid #e5eaf3;
+        }
+
+        .topbar h3 {
+            margin: 0 0 6px;
+            font-size: 19px;
+        }
+
+        .topbar p {
+            margin: 0;
+            color: #91a0b8;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 35px;
+        }
+
+        .page-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .page-heading h1 {
+            font-size: 26px;
+            margin: 0 0 8px;
+        }
+
+        .page-heading p {
+            color: #91a0b8;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* Flash messages */
+
+        .flash-message {
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .flash-message.danger {
+            background: #fff0f0;
+            color: #c62828;
+        }
+
+        .flash-message.warning {
+            background: #fff8e6;
+            color: #946200;
+        }
+
+        /* Filter card */
+
+        .filter-card {
+            background: #ffffff;
+            border: 1px solid #e7ecf4;
+            border-radius: 13px;
+            padding: 23px;
+            margin-bottom: 25px;
+        }
+
+        .filter-card h5 {
+            margin: 0 0 20px;
+            font-size: 17px;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group label {
+            display: block;
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #dfe5ef;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            background: #ffffff;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #2864ee;
+        }
+
+        .filter-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #2864ee;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover {
+            background: #174fcf;
+        }
+
+        .reset-btn {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #64748b;
+            border: 1px solid #dfe5ef;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        /* Total count */
+
+        .count-card {
+            background: #ffffff;
+            border: 1px solid #e7ecf4;
+            border-radius: 13px;
+            padding: 22px 25px;
+            margin-bottom: 25px;
+        }
+
+        .count-card p {
+            color: #91a0b8;
+            font-size: 14px;
+            margin: 0 0 10px;
+        }
+
+        .count-card h2 {
+            font-size: 29px;
+            color: #2864ee;
+            margin: 0;
+        }
+
+        /* Appointments table */
+
+        .appointments-card {
+            background: #ffffff;
+            border: 1px solid #e7ecf4;
+            border-radius: 13px;
+            padding: 25px;
+        }
+
+        .card-heading {
+            margin-bottom: 22px;
+        }
+
+        .card-heading h2 {
+            font-size: 19px;
+            margin: 0 0 7px;
+        }
+
+        .card-heading p {
+            color: #91a0b8;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px 13px;
+            background: #f7f9fd;
+            color: #73839b;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 17px 13px;
+            border-bottom: 1px solid #edf0f5;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: #172b4d;
+        }
+
+        .patient-email {
+            color: #91a0b8;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        /* Status */
+
+        .status {
+            display: inline-block;
+            padding: 6px 11px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status.booked {
+            background: #e8f9f1;
+            color: #07965e;
+        }
+
+        .status.completed {
+            background: #edf4ff;
+            color: #2864ee;
+        }
+
+        .status.cancelled {
+            background: #fff0f0;
+            color: #dc3545;
+        }
+
+        .status.no-show {
+            background: #fff8e6;
+            color: #946200;
+        }
+
+        .status.other {
+            background: #edf0f5;
+            color: #64748b;
+        }
+
+        /* Empty state */
+
+        .empty-state {
+            text-align: center;
+            padding: 65px 20px;
+            color: #91a0b8;
+        }
+
+        .empty-state i {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h3 {
+            color: #334155;
+            font-size: 18px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 1100px) {
+            .filter-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                padding: 15px;
+            }
+
+            .logo {
+                margin-bottom: 15px;
+            }
+
+            .menu-heading {
+                display: none;
+            }
+
+            .nav-link {
+                display: inline-block;
+                padding: 10px;
+                margin: 3px;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .topbar {
+                padding: 18px;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .appointments-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <i class="bi bi-heart-pulse-fill"></i> MediSlot
+        </div>
+
+        <div class="menu-heading">MAIN MENU</div>
+
+        <nav>
+
+            <a href="{{ url_for('dashboard.index') }}"
+               class="nav-link">
+                <i class="bi bi-grid"></i>
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('profile.index') }}"
+               class="nav-link">
+                <i class="bi bi-person"></i>
+                My Profile
+            </a>
+
+            <a href="{{ url_for('consultation_types.consultation_types') }}"
+               class="nav-link">
+                <i class="bi bi-clipboard2-plus"></i>
+                Consultation Types
+            </a>
+
+            <a href="/blackouts" class="nav-link">
+                <i class="bi bi-calendar-x"></i>
+                Blackout Dates
+            </a>
+
+            <a href="{{ url_for('schedule.index') }}"
+               class="nav-link">
+                <i class="bi bi-calendar-week"></i>
+                My Schedule
+            </a>
+
+            <a href="{{ url_for('appointments.index') }}"
+               class="nav-link active">
+                <i class="bi bi-calendar-check"></i>
+                Appointments
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- Main content -->
+    <main class="main">
+
+        <header class="topbar">
+            <h3>Appointments</h3>
+            <p>View and manage your patient appointments.</p>
+        </header>
+
+
+        <section class="content">
+
+            <!-- Flash messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+
+            <!-- Page heading -->
+            <div class="page-heading">
+
+                <div>
+                    <h1>My Appointments</h1>
+                    <p>
+                        View your appointments and patient information.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- Filters -->
+            <div class="filter-card">
+
+                <h5>
+                    <i class="bi bi-funnel"></i>
+                    Filter Appointments
+                </h5>
+
+                <form method="GET"
+                      action="{{ url_for('appointments.index') }}">
+
+                    <div class="filter-grid">
+
+                        <div class="filter-group">
+
+                            <label for="fromDate">From Date</label>
+
+                            <input
+                                type="date"
+                                id="fromDate"
+                                name="from"
+                                value="{{ filters.get('from') or '' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <label for="toDate">To Date</label>
+
+                            <input
+                                type="date"
+                                id="toDate"
+                                name="to"
+                                value="{{ filters.get('to') or '' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <label for="status">Appointment Status</label>
+
+                            <select id="status" name="status">
+
+                                <option value="">All Statuses</option>
+
+                                {% for option in [
+                                    'BOOKED',
+                                    'COMPLETED',
+                                    'CANCELLED',
+                                    'NO_SHOW'
+                                ] %}
+
+                                    <option
+                                        value="{{ option }}"
+                                        {% if filters.get('status') == option %}
+                                            selected
+                                        {% endif %}
+                                    >
+                                        {{ option.replace('_', ' ') }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </div>
+
+
+                        <div>
+                            <button type="submit" class="filter-btn">
+                                <i class="bi bi-search"></i>
+                                Apply Filters
+                            </button>
+
+                            <a href="{{ url_for('appointments.index') }}"
+                               class="reset-btn">
+                                Reset
+                            </a>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <!-- Total appointments -->
+            <div class="count-card">
+
+                <p>Total Appointments</p>
+
+                <h2>{{ total_appointments }}</h2>
+
+            </div>
+
+
+            <!-- Appointments table -->
+            <div class="appointments-card">
+
+                <div class="card-heading">
+
+                    <h2>Appointment Records</h2>
+
+                    <p>
+                        Your appointments based on the selected filters.
+                    </p>
+
+                </div>
+
+
+                {% if appointments %}
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Appointment Date</th>
+                                    <th>Time</th>
+                                    <th>Consultation Type</th>
+                                    <th>Status</th>
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {% for appointment in appointments %}
+
+                                    {% set status = appointment.get('status', 'UNKNOWN')|upper %}
+
+                                    <tr>
+
+                                        <!-- Patient -->
+                                        <td>
+
+                                            <div class="patient-name">
+                                                {{ appointment.get('patient', {}).get('name', 'N/A') }}
+                                            </div>
+
+                                            {% if appointment.get('patient', {}).get('email') %}
+
+                                                <div class="patient-email">
+                                                    {{ appointment.patient.email }}
+                                                </div>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+                                        <!-- Date -->
+                                        <td>
+                                            {{ appointment.get('slot', {}).get('date', 'N/A') }}
+                                        </td>
+
+
+                                        <!-- Time -->
+                                        <td>
+                                            {{ appointment.get('slot', {}).get('startTime', 'N/A') }}
+                                            -
+                                            {{ appointment.get('slot', {}).get('endTime', 'N/A') }}
+                                        </td>
+
+
+                                        <!-- Consultation -->
+                                        <td>
+                                            {{ appointment.get('consultation', {}).get('name', 'N/A') }}
+                                        </td>
+
+
+                                        <!-- Status -->
+                                        <td>
+
+                                            <span class="status
+                                                {% if status == 'BOOKED' %}
+                                                    booked
+                                                {% elif status == 'COMPLETED' %}
+                                                    completed
+                                                {% elif status == 'CANCELLED' %}
+                                                    cancelled
+                                                {% elif status == 'NO_SHOW' %}
+                                                    no-show
+                                                {% else %}
+                                                    other
+                                                {% endif %}
+                                            ">
+                                                {{ status.replace('_', ' ') }}
+                                            </span>
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="empty-state">
+
+                        <i class="bi bi-calendar2-x"></i>
+
+                        <h3>No Appointments Found</h3>
+
+                        <p>
+                            There are no appointments matching your selected filters.
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

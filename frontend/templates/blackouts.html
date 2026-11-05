@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Blackout Dates | MediSlot</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700&display=swap"
+          rel="stylesheet">
+
+    <style>
+
+        /* ---------- Design tokens ---------- */
+        :root {
+            --ms-ink: #3a1226;
+            --ms-ink-soft: #7a5566;
+            --ms-pink: #e0457b;
+            --ms-pink-deep: #b81d5b;
+            --ms-pink-light: #ff8fb8;
+            --ms-blush: #fff0f5;
+            --ms-line: #f6d3e0;
+            --ms-surface: #ffffff;
+            --ms-radius-lg: 22px;
+            --ms-radius-md: 14px;
+            --ms-shadow-sm: 0 2px 10px rgba(58, 18, 38, 0.06);
+            --ms-shadow-md: 0 14px 34px rgba(224, 69, 123, 0.14);
+            --ms-shadow-lg: 0 26px 60px rgba(184, 29, 91, 0.22);
+            --ms-ease: cubic-bezier(.22, 1, .36, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            margin: 0;
+            font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            color: var(--ms-ink);
+            background:
+                radial-gradient(1100px 600px at 100% -10%, rgba(255, 143, 184, 0.22), transparent 60%),
+                radial-gradient(900px 500px at 10% 40%, rgba(224, 69, 123, 0.10), transparent 60%),
+                linear-gradient(180deg, #fffafc 0%, #fff0f5 100%);
+            background-attachment: fixed;
+            overflow-x: hidden;
+            position: relative;
+            animation: pageFade .9s var(--ms-ease) both;
+        }
+
+        /* floating background orbs */
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(70px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: .5;
+        }
+        body::before {
+            width: 380px; height: 380px;
+            top: 20%; left: 240px;
+            background: rgba(255, 143, 184, 0.40);
+            animation: orbOne 16s ease-in-out infinite;
+        }
+        body::after {
+            width: 440px; height: 440px;
+            bottom: -150px; right: -140px;
+            background: rgba(224, 69, 123, 0.28);
+            animation: orbTwo 19s ease-in-out infinite;
+        }
+
+        h1, h2, h3, .logo {
+            font-family: 'Outfit', 'Manrope', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        ::selection { background: var(--ms-pink-light); color: #5a0f2c; }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ---------- Sidebar ---------- */
+
+        .sidebar {
+            width: 265px;
+            min-width: 265px;
+            background: rgba(255, 255, 255, 0.86);
+            backdrop-filter: blur(14px);
+            border-right: 1px solid var(--ms-line);
+            padding: 25px 20px;
+            box-shadow: 8px 0 40px rgba(224, 69, 123, 0.07);
+            animation: sidebarIn .9s var(--ms-ease) both;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--ms-pink);
+            margin-bottom: 65px;
+            display: inline-block;
+            transition: transform .4s var(--ms-ease), text-shadow .4s ease;
+        }
+        .logo:hover {
+            transform: translateY(-2px) scale(1.05);
+            text-shadow: 0 8px 20px rgba(224, 69, 123, .35);
+        }
+
+        .menu-heading {
+            color: #c08aa2;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .08em;
+            margin: 25px 12px 15px;
+            animation: fadeIn 1s .3s ease both;
+        }
+
+        .nav-link {
+            position: relative;
+            display: block;
+            overflow: hidden;
+            text-decoration: none;
+            color: var(--ms-ink-soft);
+            padding: 16px 16px;
+            margin-bottom: 8px;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: background-color .35s ease, color .35s ease, transform .4s var(--ms-ease), box-shadow .4s var(--ms-ease);
+            animation: slideRight .7s var(--ms-ease) both;
+        }
+
+        nav .nav-link:nth-child(1) { animation-delay: .20s; }
+        nav .nav-link:nth-child(2) { animation-delay: .28s; }
+        nav .nav-link:nth-child(3) { animation-delay: .36s; }
+        nav .nav-link:nth-child(4) { animation-delay: .44s; }
+        nav .nav-link:nth-child(5) { animation-delay: .52s; }
+        nav .nav-link:nth-child(6) { animation-delay: .60s; }
+
+        .nav-link i {
+            display: inline-block;
+            transition: transform .45s var(--ms-ease);
+        }
+
+        .nav-link::before {
+            content: "";
+            position: absolute;
+            left: 0; top: 18%; bottom: 18%;
+            width: 4px;
+            border-radius: 0 6px 6px 0;
+            background: linear-gradient(180deg, var(--ms-pink-light), var(--ms-pink-deep));
+            transform: scaleY(0);
+            transition: transform .45s var(--ms-ease);
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--ms-blush);
+            color: var(--ms-pink-deep);
+        }
+        .nav-link:hover {
+            transform: translateX(6px);
+            box-shadow: 0 8px 20px rgba(224, 69, 123, .12);
+        }
+        .nav-link:hover i { transform: scale(1.25) rotate(-8deg); }
+        .nav-link:hover::before,
+        .nav-link.active::before { transform: scaleY(1); }
+
+        .nav-link.active {
+            background: linear-gradient(100deg, #ffe3ee, #fff5f9);
+            box-shadow: 0 8px 22px rgba(224, 69, 123, .14);
+        }
+
+        .nav-link:focus-visible,
+        .btn-primary:focus-visible,
+        .btn-delete:focus-visible {
+            outline: 3px solid rgba(255, 143, 184, .7);
+            outline-offset: 2px;
+        }
+
+        /* ---------- Main content ---------- */
+
+        .main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .topbar {
+            position: relative;
+            overflow: hidden;
+            padding: 24px 35px;
+            color: #fff;
+            background:
+                radial-gradient(500px 200px at 95% 0%, rgba(255, 255, 255, .22), transparent 70%),
+                linear-gradient(110deg, var(--ms-pink-deep), var(--ms-pink) 55%, #f06292);
+            background-size: 100% 100%, 200% 200%;
+            box-shadow: 0 10px 30px rgba(184, 29, 91, .25);
+            animation: navDrop .8s var(--ms-ease) both, gradientShift 12s ease-in-out infinite;
+        }
+        .topbar::before {
+            content: "";
+            position: absolute;
+            width: 220px; height: 220px;
+            right: 60px; top: -120px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255, 255, 255, .28);
+            animation: spinSlow 24s linear infinite;
+        }
+        .topbar::after {
+            content: "";
+            position: absolute;
+            width: 120px; height: 120px;
+            right: -30px; bottom: -70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .12);
+            animation: floatY 6s ease-in-out infinite;
+        }
+
+        .topbar h3 {
+            position: relative;
+            z-index: 1;
+            margin: 0 0 6px;
+            font-size: 21px;
+            font-weight: 700;
+            animation: slideUp .8s .2s var(--ms-ease) both;
+        }
+
+        .topbar p {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+            color: rgba(255, 255, 255, .88);
+            font-size: 14px;
+            animation: slideUp .8s .32s var(--ms-ease) both;
+        }
+
+        .content {
+            padding: 35px;
+        }
+
+        .page-heading {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 28px;
+            padding-left: 18px;
+            animation: slideRight .8s .2s var(--ms-ease) both;
+        }
+        .page-heading::before {
+            content: "";
+            position: absolute;
+            left: 0; top: 4px; bottom: 4px;
+            width: 5px;
+            border-radius: 6px;
+            background: linear-gradient(180deg, var(--ms-pink-light), var(--ms-pink-deep));
+            transform-origin: top;
+            animation: growY .9s .4s var(--ms-ease) both;
+        }
+
+        .page-heading h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 8px;
+            color: var(--ms-ink);
+        }
+
+        .page-heading p {
+            color: var(--ms-ink-soft);
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* ---------- Flash messages ---------- */
+
+        .flash-message {
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            border-radius: var(--ms-radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            border-left: 5px solid currentColor;
+            box-shadow: var(--ms-shadow-sm);
+            animation: alertIn .7s var(--ms-ease) both;
+        }
+
+        .flash-message.success {
+            background: #e4f8f0;
+            color: #0b6b4a;
+        }
+
+        .flash-message.danger {
+            background: #fdecee;
+            color: #a3182e;
+        }
+
+        .flash-message.warning {
+            background: #fff6e3;
+            color: #8a5a00;
+        }
+
+        .flash-message.info {
+            background: #ffe9f2;
+            color: var(--ms-pink-deep);
+        }
+
+        /* ---------- Cards ---------- */
+
+        .blackout-form-card,
+        .blackout-card {
+            position: relative;
+            overflow: hidden;
+            background: var(--ms-surface);
+            border: 1px solid var(--ms-line);
+            border-radius: var(--ms-radius-lg);
+            padding: 28px;
+            box-shadow: var(--ms-shadow-sm);
+            transition: transform .5s var(--ms-ease), box-shadow .5s var(--ms-ease);
+        }
+
+        .blackout-form-card {
+            margin-bottom: 28px;
+            animation: cardIn .9s .3s var(--ms-ease) both;
+        }
+        .blackout-card {
+            animation: cardIn .9s .5s var(--ms-ease) both;
+        }
+
+        .blackout-form-card::before,
+        .blackout-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--ms-pink-light), var(--ms-pink), var(--ms-pink-light));
+            background-size: 200% 100%;
+            animation: gradientSlide 4s linear infinite;
+        }
+        .blackout-form-card::after,
+        .blackout-card::after {
+            content: "";
+            position: absolute;
+            width: 200px; height: 200px;
+            right: -80px; bottom: -80px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 143, 184, .22), transparent 70%);
+            transition: transform .8s var(--ms-ease);
+            pointer-events: none;
+        }
+        .blackout-form-card:hover,
+        .blackout-card:hover {
+            box-shadow: var(--ms-shadow-md);
+        }
+        .blackout-form-card:hover { transform: translateY(-5px); }
+        .blackout-form-card:hover::after,
+        .blackout-card:hover::after { transform: scale(2.2); }
+
+        .blackout-form-card > *,
+        .blackout-card > * { position: relative; z-index: 1; }
+
+        .card-heading {
+            margin-bottom: 22px;
+        }
+
+        .card-heading h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ms-ink);
+        }
+        .card-heading h2 i {
+            display: inline-block;
+            color: var(--ms-pink);
+            margin-right: 6px;
+            animation: floatY 3.6s ease-in-out infinite;
+        }
+
+        .card-heading p {
+            color: var(--ms-ink-soft);
+            font-size: 13px;
+            margin: 7px 0 0;
+        }
+
+        /* ---------- Form ---------- */
+
+        .form-row {
+            display: flex;
+            align-items: end;
+            flex-wrap: wrap;
+            gap: 18px;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 9px;
+            color: var(--ms-ink);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 2px solid var(--ms-line);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            outline: none;
+            color: var(--ms-ink);
+            background: #fff;
+            transition: border-color .3s ease, box-shadow .3s ease, transform .3s var(--ms-ease);
+        }
+
+        .form-group input:focus {
+            border-color: var(--ms-pink-light);
+            box-shadow: 0 0 0 .28rem rgba(255, 143, 184, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* ---------- Buttons ---------- */
+
+        .btn-primary,
+        .btn-delete {
+            position: relative;
+            overflow: hidden;
+            font-family: inherit;
+            cursor: pointer;
+            transition: transform .35s var(--ms-ease), box-shadow .35s var(--ms-ease),
+                        background-position .6s var(--ms-ease), background-color .3s ease;
+        }
+        .btn-primary::before,
+        .btn-delete::before {
+            content: "";
+            position: absolute;
+            top: 0; left: -120%;
+            width: 80%; height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55), transparent);
+            transform: skewX(-20deg);
+            transition: left .7s var(--ms-ease);
+            pointer-events: none;
+        }
+        .btn-primary:hover::before,
+        .btn-delete:hover::before { left: 140%; }
+        .btn-primary:active,
+        .btn-delete:active { transform: scale(.94) !important; }
+
+        .btn-primary {
+            background: linear-gradient(120deg, var(--ms-pink-deep), var(--ms-pink) 55%, var(--ms-pink-light));
+            background-size: 200% 100%;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: 0 8px 20px rgba(224, 69, 123, .3);
+            animation: softPulse 2.8s ease-in-out 1.6s infinite;
+        }
+
+        .btn-primary:hover {
+            background-position: 100% 0;
+            transform: translateY(-3px);
+            box-shadow: 0 14px 28px rgba(224, 69, 123, .4);
+            animation: none;
+        }
+        .btn-primary i { display: inline-block; transition: transform .5s var(--ms-ease); }
+        .btn-primary:hover i { transform: rotate(180deg) scale(1.15); }
+
+        /* ---------- Warning ---------- */
+
+        .warning-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: linear-gradient(120deg, #fff8e6, #fff3dc);
+            border: 1px solid #f4e2ae;
+            border-left: 5px solid #f0b429;
+            border-radius: var(--ms-radius-md);
+            padding: 16px 18px;
+            margin-top: 22px;
+            color: #8a5a00;
+            font-size: 13px;
+            line-height: 1.7;
+            animation: slideUp .8s .8s var(--ms-ease) both;
+        }
+
+        .warning-box i {
+            font-size: 18px;
+            margin-top: 1px;
+            animation: warnWiggle 3.2s ease-in-out 1.5s infinite;
+            transform-origin: 50% 80%;
+        }
+
+        /* ---------- Blackout table ---------- */
+
+        .blackout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .blackout-header h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--ms-ink);
+        }
+
+        .blackout-header p {
+            color: var(--ms-ink-soft);
+            font-size: 13px;
+            margin: 7px 0 0;
+        }
+
+        .count-badge {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(120deg, #ffe3ee, #ffd2e4);
+            color: var(--ms-pink-deep);
+            padding: 9px 16px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            animation: badgePop .7s .7s var(--ms-ease) both;
+        }
+        .count-badge::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .8), transparent);
+            animation: shimmer 3.4s ease-in-out infinite;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            min-width: 550px;
+        }
+
+        th {
+            text-align: left;
+            padding: 10px 16px;
+            background: transparent;
+            color: var(--ms-ink-soft);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            background: #fff;
+            box-shadow: 0 1px 0 var(--ms-line);
+            transition: transform .4s var(--ms-ease), box-shadow .4s var(--ms-ease), background-color .3s;
+            animation: rowIn .7s var(--ms-ease) both;
+            animation-delay: calc(var(--i, 0) * 90ms + 700ms);
+        }
+        tbody tr:hover {
+            transform: translateX(6px) scale(1.005);
+            box-shadow: 0 10px 24px rgba(224, 69, 123, .15);
+            background: #fff5f9;
+        }
+
+        td {
+            padding: 16px;
+            border: 0;
+            font-size: 14px;
+            color: var(--ms-ink);
+            vertical-align: middle;
+        }
+        td:first-child {
+            border-radius: 14px 0 0 14px;
+            border-left: 4px solid var(--ms-pink-light);
+            font-weight: 700;
+        }
+        td:last-child { border-radius: 0 14px 14px 0; }
+
+        .date-value {
+            font-weight: 700;
+            color: var(--ms-ink);
+        }
+        .date-value i {
+            color: var(--ms-pink);
+            margin-right: 4px;
+        }
+
+        .date-status {
+            display: inline-block;
+            padding: 7px 13px;
+            border-radius: 999px;
+            background: linear-gradient(120deg, #ffe3ee, #ffd2e4);
+            color: var(--ms-pink-deep);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: .02em;
+            animation: badgePop .7s var(--ms-ease) both;
+            animation-delay: calc(var(--i, 0) * 90ms + 900ms);
+        }
+
+        .btn-delete {
+            background: #fff;
+            color: var(--ms-pink-deep);
+            border: 2px solid var(--ms-pink-light);
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .btn-delete:hover {
+            background: var(--ms-pink);
+            border-color: var(--ms-pink);
+            color: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 22px rgba(224, 69, 123, .32);
+        }
+        .btn-delete i { display: inline-block; transition: transform .4s var(--ms-ease); }
+        .btn-delete:hover i { transform: rotate(-14deg) scale(1.2); }
+
+        /* ---------- Empty state ---------- */
+
+        .empty-state {
+            text-align: center;
+            padding: 65px 20px;
+            color: var(--ms-ink-soft);
+            border: 2px dashed #f3b6cf;
+            border-radius: var(--ms-radius-lg);
+            background: linear-gradient(135deg, #fff, #fff3f8);
+        }
+
+        .empty-state .icon {
+            font-size: 44px;
+            margin-bottom: 15px;
+            color: var(--ms-pink);
+            animation: floatY 4s ease-in-out infinite;
+        }
+
+        .empty-state h3 {
+            color: var(--ms-ink);
+            font-size: 19px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* ---------- Responsive ---------- */
+
+        @media (max-width: 700px) {
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                padding: 15px;
+                animation-name: navDrop;
+            }
+
+            .logo {
+                margin-bottom: 15px;
+            }
+
+            .menu-heading {
+                display: none;
+            }
+
+            .nav-link {
+                display: inline-block;
+                padding: 10px;
+                margin: 3px;
+            }
+            .nav-link:hover { transform: translateY(-2px); }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .topbar {
+                padding: 18px;
+            }
+
+            .blackout-form-card,
+            .blackout-card {
+                padding: 18px;
+            }
+
+            .form-row {
+                align-items: stretch;
+            }
+
+            .btn-primary {
+                width: 100%;
+            }
+
+            tbody tr:hover { transform: none; }
+        }
+
+        /* ---------- Keyframes ---------- */
+
+        @keyframes pageFade   { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn     { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes navDrop    { from { transform: translateY(-100%); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes sidebarIn  { from { transform: translateX(-100%); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes slideUp    { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+        @keyframes slideRight { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
+        @keyframes cardIn     { from { opacity: 0; transform: translateY(46px) scale(.95); } to { opacity: 1; transform: none; } }
+        @keyframes rowIn      { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+        @keyframes alertIn    { from { opacity: 0; transform: translateY(-18px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes badgePop   { 0% { opacity: 0; transform: scale(.4); } 70% { transform: scale(1.12); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes growY      { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+        @keyframes shimmer    { 0%, 55% { left: -100%; } 100% { left: 160%; } }
+        @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes gradientSlide { from { background-position: 0% 0; } to { background-position: 200% 0; } }
+        @keyframes floatY     { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes spinSlow   { to { transform: rotate(360deg); } }
+        @keyframes orbOne     { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(90px, -70px); } }
+        @keyframes orbTwo     { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-80px, 60px); } }
+        @keyframes softPulse  {
+            0%, 100% { box-shadow: 0 8px 20px rgba(224, 69, 123, .3), 0 0 0 0 rgba(224, 69, 123, .35); }
+            50%      { box-shadow: 0 8px 20px rgba(224, 69, 123, .3), 0 0 0 10px rgba(224, 69, 123, 0); }
+        }
+        @keyframes warnWiggle {
+            0%, 88%, 100% { transform: rotate(0); }
+            91% { transform: rotate(-14deg); }
+            94% { transform: rotate(12deg); }
+            97% { transform: rotate(-8deg); }
+        }
+
+        /* ---------- Respect reduced motion ---------- */
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- Sidebar -->
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            ♥ MediSlot
+        </div>
+
+        <div class="menu-heading">MAIN MENU</div>
+
+        <nav>
+
+            <a href="{{ url_for('dashboard.index') }}"
+               class="nav-link">
+                <i class="bi bi-grid"></i>
+                &nbsp; Dashboard
+            </a>
+
+            <a href="{{ url_for('profile.index') }}"
+               class="nav-link">
+                <i class="bi bi-person"></i>
+                &nbsp; My Profile
+            </a>
+
+            <a href="{{ url_for('consultation_types.consultation_types') }}"
+               class="nav-link">
+                <i class="bi bi-clipboard2-pulse"></i>
+                &nbsp; Consultation Types
+            </a>
+
+            <a href="{{ url_for('blackouts.index') }}"
+               class="nav-link active">
+                <i class="bi bi-calendar-x"></i>
+                &nbsp; Blackout Dates
+            </a>
+
+            <a href="{{ url_for('schedule.index') }}"
+               class="nav-link">
+                <i class="bi bi-calendar-week"></i>
+                &nbsp; My Schedule
+            </a>
+
+            <a href="{{ url_for('appointments.index') }}"
+               class="nav-link">
+                <i class="bi bi-calendar-check"></i>
+                &nbsp; Appointments
+            </a>
+
+        </nav>
+
+        <div style="margin-top: 35px;">
+
+            <form action="{{ url_for('auth.logout') }}"
+                  method="POST">
+
+                <button type="submit"
+                        class="nav-link"
+                        style="width:100%; text-align:left; border:none; background:transparent; cursor:pointer;">
+
+                    <i class="bi bi-box-arrow-left"></i>
+                    &nbsp; Logout
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </aside>
+
+
+    <!-- Main content -->
+
+    <main class="main">
+
+        <header class="topbar">
+
+            <h3>Blackout Dates</h3>
+
+            <p>
+                Manage the dates when you are unavailable for consultations.
+            </p>
+
+        </header>
+
+
+        <section class="content">
+
+
+            <!-- Flash messages -->
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% if messages %}
+
+                    {% for category, message in messages %}
+
+                        <div class="flash-message {{ category }}">
+                            {{ message }}
+                        </div>
+
+                    {% endfor %}
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <!-- Page heading -->
+
+            <div class="page-heading">
+
+                <div>
+                    <h1>Manage Blackout Dates</h1>
+
+                    <p>
+                        Block dates when you cannot accept appointments.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <!-- Add blackout form -->
+
+            <div class="blackout-form-card">
+
+                <div class="card-heading">
+
+                    <h2>
+                        <i class="bi bi-calendar-plus"></i>
+                        Add Blackout Date
+                    </h2>
+
+                    <p>
+                        Select a date to mark yourself unavailable.
+                    </p>
+
+                </div>
+
+
+                <form method="POST"
+                      action="{{ url_for('blackouts.add_blackout') }}"
+                      onsubmit="return confirmBlackout();">
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+
+                            <label for="blackoutDate">
+                                Select Date
+                            </label>
+
+                            <input
+                                type="date"
+                                id="blackoutDate"
+                                name="blackoutDate"
+                                required
+                            >
+
+                        </div>
+
+
+                        <button type="submit"
+                                class="btn-primary">
+
+                            <i class="bi bi-plus-circle"></i>
+                            Add Blackout
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+
+                <div class="warning-box">
+
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+
+                    <div>
+                        <strong>Important:</strong>
+                        Adding a blackout date will close the generated
+                        slots for that date and automatically cancel
+                        associated booked appointments.
+
+                        Cancelled appointments will not be restored
+                        automatically if you later delete the blackout.
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Existing blackout dates -->
+
+            <div class="blackout-card">
+
+                <div class="blackout-header">
+
+                    <div>
+
+                        <h2>Existing Blackout Dates</h2>
+
+                        <p>
+                            Dates on which you are unavailable.
+                        </p>
+
+                    </div>
+
+                    <span class="count-badge">
+                        {{ blackouts|length }} Dates
+                    </span>
+
+                </div>
+
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>#</th>
+                                <th>Blackout Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% if blackouts %}
+
+                                {% for blackout in blackouts %}
+
+                                    <tr style="--i: {{ loop.index0 }};">
+
+                                        <td>
+                                            {{ loop.index }}
+                                        </td>
+
+                                        <td class="date-value">
+
+                                            <i class="bi bi-calendar-event"></i>
+
+                                            {{ blackout.blackoutDate }}
+
+                                        </td>
+
+                                        <td>
+
+                                            <span class="date-status">
+                                                Unavailable
+                                            </span>
+
+                                        </td>
+
+                                        <td>
+
+                                            <form
+                                                method="POST"
+                                                action="{{ url_for('blackouts.delete_blackout', blackout_id=blackout.blackoutId) }}"
+                                                onsubmit="return confirmDelete();"
+                                            >
+
+                                                <button type="submit"
+                                                        class="btn-delete">
+
+                                                    <i class="bi bi-trash"></i>
+                                                    Delete
+
+                                                </button>
+
+                                            </form>
+
+                                        </td>
+
+                                    </tr>
+
+                                {% endfor %}
+
+                            {% else %}
+
+                                <tr>
+
+                                    <td colspan="4">
+
+                                        <div class="empty-state">
+
+                                            <div class="icon">
+                                                <i class="bi bi-calendar-check"></i>
+                                            </div>
+
+                                            <h3>No Blackout Dates</h3>
+
+                                            <p>
+                                                You have not blocked any dates yet.
+                                                Add a blackout date using the form above.
+                                            </p>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endif %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script>
+
+    function confirmBlackout() {
+
+        const selectedDate =
+            document.getElementById("blackoutDate").value;
+
+        if (!selectedDate) {
+            alert("Please select a blackout date.");
+            return false;
+        }
+
+        return confirm(
+            "Are you sure you want to block " +
+            selectedDate +
+            "?\n\nAll generated slots for this date will be closed, " +
+            "and associated booked appointments will be cancelled."
+        );
+    }
+
+
+    function confirmDelete() {
+
+        return confirm(
+            "Are you sure you want to delete this blackout date?\n\n" +
+            "Previously closed slots and cancelled appointments " +
+            "will not be restored automatically."
+        );
+
+    }
+
+</script>
+
+</body>
+</html>
