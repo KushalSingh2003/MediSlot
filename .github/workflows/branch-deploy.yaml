@@ -344,84 +344,9 @@ jobs:
               "$RUNNER_TEMP/${artifact}.zip" \
               "s3://${LAMBDA_BUCKET}/${ARTIFACT_PREFIX}/${artifact}.zip"
           done
-
-          
-
-  # ==========================================================
-  # APPLICATION STACK
-  # ==========================================================
-  deploy-application:
-    needs: package-lambdas
-    runs-on: ubuntu-latest
-    environment: ${{ vars.DEPLOY_ENV }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Validate Application Stack
-        run: |
-          aws cloudformation validate-template \
-            --template-body file://cloudformation/application-stack.yaml \
-            --region "$AWS_REGION"
-      - name: Verify Lambda Artifacts in S3
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          for artifact in \
-            auth-layer \
-            auth-register \
-            auth-login \
-            auth-refresh \
-            auth-logout \
-            authorizer \
-            get-doctor-profile \
-            get-patient-profile \
-            db-migration \
-            doctor-photo \
-            doctor-consultation-types \
-            doctor-blackouts \
-            doctor-schedule \
-            doctor-appointments \
-            doctor-slot-cancellation \
-            appointment-outcome \
-            slot-template-admin \
-            slot-materializer
-          do
-            echo "Checking ${artifact}.zip"
-            aws s3api head-object \
-              --bucket "$LAMBDA_BUCKET" \
-              --key "${ARTIFACT_PREFIX}/${artifact}.zip" \
-              --region "$AWS_REGION"
-          done
-      - name: Deploy Application Stack
-        shell: bash
-        run: |
-          set -euo pipefail
-          aws cloudformation deploy \
-            --template-file cloudformation/application-stack.yaml \
-            --stack-name "medislot-${DEPLOY_ENV}-application" \
-            --parameter-overrides \
-            "Env=${DEPLOY_ENV}" \
-            "ProjectName=medislot" \
-            "ArtifactBucket=${LAMBDA_BUCKET}" \
-            "ArtifactPrefix=${ARTIFACT_PREFIX}" \
-            --capabilities CAPABILITY_NAMED_IAM \
-            --no-fail-on-empty-changeset \
-            --region "$AWS_REGION"
-        # ==========================================================
-  # PACKAGE AND UPLOAD FRONTEND
-  # ==========================================================
-
   package-frontend:
     name: Package and Upload Frontend
-    needs: deploy-application
+    needs: package-lambdas
     runs-on: ubuntu-latest
     environment: ${{ vars.DEPLOY_ENV }}
 
@@ -483,6 +408,88 @@ jobs:
             --region "$AWS_REGION"
 
           echo "Frontend uploaded successfully."
+
+          
+
+  # ==========================================================
+  # APPLICATION STACK
+  # ==========================================================
+  deploy-application:
+    needs: package-frontend
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Validate Application Stack
+        run: |
+          aws cloudformation validate-template \
+            --template-body file://cloudformation/application-stack.yaml \
+            --region "$AWS_REGION"
+      - name: Verify Lambda Artifacts in S3
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for artifact in \
+            auth-layer \
+            auth-register \
+            auth-login \
+            auth-refresh \
+            auth-logout \
+            authorizer \
+            get-doctor-profile \
+            get-patient-profile \
+            db-migration \
+            doctor-photo \
+            doctor-consultation-types \
+            doctor-blackouts \
+            doctor-schedule \
+            doctor-appointments \
+            doctor-slot-cancellation \
+            appointment-outcome \
+            slot-template-admin \
+            slot-materializer
+          do
+            echo "Checking ${artifact}.zip"
+            aws s3api head-object \
+              --bucket "$LAMBDA_BUCKET" \
+              --key "${ARTIFACT_PREFIX}/${artifact}.zip" \
+              --region "$AWS_REGION"
+          echo "Checking frontend.zip"
+
+          aws s3api head-object \
+            --bucket "$LAMBDA_BUCKET" \
+            --key "${ARTIFACT_PREFIX}/frontend.zip" \
+            --region "$AWS_REGION"
+                    done
+      - name: Deploy Application Stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws cloudformation deploy \
+            --template-file cloudformation/application-stack.yaml \
+            --stack-name "medislot-${DEPLOY_ENV}-application" \
+            --parameter-overrides \
+            "Env=${DEPLOY_ENV}" \
+            "ProjectName=medislot" \
+            "ArtifactBucket=${LAMBDA_BUCKET}" \
+            "ArtifactPrefix=${ARTIFACT_PREFIX}" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --region "$AWS_REGION"
+        # ==========================================================
+  # PACKAGE AND UPLOAD FRONTEND
+  # ==========================================================
+
+
 
       
   # ==========================================================
