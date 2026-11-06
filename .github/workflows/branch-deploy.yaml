@@ -536,7 +536,7 @@ jobs:
   # API STACK
   # ==========================================================
   deploy-api:
-    needs: application-stack
+    needs: deploy-application
     runs-on: ubuntu-latest
     environment: ${{ vars.DEPLOY_ENV }}
 
