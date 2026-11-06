@@ -322,7 +322,7 @@ Resources:
       Handler: app.lambda_handler
 
       Role:
-        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-GetDoctorProfileRoleArn'
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorProfileRoleArn'
 
       Code:
         S3Bucket: !Ref ArtifactBucket
