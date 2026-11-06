@@ -1,4 +1,4 @@
-name: MediSlot Branch Deployment
+name: MediSlot Branch Deployment Management
 
 on:
   push:
