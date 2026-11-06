@@ -972,3 +972,8 @@ Outputs:
     Value: !GetAtt SlotMaterializerRole.Arn
     Export:
       Name: !Sub '${AWS::StackName}-SlotMaterializerRoleArn'
+  DoctorAppointmentsRoleArn:
+    Description: IAM role ARN for doctor appointments Lambda
+    Value: !GetAtt DoctorAppointmentsRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorAppointmentsRoleArn'
