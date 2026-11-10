@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Patient Profile | MediSlot{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-lg-8"><div class="card border-0 shadow-sm p-4"><h2>My profile</h2><p class="text-muted">Manage your personal and emergency contact details.</p>
+<form method="post"><div class="mb-3"><label class="form-label">Full name</label><input class="form-control" name="name" value="{{ profile.name or '' }}" required></div>
+<div class="mb-3"><label class="form-label">Email</label><input class="form-control" value="{{ profile.email or '' }}" disabled></div>
+<div class="row"><div class="col-md-6 mb-3"><label class="form-label">Phone</label><input class="form-control" name="phone" value="{{ profile.phone or '' }}"></div><div class="col-md-6 mb-3"><label class="form-label">City</label><input class="form-control" name="city" value="{{ profile.city or '' }}"></div></div>
+<div class="row"><div class="col-md-6 mb-3"><label class="form-label">Date of birth</label><input class="form-control" type="date" name="dateOfBirth" value="{{ profile.date_of_birth or '' }}"></div><div class="col-md-6 mb-3"><label class="form-label">Gender</label><input class="form-control" name="gender" value="{{ profile.gender or '' }}"></div></div>
+<div class="mb-3"><label class="form-label">Emergency contact</label><input class="form-control" name="emergencyContact" value="{{ profile.emergency_contact or '' }}"></div>
+<button class="btn btn-primary">Save changes</button> <a class="btn btn-light" href="{{ url_for('patient.dashboard') }}">Back to search</a></form></div></div></div>
+{% endblock %}

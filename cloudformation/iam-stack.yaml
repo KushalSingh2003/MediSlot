@@ -310,6 +310,64 @@ Resources:
             - secretsmanager:GetSecretValue
             Resource:
               Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+  #============================================================================
+  # Public doctor search/profile/slot availability Lambda (RDS read access).
+  #============================================================================
+  DoctorDiscoveryRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W28
+          reason: Explicit role names are required so other stacks can reference them by convention
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-doctor-discovery-role'
+
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+      Policies:
+      - PolicyName: doctor-discovery-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-doctor-discovery:*'
+
+          - Sid: ReadDatabaseSettings
+            Effect: Allow
+            Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+            Resource:
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/endpoint'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/port'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/name'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/username'
+            - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/secret-arn'
+
+      - PolicyName: ReadDatabaseSecret
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: GetDatabaseCredentials
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+              Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
   # ==========================================================================
   # DbMigration Lambda (in VPC: RDS). Runs the database migrations.
   # ==========================================================================
@@ -922,6 +980,11 @@ Outputs:
     Value: !GetAtt GetPatientProfileRole.Arn
     Export:
       Name: !Sub '${AWS::StackName}-GetPatientProfileRoleArn'
+
+  DoctorDiscoveryRoleArn:
+    Value: !GetAtt DoctorDiscoveryRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorDiscoveryRoleArn'
   DbMigrationRoleArn:
     Value: !GetAtt DbMigrationRole.Arn
     Export:

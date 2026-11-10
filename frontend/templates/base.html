@@ -32,48 +32,18 @@
 
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav ms-auto">
-
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('dashboard.index') }}">
-                        Dashboard
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('profile.profile') }}">
-                        My Profile
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('consultation_types.consultation_types') }}">
-                        Consultation Types
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('blackouts.blackouts') }}">
-                        Blackout Dates
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link"
-                       href="{{ url_for('appointments.appointments') }}">
-                        Appointments
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('auth.logout') }}">
-                        Logout
-                    </a>
-                </li>
-
+                {% if session.get('role') == 'patient' %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.dashboard') }}">Find Doctors</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('patient.profile') }}">My Profile</a></li>
+                <li class="nav-item"><form method="post" action="{{ url_for('patient.logout') }}"><button class="btn btn-link nav-link" type="submit">Logout</button></form></li>
+                {% else %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('profile.index') }}">My Profile</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('consultation_types.consultation_types') }}">Consultation Types</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('blackouts.index') }}">Blackout Dates</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('appointments.index') }}">Appointments</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Logout</a></li>
+                {% endif %}
             </ul>
         </div>
     </div>

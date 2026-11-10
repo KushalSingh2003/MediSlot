@@ -12,6 +12,7 @@ from routes.consultation_types import consultation_types_bp
 from routes.schedule import schedule_bp
 from routes.appointments import appointments_bp
 from routes.blackouts import blackouts_bp
+from routes.patient_portal import patient_bp
 
 
 
@@ -34,10 +35,12 @@ def create_app():
     app.register_blueprint(schedule_bp)
     app.register_blueprint(appointments_bp)
     app.register_blueprint(blackouts_bp)
+    app.register_blueprint(patient_bp)
 
     @app.route("/")
     def index():
-        return redirect(url_for("auth.login"))
+        from flask import render_template
+        return render_template("landing.html")
 
     @app.route("/health")
     def health():

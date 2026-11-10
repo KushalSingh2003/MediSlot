@@ -121,6 +121,17 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-get-patient-profile'
       RetentionInDays: !Ref LogRetentionDays
+  DoctorDiscoveryLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-doctor-discovery'
+      RetentionInDays: !Ref LogRetentionDays
+
   DbMigrationLogGroup:
     Type: AWS::Logs::LogGroup
     Metadata:
@@ -361,7 +372,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub '${ProjectName}-${Env}-get-patient-profile'
-      Description: Retrieve the authenticated patient's profile
+      Description: Create, retrieve, update and delete the authenticated patient's profile
       Runtime: python3.12
       Architectures: [ x86_64 ]
       Handler: app.lambda_handler
@@ -390,6 +401,37 @@ Resources:
           ENV: !Ref Env
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
 
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+
+  DoctorDiscoveryFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-doctor-discovery'
+      Description: Public doctor search, public profile and slot availability lookup
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorDiscoveryRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/doctor-discovery.zip'
+      Layers: [ !Ref AuthDependenciesLayer ]
+      MemorySize: 256
+      Timeout: 10
+      TracingConfig: { Mode: Active }
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref DoctorDiscoveryLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
       VpcConfig:
         SubnetIds: !Split
           - ','
@@ -1020,6 +1062,10 @@ Outputs:
     Value: !GetAtt GetPatientProfileFunction.Arn
     Export:
       Name: !Sub '${AWS::StackName}-PatientProfileFunctionArn'
+  DoctorDiscoveryFunctionArn:
+    Value: !GetAtt DoctorDiscoveryFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorDiscoveryFunctionArn'
   DbMigrationFunctionArn:
     Value: !GetAtt DbMigrationFunction.Arn
     Export:

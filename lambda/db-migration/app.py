@@ -12,8 +12,9 @@ logger.setLevel(logging.INFO)
 ssm = boto3.client("ssm")
 secretsmanager = boto3.client("secretsmanager")
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
-PARAMETER_PREFIX = f"/medislot/{ENVIRONMENT}/db"
+ENVIRONMENT = os.environ.get("ENVIRONMENT", os.environ.get("ENV", "dev"))
+SSM_PREFIX = os.environ.get("SSM_PREFIX", f"/medislot/{ENVIRONMENT}").rstrip("/")
+PARAMETER_PREFIX = f"{SSM_PREFIX}/db"
 
 
 def get_parameter(name):
@@ -51,6 +52,7 @@ def get_db_connection():
         user=username,
         password=secret["password"],
         database=get_parameter("name"),
+        cursorclass=pymysql.cursors.DictCursor,
         connect_timeout=10,
         read_timeout=30,
         write_timeout=30,
@@ -86,6 +88,30 @@ def lambda_handler(event, context):
 
             for statement in statements:
                 cursor.execute(statement)
+
+        # Additive, idempotent upgrades for databases created before Milestone 4.
+        with connection.cursor() as cursor:
+            cursor.execute("""SELECT COUNT(*) AS n FROM information_schema.columns
+                WHERE table_schema=DATABASE() AND table_name='patients'
+                AND column_name='emergency_contact'""")
+            if cursor.fetchone()["n"] == 0:
+                cursor.execute("ALTER TABLE patients ADD COLUMN emergency_contact VARCHAR(30) NULL AFTER city")
+
+            index_specs = {
+                "doctor": [("idx_doctor_name", "(name)")],
+                "doctor_address": [("idx_doctor_address_city", "(city, doctor_id)")],
+                "hospitals": [("idx_hospitals_name", "(name)")],
+                "specialisations": [("idx_specialisations_name", "(name)")],
+                "doctor_hospital": [("idx_doctor_hospital_lookup", "(hospital_id, doctor_id)")],
+                "doctor_specialisation": [("idx_doctor_specialisation_lookup", "(specialisation_id, doctor_id)")],
+            }
+            for table, indexes in index_specs.items():
+                for index_name, columns in indexes:
+                    cursor.execute("""SELECT COUNT(*) AS n FROM information_schema.statistics
+                        WHERE table_schema=DATABASE() AND table_name=%s AND index_name=%s""",
+                        (table, index_name))
+                    if cursor.fetchone()["n"] == 0:
+                        cursor.execute(f"CREATE INDEX {index_name} ON {table} {columns}")
 
         connection.commit()
 

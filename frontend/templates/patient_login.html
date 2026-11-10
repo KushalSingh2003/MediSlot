@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Patient Login | MediSlot{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-md-6 col-lg-5"><div class="card shadow-sm border-0 p-4">
+<h2 class="mb-2">Patient sign in</h2><p class="text-muted">Access your MediSlot patient account.</p>
+<form method="post"><div class="mb-3"><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div>
+<div class="mb-3"><label class="form-label">Password</label><input class="form-control" type="password" name="password" required></div>
+<button class="btn btn-primary w-100" type="submit">Sign in</button></form>
+<p class="mt-3 mb-0">New to MediSlot? <a href="{{ url_for('patient.register') }}">Create patient account</a></p>
+<p class="mt-2"><a href="{{ url_for('auth.login') }}">Doctor login</a></p></div></div></div>
+{% endblock %}

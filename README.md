@@ -104,3 +104,26 @@ Design documents will be added to [`docs/`](docs/) as milestones complete.
 Built as a capstone project · 2026
 
 </div>
+
+## Milestone 4 — Patient Domain
+
+### Patient APIs
+- `GET /patients/me` — retrieve the authenticated patient's profile.
+- `PUT /patients/me` — update name, phone, city, date of birth, gender, and emergency contact.
+- `DELETE /patients/me` — delete the authenticated patient's profile when no appointment records exist; returns `409` when appointment history prevents deletion.
+- `GET /doctors?name=&hospital=&specialisation=&city=&page=&pageSize=` — public doctor discovery with AND-combined filters and pagination.
+- `GET /doctors/{doctorId}` — public professional profile, hospital affiliations, specialisations, languages, consultation types and fees.
+- `GET /doctors/{doctorId}/slots?from=&to=&consultationTypeId=` — public availability lookup; date range is limited to 31 calendar days and only free seats are returned.
+
+Patient identity is taken only from the Lambda Authorizer context. There is no patient ID path or query parameter for profile access.
+
+### Search indexes
+The search uses prefix matching (`term%`) so MySQL can use B-tree indexes rather than leading-wildcard scans. Indexes are defined for `doctor.name`, `doctor_address(city, doctor_id)`, `hospitals.name`, `specialisations.name`, `doctor_hospital(hospital_id, doctor_id)`, and `doctor_specialisation(specialisation_id, doctor_id)`. The two junction-table indexes support reverse lookup from the selected hospital or specialisation to doctor IDs; the address index supports city filtering; name indexes support prefix matching on doctor, hospital and specialisation names. The existing slot index on `(doctor_id, slot_date, status)` supports doctor/date availability lookups.
+
+The database migration is safe to re-run: schema table creation uses `IF NOT EXISTS`, and the Milestone 4 emergency-contact column and search indexes are added only when absent.
+
+### Patient dashboard
+The EC2 Flask application remains an API client and now exposes `/patient/login`, `/patient/register`, `/patient/dashboard`, `/patient/profile`, and `/patient/doctors/{doctorId}`. Patient requests go through API Gateway; the Flask app does not connect directly to RDS.
+
+### Deployed integration tests
+`tests/integration/test_patient_domain.py` exercises patient registration/login, profile CRUD, patient identity isolation, doctor search, public doctor profile, and slot availability against the deployed API. The deployment workflow invokes the idempotent DB migration before deploying the API and runs this suite after stack validation. The GitHub Actions deployment role must permit `lambda:InvokeFunction` on `medislot-${DEPLOY_ENV}-db-migration`.

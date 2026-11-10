@@ -46,6 +46,13 @@ def generate_photo_upload_url():
         json={"contentType": content_type}
     )
 
+    print("========== PHOTO UPLOAD DEBUG ==========")
+    print("API URL:", APIClient.base_url() + "/doctors/me/photo")
+    print("STATUS CODE:", response.status_code)
+    print("RESPONSE BODY:", response.text)
+    print("ACCESS TOKEN EXISTS:", bool(session.get("access_token")))
+    print("========================================")
+
     if response.status_code not in (200, 201):
         try:
             error = response.json().get("message", "Could not generate upload URL.")

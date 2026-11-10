@@ -70,12 +70,12 @@ class APIClient:
             current_app.logger.exception("Token refresh request failed.")
             return False
     @staticmethod
-    def request(method, endpoint, refresh_on_401=True, **kwargs):
+    def request(method, endpoint, refresh_on_401=True, authenticated=True, **kwargs):
 
         url = f"{APIClient.base_url()}/{endpoint.lstrip('/')}"
 
         custom_headers = kwargs.pop("headers", {})
-        headers = APIClient.get_headers()
+        headers = APIClient.get_headers(authenticated=authenticated)
         headers.update(custom_headers)
 
         try:
@@ -98,7 +98,7 @@ class APIClient:
 
                 if APIClient.refresh_access_token():
 
-                    headers = APIClient.get_headers()
+                    headers = APIClient.get_headers(authenticated=authenticated)
                     headers.update(custom_headers)
 
                     response = requests.request(

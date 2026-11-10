@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Find Doctors | MediSlot{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4"><div><h2 class="mb-1">Find your doctor</h2><p class="text-muted mb-0">Search by doctor, hospital, specialisation or city.</p></div><a class="btn btn-outline-primary" href="{{ url_for('patient.profile') }}">Edit profile</a></div>
+<div class="card border-0 shadow-sm p-3 mb-4"><form method="get" class="row g-3">
+<div class="col-md-3"><label class="form-label">Doctor name</label><input class="form-control" name="name" value="{{ filters.name }}" placeholder="e.g. John"></div>
+<div class="col-md-3"><label class="form-label">Hospital</label><input class="form-control" name="hospital" value="{{ filters.hospital }}"></div>
+<div class="col-md-3"><label class="form-label">Specialisation</label><input class="form-control" name="specialisation" value="{{ filters.specialisation }}"></div>
+<div class="col-md-3"><label class="form-label">City</label><input class="form-control" name="city" value="{{ filters.city }}"></div>
+<div class="col-12"><button class="btn btn-primary">Search doctors</button> <a class="btn btn-light" href="{{ url_for('patient.dashboard') }}">Clear</a></div></form></div>
+<div class="d-flex justify-content-between mb-3"><h4>Available doctors</h4><span class="text-muted">{{ pagination.total|default(0) }} results</span></div>
+<div class="row g-3">{% for doctor in doctors %}<div class="col-md-6 col-lg-4"><div class="card h-100 border-0 shadow-sm p-3"><div class="d-flex align-items-center gap-3 mb-3"><div class="rounded-circle bg-light p-3">👨‍⚕️</div><div><h5 class="mb-0">{{ doctor.name }}</h5><small class="text-muted">{{ doctor.years_experience or 0 }} years experience</small></div></div><p class="mb-1"><strong>Specialisation:</strong> {{ doctor.specialisations or 'Not specified' }}</p><p class="mb-3"><strong>Hospital:</strong> {{ doctor.hospitals or 'Not specified' }}<br><strong>City:</strong> {{ doctor.cities or 'Not specified' }}</p><a class="btn btn-outline-primary mt-auto" href="{{ url_for('patient.doctor_detail', doctor_id=doctor.doctor_id) }}">View profile & slots</a></div></div>{% else %}<div class="col-12"><div class="alert alert-light">No doctors matched your search. Try changing the filters.</div></div>{% endfor %}</div>
+{% if pagination.totalPages|default(0) > 1 %}<nav class="mt-4"><ul class="pagination">{% for p in range(1, pagination.totalPages + 1) %}<li class="page-item {{ 'active' if p == pagination.page else '' }}"><a class="page-link" href="{{ url_for('patient.dashboard', page=p, name=filters.name, hospital=filters.hospital, specialisation=filters.specialisation, city=filters.city) }}">{{ p }}</a></li>{% endfor %}</ul></nav>{% endif %}
+{% endblock %}

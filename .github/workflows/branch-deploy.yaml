@@ -248,6 +248,7 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
+            doctor-discovery \
             db-migration \
             doctor-photo \
             doctor-consultation-types \
@@ -305,6 +306,7 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
+            doctor-discovery \
             doctor-photo \
             doctor-consultation-types \
             doctor-blackouts \
@@ -353,6 +355,7 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
+            doctor-discovery \
             db-migration \
             doctor-photo \
             doctor-consultation-types \
@@ -471,6 +474,7 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
+            doctor-discovery \
             db-migration \
             doctor-photo \
             doctor-consultation-types \
@@ -487,13 +491,13 @@ jobs:
               --bucket "$LAMBDA_BUCKET" \
               --key "${ARTIFACT_PREFIX}/${artifact}.zip" \
               --region "$AWS_REGION"
-          echo "Checking frontend.zip"
+          done
 
+          echo "Checking frontend.zip"
           aws s3api head-object \
             --bucket "$LAMBDA_BUCKET" \
             --key "${ARTIFACT_PREFIX}/frontend.zip" \
             --region "$AWS_REGION"
-                    done
       - name: Deploy Application Stack
         shell: bash
         run: |
@@ -557,10 +561,40 @@ jobs:
 
 
   # ==========================================================
+  # APPLY IDEMPOTENT DATABASE SCHEMA / MILESTONE 4 MIGRATIONS
+  # ==========================================================
+  run-db-migration:
+    needs: deploy-application
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Apply database schema and additive migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws lambda invoke \
+            --function-name "medislot-${DEPLOY_ENV}-db-migration" \
+            --payload '{}' \
+            --cli-binary-format raw-in-base64-out \
+            --log-type Tail \
+            "$RUNNER_TEMP/db-migration-response.json" \
+            > "$RUNNER_TEMP/db-migration-metadata.json"
+          cat "$RUNNER_TEMP/db-migration-response.json"
+          if grep -q 'FunctionError' "$RUNNER_TEMP/db-migration-metadata.json"; then
+            cat "$RUNNER_TEMP/db-migration-metadata.json"
+            exit 1
+          fi
+
+  # ==========================================================
   # API STACK
   # ==========================================================
   deploy-api:
-    needs: deploy-application
+    needs: run-db-migration
     runs-on: ubuntu-latest
     environment: ${{ vars.DEPLOY_ENV }}
 
@@ -635,3 +669,35 @@ jobs:
           done
 
           echo "All MediSlot stacks deployed successfully."
+
+  # ==========================================================
+  # MILESTONE 4 DEPLOYED INTEGRATION TESTS
+  # ==========================================================
+  integration-tests:
+    needs: validate-deployment
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install integration test dependencies
+        run: python -m pip install requests pytest
+      - name: Read deployed API URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name "medislot-${DEPLOY_ENV}-api" \
+            --query "Stacks[0].Outputs[?OutputKey=='ApiBaseUrl'].OutputValue | [0]" \
+            --output text)
+          echo "MEDISLOT_API_BASE_URL=${API_URL}" >> "$GITHUB_ENV"
+      - name: Run patient domain integration tests
+        run: pytest -q tests/integration/test_patient_domain.py
