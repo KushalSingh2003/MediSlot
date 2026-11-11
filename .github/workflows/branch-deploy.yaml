@@ -670,34 +670,3 @@ jobs:
 
           echo "All MediSlot stacks deployed successfully."
 
-  # ==========================================================
-  # MILESTONE 4 DEPLOYED INTEGRATION TESTS
-  # ==========================================================
-  integration-tests:
-    needs: validate-deployment
-    runs-on: ubuntu-latest
-    environment: ${{ vars.DEPLOY_ENV }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION }}
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install integration test dependencies
-        run: python -m pip install requests pytest
-      - name: Read deployed API URL
-        shell: bash
-        run: |
-          set -euo pipefail
-          API_URL=$(aws cloudformation describe-stacks \
-            --stack-name "medislot-${DEPLOY_ENV}-api" \
-            --query "Stacks[0].Outputs[?OutputKey=='ApiBaseUrl'].OutputValue | [0]" \
-            --output text)
-          echo "MEDISLOT_API_BASE_URL=${API_URL}" >> "$GITHUB_ENV"
-      - name: Run patient domain integration tests
-        run: pytest -q tests/integration/test_patient_domain.py

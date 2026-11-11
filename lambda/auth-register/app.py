@@ -279,6 +279,7 @@ def validate_doctor(data):
     password_hash = validate_password(data.get("password"))
     phone = validate_phone(data.get("phone"), required=False)
     experience = validate_experience(data.get("yearsExperience"))
+    # sending the entire data to validate the licennse NUmber
 
     licence_number = get_string(
         data,
