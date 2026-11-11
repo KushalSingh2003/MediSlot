@@ -24,7 +24,16 @@ def register():
         return render_template("register.html")
 
     payload = {
-        "name": request.form.get("name", "").strip(),
+        
+        "firstName": request.form.get("firstName", "").strip(),
+        "lastName": request.form.get("lastName", "").strip(),
+
+        # Combine both names for the existing doctor.name column
+        "name": (
+            request.form.get("firstName", "").strip()
+            + " "
+            + request.form.get("lastName", "").strip()
+        ).strip(),
         "email": request.form.get("email", "").strip().lower(),
         "password": request.form.get("password", ""),
         "phone": request.form.get("phone", "").strip(),
@@ -69,7 +78,8 @@ def register():
                 return render_template("register.html")
 
     required_fields = [
-        payload["name"],
+        payload["firstName"],
+        payload["lastName"],
         payload["email"],
         payload["password"],
         payload["phone"],

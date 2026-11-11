@@ -482,9 +482,15 @@
 
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">Full Name *</label>
-                    <input name="name" class="form-control" required>
+                    <label class="form-label">First Name *</label>
+                    <input name="firstName" class="form-control" required>
                 </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Last Name *</label>
+                    <input name="lastName" class="form-control" required>
+                </div>
+                
 
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Email *</label>
@@ -521,7 +527,16 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Licence Number *</label>
-                    <input name="licenceNumber" class="form-control" required>
+                    <input
+    type="text"
+    name="licenceNumber"
+    class="form-control"
+    minlength="3"
+    maxlength="30"
+    pattern="[A-Za-z0-9/ -]{3,30}"
+    title="Enter 3-30 letters, numbers, spaces, / or -."
+    required
+>
                 </div>
 
                 <div class="col-md-6 mb-3">

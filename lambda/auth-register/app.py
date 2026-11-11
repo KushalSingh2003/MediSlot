@@ -10,6 +10,7 @@ import boto3
 import bcrypt
 import pymysql
 from botocore.exceptions import ClientError
+LICENSE_PATTERN = re.compile(r"[A-Za-z0-9/ -]{3,30}")
 
 
 logger = logging.getLogger()
@@ -274,7 +275,9 @@ def validate_doctor(data):
     if not isinstance(data, dict):
         raise ValueError("Request body must be a JSON object.")
 
-    name = validate_name(data.get("name"), "name", 255)
+    first_name = validate_name(data.get("firstName"), "firstName", 100)
+    last_name = validate_name(data.get("lastName"), "lastName", 100)
+    full_name = f"{first_name} {last_name}"
     email = validate_email(data.get("email"))
     password_hash = validate_password(data.get("password"))
     phone = validate_phone(data.get("phone"), required=False)
@@ -287,9 +290,9 @@ def validate_doctor(data):
         required=True,
         max_length=100,  # doctor_licence.licence_no is VARCHAR(100)
     )
-    if len(licence_number) < 2:
-        raise ValueError("licenceNumber must contain at least 2 characters.")
-
+    license_number = licence_number.strip()
+    if not LICENSE_PATTERN.fullmatch(licence_number):
+     raise ValueError("Invalid medical registration number. Use 3-30 letters, numbers, spaces, '/' or '-'.")
     authority = get_string(
         data,
         "licenceAuthority",
@@ -393,7 +396,7 @@ def validate_doctor(data):
         "doctor_id": str(uuid.uuid4()),
         "email": email,
         "password_hash": password_hash,
-        "name": name,
+        "name": full_name,
         "phone": phone,
         "years_experience": experience,
         "licence_number": licence_number,
