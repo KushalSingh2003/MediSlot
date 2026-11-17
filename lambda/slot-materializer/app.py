@@ -31,6 +31,7 @@ MORNING_END = time.fromisoformat(
 AFTERNOON_START = time.fromisoformat(
     os.environ.get("AFTERNOON_START", "12:00")
 )
+TEMPLATE_NAME = "UNIVERSAL_TEMPLATE"
 
 ssm = boto3.client("ssm")
 secretsmanager = boto3.client("secretsmanager")
@@ -128,10 +129,13 @@ def get_active_template(cursor):
             working_end_time
         FROM slot_template
         WHERE is_active = 1
+          AND name = %s
         ORDER BY template_id DESC
         LIMIT 1
-        """
+        """,
+        (TEMPLATE_NAME,)
     )
+    
 
     template = cursor.fetchone()
 
@@ -178,8 +182,10 @@ def get_consultation_rules(cursor):
         INNER JOIN consultation_type ct
             ON ct.id = r.consultation_type_id
         WHERE r.is_active = 1
+          AND r.template_id = %s
         ORDER BY r.rule_id
-        """
+        """,
+        (template_id,)
     )
 
     rules = cursor.fetchall()
@@ -301,7 +307,7 @@ def generate_day_slots(
     doctor_consultation_types
 ):
 
-    weekday = slot_date.weekday()
+    weekday = slot_date.isoweekday()
 
     # Select rules applicable to this weekday
     daily_rules = []
@@ -517,7 +523,7 @@ def materialize_slots():
             # Fetch universal template and rules.
             template = get_active_template(cursor)
 
-            rules = get_consultation_rules(cursor)
+            rules = get_consultation_rules(cursor, template["template_id"])
 
             doctors = get_doctors(cursor)
 
