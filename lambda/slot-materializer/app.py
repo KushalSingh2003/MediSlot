@@ -167,7 +167,7 @@ def get_active_template(cursor):
 # FETCH ACTIVE CONSULTATION RULES
 # ==========================================================
 
-def get_consultation_rules(cursor):
+def get_consultation_rules(cursor , template_id):
 
     cursor.execute(
         """
