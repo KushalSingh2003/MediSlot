@@ -10,7 +10,9 @@ import boto3
 import bcrypt
 import pymysql
 from botocore.exceptions import ClientError
-LICENSE_PATTERN = re.compile(r"[A-Za-z0-9/ -]{3,30}")
+LICENSE_PATTERN = re.compile(
+    r"(?=.{3,30}\Z)[A-Za-z0-9]+(?:[ /\-][A-Za-z0-9]+)*"
+)
 
 
 logger = logging.getLogger()
@@ -292,7 +294,10 @@ def validate_doctor(data):
     )
     license_number = licence_number.strip()
     if not LICENSE_PATTERN.fullmatch(licence_number):
-     raise ValueError("Invalid medical registration number. Use 3-30 letters, numbers, spaces, '/' or '-'.")
+        raise ValueError(
+            "Invalid medical registration number. Use 3-30 letters or numbers, "
+            "with single spaces, '/' or '-' only between groups."
+        )
     authority = get_string(
         data,
         "licenceAuthority",
