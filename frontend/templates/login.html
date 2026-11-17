@@ -14,43 +14,125 @@
           href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 
     <style>
+        /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
+           (variable names kept so the rest of the file stays the same) */
         :root {
-            --pink-50:  #fff5f9;
-            --pink-100: #ffe8f1;
-            --pink-200: #ffd0e2;
-            --pink-300: #ffadcc;
-            --pink-400: #f783ae;
-            --pink-500: #e8528f;
-            --pink-600: #c93a76;
-            --plum:     #4a2040;
-            --plum-soft:#8a6380;
+            --pink-50:  #F6F1E7;
+            --pink-100: #EFE7D8;
+            --pink-200: #D8CBB3;
+            --pink-300: #7EA3FF;
+            --pink-400: #5A8BFF;
+            --pink-500: #2F6BFF;
+            --pink-600: #1B4FD6;
+            --plum:     #1E1E1C;
+            --plum-soft:#6b6455;
+            --ease: cubic-bezier(.22, 1, .36, 1);
         }
 
         body {
+            position: relative;
+            overflow-x: hidden;
             font-family: 'Plus Jakarta Sans', Arial, sans-serif;
             color: var(--plum);
             background:
-                radial-gradient(circle at 10% 15%, #ffd6e7 0, transparent 38%),
-                radial-gradient(circle at 90% 85%, #e9defe 0, transparent 42%),
-                radial-gradient(circle at 85% 10%, #ffe9d8 0, transparent 30%),
-                #fff7fb;
+                radial-gradient(circle at 10% 15%, rgba(216, 203, 179, .9) 0, transparent 40%),
+                radial-gradient(circle at 90% 85%, rgba(47, 107, 255, .20) 0, transparent 42%),
+                radial-gradient(circle at 85% 10%, rgba(216, 203, 179, .6) 0, transparent 32%),
+                #EFE7D8;
+            background-color: #EFE7D8 !important;
             background-attachment: fixed;
+            animation: pageFade .9s ease backwards;
+        }
+
+        /* drifting dot grid + floating orbs */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(30, 30, 28, .09) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            animation: gridDrift 30s linear infinite;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            width: 420px; height: 420px;
+            left: -120px; bottom: -120px;
+            border-radius: 50%;
+            background: rgba(47, 107, 255, .28);
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+            animation: orbOne 16s ease-in-out infinite;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            width: 340px; height: 340px;
+            right: 4%; top: 6%;
+            border-radius: 50%;
+            background: rgba(30, 30, 28, .10);
+            filter: blur(70px);
+            pointer-events: none;
+            animation: orbTwo 19s ease-in-out infinite;
         }
 
         .card {
+            position: relative;
+            overflow: hidden;
             width: 100%;
             max-width: 420px;
             border-radius: 26px;
-            background: rgba(255, 255, 255, 0.92);
+            background: rgba(252, 250, 246, 0.94);
             border: 1px solid #ffffff !important;
-            box-shadow: 0 24px 60px rgba(232, 82, 143, 0.22) !important;
+            box-shadow: 0 24px 60px rgba(30, 30, 28, 0.22) !important;
             padding: 36px 34px !important;
+            animation: cardIn 1s .15s var(--ease) backwards, cardFloat 7s 1.2s ease-in-out infinite;
         }
+
+        /* flowing top border */
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 5px;
+            background: linear-gradient(90deg, #D8CBB3, #2F6BFF, #1E1E1C, #2F6BFF, #D8CBB3);
+            background-size: 300% 100%;
+            animation: gradientSlide 4s linear infinite;
+        }
+
+        /* rotating dashed ring in the corner */
+        .card::after {
+            content: "";
+            position: absolute;
+            width: 200px; height: 200px;
+            right: -90px; top: -90px;
+            border-radius: 50%;
+            border: 2px dashed rgba(47, 107, 255, .35);
+            pointer-events: none;
+            animation: spinSlow 22s linear infinite;
+        }
+
+        .card > * { position: relative; z-index: 1; }
 
         .card h2 {
             font-weight: 800;
             letter-spacing: -0.5px;
             color: var(--pink-500) !important;
+            background: linear-gradient(100deg, #2F6BFF 0%, #2F6BFF 40%, #1E1E1C 50%, #2F6BFF 60%, #2F6BFF 100%);
+            background-size: 250% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textSweep 6s 1.4s ease-in-out infinite;
         }
 
         .card h2::before {
@@ -64,14 +146,21 @@
             border-radius: 20px;
             background: linear-gradient(135deg, var(--pink-300), var(--pink-500));
             color: #ffffff;
+            -webkit-text-fill-color: #ffffff;
             font-size: 28px;
             font-weight: 400;
-            box-shadow: 0 12px 24px rgba(232, 82, 143, 0.35);
+            box-shadow: 0 12px 24px rgba(47, 107, 255, 0.4);
+            animation: iconPop .9s .35s var(--ease) backwards, iconFloat 4s 1.3s ease-in-out infinite, ringPulse 2.8s 1.3s ease-in-out infinite;
         }
 
         .card .text-muted {
             color: var(--plum-soft) !important;
             font-weight: 500;
+            animation: slideUp .8s .55s var(--ease) backwards;
+        }
+
+        .card > .text-center {
+            animation: slideUp .8s .3s var(--ease) backwards;
         }
 
         .form-label {
@@ -92,58 +181,99 @@
         }
 
         .form-control::placeholder {
-            color: #c7a6ba;
+            color: #a89d86;
+        }
+
+        .form-control:hover {
+            border-color: var(--pink-300);
         }
 
         .form-control:focus {
             background: #ffffff;
-            border-color: var(--pink-400);
-            box-shadow: 0 0 0 4px rgba(247, 131, 174, 0.22);
+            border-color: var(--pink-500);
+            box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.22);
             color: var(--plum);
+            transform: translateY(-2px);
+            animation: focusRing 1.8s ease-in-out infinite;
         }
 
+        /* staggered entrance for form pieces */
+        .card form .mb-3:nth-child(1) { animation: slideRight .8s .65s var(--ease) backwards; }
+        .card form .mb-3:nth-child(2) { animation: slideRight .8s .8s var(--ease) backwards; }
+
         .btn-primary {
+            position: relative;
+            overflow: hidden;
             padding: 13px;
             border: none;
             border-radius: 14px;
             font-weight: 700;
             font-size: 15px;
             background: linear-gradient(135deg, var(--pink-400), var(--pink-500));
-            box-shadow: 0 12px 24px rgba(232, 82, 143, 0.32);
+            box-shadow: 0 12px 24px rgba(47, 107, 255, 0.35);
             transition: transform 0.2s, box-shadow 0.2s;
+            animation: slideUp .8s .95s var(--ease) backwards, softPulse 2.8s 2s ease-in-out infinite;
+        }
+
+        /* shine sweep on button */
+        .btn-primary::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -120%;
+            width: 60%; height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .5), transparent);
+            transform: skewX(-20deg);
+            animation: btnShine 3.6s 1.6s ease-in-out infinite;
+            pointer-events: none;
         }
 
         .btn-primary:hover,
         .btn-primary:focus {
             background: linear-gradient(135deg, var(--pink-500), var(--pink-600));
             transform: translateY(-2px);
-            box-shadow: 0 16px 30px rgba(232, 82, 143, 0.4);
+            box-shadow: 0 16px 30px rgba(47, 107, 255, 0.45);
+            animation: none;
         }
 
         .btn-primary:active {
-            transform: translateY(0);
+            transform: scale(.96);
         }
 
         .btn-primary:focus-visible {
-            outline: 3px solid rgba(247, 131, 174, 0.5);
+            outline: 3px solid rgba(126, 163, 255, 0.6);
             outline-offset: 2px;
         }
 
         .card p.text-center {
             color: var(--plum-soft);
             font-size: 14px;
+            animation: fadeIn .9s 1.15s ease backwards;
         }
 
         .card a {
+            position: relative;
             color: var(--pink-600);
             font-weight: 700;
             text-decoration: none;
         }
 
+        /* animated underline on links */
+        .card a::after {
+            content: "";
+            position: absolute;
+            left: 0; bottom: -2px;
+            width: 100%; height: 2px;
+            background: var(--pink-500);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .4s var(--ease);
+        }
+
         .card a:hover {
             color: var(--pink-500);
-            text-decoration: underline;
+            text-decoration: none;
         }
+        .card a:hover::after { transform: scaleX(1); }
 
         /* Flash messages */
 
@@ -153,6 +283,7 @@
             border-radius: 12px;
             font-size: 14px;
             font-weight: 500;
+            animation: alertIn .7s .5s var(--ease) backwards, alertNudge 4s 2s ease-in-out infinite;
         }
 
         .alert-danger {
@@ -174,15 +305,53 @@
         }
 
         .alert-info {
-            background: #f1eaff;
-            color: #7048c9;
-            border-left-color: #a58af0;
+            background: #e6eeff;
+            color: #1B4FD6;
+            border-left-color: #2F6BFF;
         }
 
         @media (max-width: 480px) {
             .card {
                 padding: 28px 22px !important;
                 border-radius: 22px;
+            }
+        }
+
+        /* ---------- Keyframes ---------- */
+        @keyframes pageFade    { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn      { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes cardIn      { from { opacity: 0; transform: translateY(60px) scale(.92); } to { opacity: 1; transform: none; } }
+        @keyframes cardFloat   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes slideUp     { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+        @keyframes slideRight  { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+        @keyframes alertIn     { from { opacity: 0; transform: translateY(-18px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes alertNudge  { 0%, 90%, 100% { transform: translateX(0); } 93% { transform: translateX(-5px); } 96% { transform: translateX(5px); } }
+        @keyframes iconPop     { 0% { opacity: 0; transform: scale(.3) rotate(-90deg); } 70% { transform: scale(1.15) rotate(8deg); } 100% { opacity: 1; transform: none; } }
+        @keyframes iconFloat   { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-6px) rotate(-4deg); } }
+        @keyframes ringPulse   {
+            0%, 100% { box-shadow: 0 12px 24px rgba(47, 107, 255, .4), 0 0 0 0 rgba(47, 107, 255, .45); }
+            50%      { box-shadow: 0 12px 24px rgba(47, 107, 255, .4), 0 0 0 14px rgba(47, 107, 255, 0); }
+        }
+        @keyframes textSweep   { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
+        @keyframes gradientSlide { from { background-position: 0% 0; } to { background-position: 300% 0; } }
+        @keyframes spinSlow    { to { transform: rotate(360deg); } }
+        @keyframes gridDrift   { from { background-position: 0 0; } to { background-position: 60px 60px; } }
+        @keyframes orbOne      { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(90px, -70px); } }
+        @keyframes orbTwo      { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-80px, 60px); } }
+        @keyframes focusRing   { 0%, 100% { box-shadow: 0 0 0 4px rgba(47, 107, 255, .22); } 50% { box-shadow: 0 0 0 8px rgba(47, 107, 255, .08); } }
+        @keyframes softPulse   {
+            0%, 100% { box-shadow: 0 12px 24px rgba(47, 107, 255, .35), 0 0 0 0 rgba(47, 107, 255, .4); }
+            50%      { box-shadow: 0 12px 24px rgba(47, 107, 255, .35), 0 0 0 10px rgba(47, 107, 255, 0); }
+        }
+        @keyframes btnShine    { 0%, 55% { left: -120%; } 100% { left: 160%; } }
+
+        /* Respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+                scroll-behavior: auto !important;
             }
         }
     </style>

@@ -12,6 +12,10 @@ logger.setLevel(logging.INFO)
 ssm = boto3.client("ssm")
 secrets = boto3.client("secretsmanager")
 SSM_PREFIX = os.environ["SSM_PREFIX"].rstrip("/")
+s3 = boto3.client("s3")
+PHOTO_BUCKET = os.environ["PHOTOS_BUCKET"]
+PHOTO_URL_EXPIRY = 3600
+
 
 
 def db_connection():
@@ -34,6 +38,19 @@ def response(code, body):
 
 def query_params(event):
     return event.get("queryStringParameters") or {}
+def attach_photo_url(doctor):
+    photo_key = doctor.pop("photo_key", None)
+
+    if photo_key:
+        doctor["photoUrl"] = s3.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": PHOTO_BUCKET, "Key": photo_key},
+            ExpiresIn=PHOTO_URL_EXPIRY,
+        )
+    else:
+        doctor["photoUrl"] = None
+
+    return doctor
 
 
 def search_doctors(cur, q):
@@ -74,42 +91,63 @@ def search_doctors(cur, q):
         """ + joins + " " + where + " " + """GROUP BY d.doctor_id, d.name, d.years_experience, d.photo_key
         ORDER BY d.name ASC LIMIT %s OFFSET %s"""
     cur.execute(select_sql, values + [page_size, (page-1)*page_size])
-    return {"doctors": cur.fetchall(), "pagination": {"page": page, "pageSize": page_size,
-            "total": total, "totalPages": (total + page_size - 1)//page_size}}
+    doctors = cur.fetchall()
+
+    for doctor in doctors:
+        attach_photo_url(doctor)
+
+    return {
+        "doctors": doctors,
+        "pagination": {
+            "page": page,
+            "pageSize": page_size,
+            "total": total,
+            "totalPages": (total + page_size - 1) // page_size,
+        },
+    }
+    
 
 
 def public_profile(cur, doctor_id):
-    cur.execute("""SELECT d.doctor_id, d.name, d.phone, d.years_experience, d.photo_key,
-        dl.licence_no, dl.authority, dl.verification_status
+    cur.execute("""SELECT d.doctor_id, d.name, d.years_experience, d.photo_key,
+        dl.authority, dl.verification_status
         FROM doctor d LEFT JOIN doctor_licence dl ON dl.doctor_id=d.doctor_id
         WHERE d.doctor_id=%s LIMIT 1""", (doctor_id,))
     doctor = cur.fetchone()
     if not doctor:
         return None
-    cur.execute("""SELECT a.address_line_1, a.address_line_2, a.city, a.postal_code
+
+    cur.execute("""SELECT a.city
         FROM doctor_address a WHERE a.doctor_id=%s ORDER BY a.id""", (doctor_id,))
     doctor["addresses"] = cur.fetchall()
+
     cur.execute("""SELECT DISTINCT h.name AS hospital, dep.name AS department
         FROM doctor_hospital dh JOIN hospitals h ON h.hospital_id=dh.hospital_id
         JOIN department dep ON dep.department_id=dh.department_id
         WHERE dh.doctor_id=%s ORDER BY h.name""", (doctor_id,))
     doctor["hospitalAffiliations"] = cur.fetchall()
+
     cur.execute("""SELECT DISTINCT s.name FROM doctor_specialisation ds
         JOIN specialisations s ON s.specialisation_id=ds.specialisation_id
         WHERE ds.doctor_id=%s ORDER BY s.name""", (doctor_id,))
     doctor["specialisations"] = [r["name"] for r in cur.fetchall()]
+
     cur.execute("""SELECT DISTINCT l.name FROM doctor_language dl
         JOIN language l ON l.language_id=dl.language_id
         WHERE dl.doctor_id=%s ORDER BY l.name""", (doctor_id,))
     doctor["languages"] = [r["name"] for r in cur.fetchall()]
+
     cur.execute("""SELECT degree, institution, year FROM doctor_qualification
         WHERE doctor_id=%s ORDER BY year DESC, degree""", (doctor_id,))
     doctor["qualifications"] = cur.fetchall()
+
     cur.execute("""SELECT ct.id AS consultationTypeId, ct.name, ct.duration_min AS durationMin,
         dct.fee, dct.capacity FROM doctor_consultation_type dct
         JOIN consultation_type ct ON ct.id=dct.consultation_type_id
         WHERE dct.doctor_id=%s AND dct.active=1 ORDER BY ct.duration_min""", (doctor_id,))
     doctor["consultationTypes"] = cur.fetchall()
+    attach_photo_url(doctor)
+
     return doctor
 
 

@@ -1,948 +1,476 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Schedule | MediSlot</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
-
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
-
-    <style>
-        :root {
-            --pink-50:  #fff5f9;
-            --pink-100: #ffe8f1;
-            --pink-200: #ffd0e2;
-            --pink-300: #ffadcc;
-            --pink-400: #f783ae;
-            --pink-500: #e8528f;
-            --pink-600: #c93a76;
-            --plum:     #4a2040;
-            --plum-soft:#8a6380;
-            --lavender: #f1eaff;
-            --lavender-text: #7048c9;
-            --mint:     #e4f8ee;
-            --mint-text:#1a8f5c;
-            --peach:    #fff0e3;
-            --peach-text:#d4601f;
-            --line:     #f6dce8;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: 'Plus Jakarta Sans', Arial, sans-serif;
-            background:
-                radial-gradient(circle at 0% 0%, #ffe3ef 0, transparent 40%),
-                radial-gradient(circle at 100% 100%, #efe6ff 0, transparent 45%),
-                #fff7fb;
-            background-attachment: fixed;
-            color: var(--plum);
-        }
-
-        .layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar */
-
-        .sidebar {
-            width: 265px;
-            min-width: 265px;
-            background: linear-gradient(180deg, #ffffff 0%, #fff0f6 100%);
-            border-right: 1px solid var(--line);
-            padding: 28px 20px;
-            box-shadow: 4px 0 24px rgba(232, 82, 143, 0.06);
-        }
-
-        .logo {
-            font-size: 25px;
-            font-weight: 800;
-            color: var(--pink-500);
-            margin-bottom: 55px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        .logo i {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 42px;
-            height: 42px;
-            border-radius: 13px;
-            background: linear-gradient(135deg, var(--pink-300), var(--pink-500));
-            color: #ffffff;
-            font-size: 20px;
-            box-shadow: 0 8px 18px rgba(232, 82, 143, 0.3);
-        }
-
-        .menu-heading {
-            color: var(--pink-400);
-            font-size: 12px;
-            font-weight: 700;
-            margin: 25px 12px 15px;
-            letter-spacing: 1.2px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-            color: var(--plum-soft);
-            padding: 14px 16px;
-            margin-bottom: 8px;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 500;
-            transition: background 0.2s, color 0.2s, transform 0.2s;
-        }
-
-        .nav-link i {
-            font-size: 17px;
-        }
-
-        .nav-link:hover {
-            background: var(--pink-100);
-            color: var(--pink-600);
-            transform: translateX(3px);
-        }
-
-        .nav-link.active {
-            background: linear-gradient(135deg, var(--pink-400), var(--pink-500));
-            color: #ffffff;
-            font-weight: 600;
-            box-shadow: 0 10px 20px rgba(232, 82, 143, 0.28);
-        }
-
-        /* Main content */
-
-        .main {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .topbar {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(10px);
-            padding: 22px 38px;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .topbar h3 {
-            margin: 0 0 6px;
-            font-size: 19px;
-            font-weight: 700;
-            color: var(--plum);
-        }
-
-        .topbar p {
-            margin: 0;
-            color: var(--plum-soft);
-            font-size: 14px;
-        }
-
-        .content {
-            padding: 36px 38px;
-        }
-
-        .page-heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            margin-bottom: 30px;
-            padding: 28px 30px;
-            border-radius: 22px;
-            background: linear-gradient(120deg, #ffd9e8 0%, #ffe9f2 45%, #f1eaff 100%);
-            border: 1px solid #ffffff;
-            box-shadow: 0 14px 34px rgba(232, 82, 143, 0.12);
-        }
-
-        .page-heading h1 {
-            font-size: 28px;
-            font-weight: 800;
-            margin: 0 0 8px;
-            color: var(--plum);
-            letter-spacing: -0.5px;
-        }
-
-        .page-heading p {
-            color: var(--plum-soft);
-            margin: 0;
-            font-size: 14px;
-        }
-
-        /* Date filter */
-
-        .date-filter {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #ffffff;
-            padding: 12px 18px;
-            border: 1px solid var(--pink-200);
-            border-radius: 14px;
-            box-shadow: 0 6px 16px rgba(232, 82, 143, 0.1);
-        }
-
-        .date-filter label {
-            color: var(--pink-600);
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .date-filter input {
-            border: none;
-            outline: none;
-            font-family: inherit;
-            font-size: 14px;
-            color: var(--plum);
-            cursor: pointer;
-            background: transparent;
-        }
-
-        .date-filter:focus-within {
-            border-color: var(--pink-400);
-            box-shadow: 0 0 0 4px rgba(247, 131, 174, 0.2);
-        }
-
-        /* Flash messages */
-
-        .flash-message {
-            padding: 14px 18px;
-            margin-bottom: 20px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            border-left: 5px solid transparent;
-        }
-
-        .flash-message.danger {
-            background: #ffe9ec;
-            color: #c0304a;
-            border-left-color: #f2647b;
-        }
-
-        .flash-message.warning {
-            background: #fff4e0;
-            color: #a06512;
-            border-left-color: #f5b041;
-        }
-
-        .flash-message.success {
-            background: var(--mint);
-            color: var(--mint-text);
-            border-left-color: #4fcf92;
-        }
-
-        .flash-message.info {
-            background: var(--lavender);
-            color: var(--lavender-text);
-            border-left-color: #a58af0;
-        }
-
-        /* Summary cards */
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
-            margin-bottom: 30px;
-        }
-
-        .summary-card {
-            padding: 24px;
-            border: 1px solid #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 10px 26px rgba(232, 82, 143, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .summary-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 16px 34px rgba(232, 82, 143, 0.18);
-        }
-
-        .summary-card .label {
-            color: var(--plum-soft);
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 12px;
-        }
-
-        .summary-card .value {
-            font-size: 34px;
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .summary-card.total {
-            background: linear-gradient(145deg, #ffe0ee, #ffc9de);
-        }
-
-        .summary-card.total .value {
-            color: var(--pink-600);
-        }
-
-        .summary-card.available {
-            background: linear-gradient(145deg, #e9faf2, #cff2e1);
-        }
-
-        .summary-card.available .value {
-            color: var(--mint-text);
-        }
-
-        .summary-card.booked {
-            background: linear-gradient(145deg, #f5efff, #e4d8ff);
-        }
-
-        .summary-card.booked .value {
-            color: var(--lavender-text);
-        }
-
-        .summary-card.closed {
-            background: linear-gradient(145deg, #fff3e8, #ffe0c8);
-        }
-
-        .summary-card.closed .value {
-            color: var(--peach-text);
-        }
-
-        /* Schedule table */
-
-        .schedule-card {
-            background: #ffffff;
-            border: 1px solid var(--line);
-            border-radius: 22px;
-            padding: 28px;
-            box-shadow: 0 14px 34px rgba(232, 82, 143, 0.08);
-        }
-
-        .schedule-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 22px;
-            padding-bottom: 18px;
-            border-bottom: 2px dashed var(--pink-100);
-        }
-
-        .schedule-header h2 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--plum);
-        }
-
-        .schedule-header p {
-            color: var(--pink-500);
-            font-size: 13px;
-            font-weight: 600;
-            margin: 7px 0 0;
-        }
-
-        .table-wrapper {
-            width: 100%;
-            overflow-x: auto;
-            border-radius: 14px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            min-width: 950px;
-        }
-
-        th {
-            text-align: left;
-            padding: 15px 14px;
-            background: var(--pink-100);
-            color: var(--pink-600);
-            font-size: 12px;
-            font-weight: 700;
-            white-space: nowrap;
-            letter-spacing: 0.4px;
-        }
-
-        th:first-child {
-            border-radius: 12px 0 0 12px;
-        }
-
-        th:last-child {
-            border-radius: 0 12px 12px 0;
-        }
-
-        td {
-            padding: 17px 14px;
-            border-bottom: 1px solid var(--pink-100);
-            font-size: 14px;
-            color: #5b3a54;
-            vertical-align: middle;
-        }
-
-        tbody tr:hover td {
-            background: var(--pink-50);
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .consultation-name {
-            font-weight: 700;
-            color: var(--plum);
-        }
-
-        /* Status badges */
-
-        .status {
-            display: inline-block;
-            padding: 6px 13px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-            letter-spacing: 0.3px;
-        }
-
-        .status.available {
-            background: var(--mint);
-            color: var(--mint-text);
-        }
-
-        .status.booked {
-            background: var(--lavender);
-            color: var(--lavender-text);
-        }
-
-        .status.closed,
-        .status.cancelled {
-            background: var(--peach);
-            color: var(--peach-text);
-        }
-
-        .status.other {
-            background: #f3eef2;
-            color: #8a7585;
-        }
-
-        .capacity {
-            color: var(--plum-soft);
-        }
-
-        /* Cancel button */
-
-        .cancel-slot-btn {
-            background: #ffffff;
-            color: var(--pink-600);
-            border: 1.5px solid var(--pink-300);
-            padding: 8px 14px;
-            border-radius: 10px;
-            font-family: inherit;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: 0.2s;
-        }
-
-        .cancel-slot-btn:hover {
-            background: linear-gradient(135deg, var(--pink-400), var(--pink-500));
-            border-color: transparent;
-            color: #ffffff;
-            box-shadow: 0 8px 16px rgba(232, 82, 143, 0.3);
-        }
-
-        .cancel-slot-btn:focus-visible {
-            outline: 3px solid rgba(247, 131, 174, 0.5);
-            outline-offset: 2px;
-        }
-
-        .cancel-slot-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .cancelled-label {
-            color: #b79aae;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        /* Patient information */
-
-        .patient-list {
-            margin-top: 8px;
-            font-size: 12px;
-            color: var(--plum-soft);
-            line-height: 1.8;
-            background: var(--pink-50);
-            border-left: 4px solid var(--pink-300);
-            border-radius: 0 10px 10px 0;
-            padding: 10px 14px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 65px 20px;
-            color: var(--plum-soft);
-        }
-
-        .empty-state .icon {
-            font-size: 40px;
-            margin: 0 auto 18px;
-            width: 88px;
-            height: 88px;
-            line-height: 88px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--pink-100), var(--lavender));
-            color: var(--pink-500);
-        }
-
-        .empty-state h3 {
-            color: var(--plum);
-            font-size: 19px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .empty-state p {
-            font-size: 14px;
-        }
-
-        /* Responsive */
-
-        @media (max-width: 1100px) {
-            .summary-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 700px) {
-            .layout {
-                display: block;
-            }
-
-            .sidebar {
-                width: 100%;
-                min-width: 0;
-                padding: 15px;
-            }
-
-            .logo {
-                margin-bottom: 15px;
-            }
-
-            .menu-heading {
-                display: none;
-            }
-
-            .nav-link {
-                display: inline-flex;
-                padding: 10px 12px;
-                margin: 3px;
-            }
-
-            .content {
-                padding: 20px 15px;
-            }
-
-            .topbar {
-                padding: 18px;
-            }
-
-            .page-heading {
-                padding: 20px;
-            }
-
-            .summary-grid {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            .summary-card {
-                padding: 16px;
-            }
-
-            .summary-card .value {
-                font-size: 26px;
-            }
-
-            .schedule-card {
-                padding: 16px;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .summary-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Schedule | MediSlot</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+
+<style>
+/* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
+   Week view: available = blue block, booked = charcoal block, closed/cancelled = striped beige block */
+:root {
+    --blue-300:#7EA3FF; --blue-500:#2F6BFF; --blue-600:#1B4FD6;
+    --ink:#1E1E1C; --ink-soft:#6b6455; --beige:#D8CBB3; --beige-50:#F6F1E7; --beige-100:#EFE7D8;
+    --line:#D8CBB3; --mint:#e4f8ee; --mint-text:#1a8f5c; --lav:#E6EEFF;
+    --ease:cubic-bezier(.22,1,.36,1);
+    --hour:64px;               /* height of one hour row */
+}
+* { box-sizing:border-box; }
+body {
+    margin:0; font-family:'Plus Jakarta Sans',Arial,sans-serif; color:var(--ink); overflow-x:hidden;
+    background:radial-gradient(circle at 0% 0%,rgba(216,203,179,.85) 0,transparent 42%),
+               radial-gradient(circle at 100% 100%,rgba(47,107,255,.16) 0,transparent 45%),#F1EBDD;
+    background-attachment:fixed; animation:fade .8s ease backwards;
+}
+@keyframes fade { from{opacity:0} to{opacity:1} }
+@keyframes up   { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:none} }
+@keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(47,107,255,.6)} 50%{box-shadow:0 0 0 7px rgba(47,107,255,0)} }
+
+.layout { display:flex; min-height:100vh; }
+
+/* Sidebar */
+.sidebar { position:relative; overflow:hidden; width:265px; min-width:265px; padding:28px 20px;
+    background:linear-gradient(180deg,#1E1E1C,#2a2a27); box-shadow:4px 0 24px rgba(30,30,28,.25); }
+.sidebar::before { content:""; position:absolute; left:0; right:0; bottom:0; height:240px; pointer-events:none;
+    background:radial-gradient(circle at 20% 100%,rgba(47,107,255,.45),transparent 70%); }
+.sidebar > * { position:relative; z-index:1; }
+.logo { font-size:25px; font-weight:800; color:var(--beige); margin-bottom:55px; display:flex; align-items:center; gap:10px; }
+.logo i { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:13px;
+    background:linear-gradient(135deg,var(--blue-300),var(--blue-500)); color:#fff; font-size:20px;
+    box-shadow:0 8px 18px rgba(47,107,255,.45); }
+.menu-heading { color:#a89d86; font-size:12px; font-weight:700; margin:25px 12px 15px; letter-spacing:1.2px; }
+.nav-link { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--beige); padding:14px 16px;
+    margin-bottom:8px; border-radius:14px; font-size:15px; font-weight:500; transition:.2s; }
+.nav-link i { font-size:17px; color:var(--blue-300); }
+.nav-link:hover { background:rgba(216,203,179,.12); color:#fff; transform:translateX(5px); }
+.nav-link.active { background:linear-gradient(135deg,var(--blue-500),var(--blue-600)); color:#fff; font-weight:600;
+    box-shadow:0 10px 20px rgba(47,107,255,.4); }
+.nav-link.active i { color:#fff; }
+
+/* Main */
+.main { flex:1; min-width:0; }
+.topbar { background:rgba(252,250,246,.8); backdrop-filter:blur(10px); padding:22px 38px; border-bottom:1px solid var(--line); }
+.topbar h3 { margin:0 0 6px; font-size:19px; font-weight:700; }
+.topbar p  { margin:0; color:var(--ink-soft); font-size:14px; }
+.content { padding:36px 38px; }
+
+.page-heading { position:relative; overflow:hidden; display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:20px; margin-bottom:30px; padding:28px 30px; border-radius:22px; color:#fff;
+    background:linear-gradient(110deg,#1B4FD6,#2F6BFF 55%,#5A8BFF); box-shadow:0 14px 34px rgba(27,79,214,.28);
+    animation:up .8s var(--ease) backwards; }
+.page-heading h1 { font-size:28px; font-weight:800; margin:0 0 8px; letter-spacing:-.5px; }
+.page-heading p  { margin:0; font-size:14px; opacity:.9; }
+
+.date-filter { display:flex; align-items:center; gap:12px; background:#fff; padding:12px 18px; border-radius:14px;
+    border:1px solid var(--beige); box-shadow:0 6px 16px rgba(30,30,28,.15); }
+.date-filter label { color:var(--blue-600); font-size:13px; font-weight:600; }
+.date-filter input { border:none; outline:none; font-family:inherit; font-size:14px; color:var(--ink); background:transparent; cursor:pointer; }
+
+/* Flash */
+.flash-message { padding:14px 18px; margin-bottom:20px; border-radius:12px; font-size:14px; font-weight:500; border-left:5px solid transparent; }
+.flash-message.danger  { background:#ffe9ec; color:#c0304a; border-left-color:#f2647b; }
+.flash-message.warning { background:#fff4e0; color:#a06512; border-left-color:#f5b041; }
+.flash-message.success { background:var(--mint); color:var(--mint-text); border-left-color:#4fcf92; }
+.flash-message.info    { background:var(--lav); color:var(--blue-600); border-left-color:var(--blue-500); }
+
+/* Summary */
+.summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; margin-bottom:30px; }
+.summary-card { padding:24px; border:1px solid #fff; border-radius:20px; box-shadow:0 10px 26px rgba(30,30,28,.1);
+    transition:transform .3s var(--ease); animation:up .8s var(--ease) backwards; }
+.summary-card:hover { transform:translateY(-4px); }
+.summary-card .label { color:var(--ink-soft); font-size:14px; font-weight:500; margin-bottom:12px; }
+.summary-card .value { font-size:34px; font-weight:800; letter-spacing:-1px; }
+.summary-card.total     { background:linear-gradient(145deg,#F6F1E7,#EFE7D8); } .summary-card.total .value { color:var(--blue-600); }
+.summary-card.available { background:linear-gradient(145deg,#E6EEFF,#CFDDFF); } .summary-card.available .value { color:var(--blue-600); }
+.summary-card.booked    { background:linear-gradient(145deg,#2a2a27,#1E1E1C); } .summary-card.booked .label { color:#b9ad94; } .summary-card.booked .value { color:#fff; }
+.summary-card.closed    { background:linear-gradient(145deg,#EFE7D8,#D8CBB3); }
+
+/* ---------- Week calendar ---------- */
+.schedule-card { position:relative; overflow:hidden; background:#FCFAF6; border:1px solid var(--line); border-radius:22px;
+    padding:24px; box-shadow:0 14px 34px rgba(30,30,28,.1); animation:up .8s .2s var(--ease) backwards; }
+.schedule-card::before { content:""; position:absolute; inset:0 0 auto 0; height:5px;
+    background:linear-gradient(90deg,#D8CBB3,#2F6BFF,#1E1E1C,#2F6BFF,#D8CBB3); }
+
+.cal-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin:6px 0 18px; }
+.cal-toolbar h2 { margin:0 0 0 8px; font-size:20px; font-weight:800; }
+.cal-btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; text-decoration:none; cursor:pointer;
+    border:1.5px solid var(--beige); background:#fff; color:var(--ink); border-radius:10px; padding:8px 14px;
+    font:700 13px 'Plus Jakarta Sans',Arial,sans-serif; transition:.2s; }
+.cal-btn:hover { border-color:var(--blue-500); color:var(--blue-600); }
+.cal-btn.icon { width:38px; padding:8px 0; }
+.legend { margin-left:auto; display:flex; gap:14px; font-size:12px; font-weight:600; color:var(--ink-soft); }
+.legend span::before { content:""; display:inline-block; width:11px; height:11px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+.legend .l-av::before { background:var(--blue-500); }
+.legend .l-bk::before { background:var(--ink); }
+.legend .l-cl::before { background:var(--beige); }
+
+.cal-scroll { overflow:auto; max-height:72vh; border:1px solid var(--line); border-radius:14px; background:#fff; }
+.cal-inner  { min-width:820px; }
+
+.cal-head { position:sticky; top:0; z-index:5; display:grid; grid-template-columns:60px repeat(7,1fr);
+    background:#FCFAF6; border-bottom:1px solid var(--line); }
+.cal-head .corner { border-right:1px solid var(--line); }
+.day-head { text-align:center; padding:10px 4px; border-right:1px solid var(--line); text-decoration:none; color:var(--ink); }
+.day-head:last-child { border-right:0; }
+.day-head .dow { font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--ink-soft); }
+.day-head .num { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; margin-top:4px;
+    border-radius:50%; font-size:20px; font-weight:800; transition:.2s; }
+.day-head:hover .num { background:var(--beige-100); }
+.day-head.today .dow { color:var(--blue-600); }
+.day-head.today .num { background:var(--blue-500); color:#fff; }
+.day-head.selected:not(.today) .num { box-shadow:inset 0 0 0 2px var(--blue-500); }
+
+.cal-body { display:grid; grid-template-columns:60px repeat(7,1fr); }
+.time-col { position:relative; border-right:1px solid var(--line); }
+.time-col .tick { position:absolute; right:8px; transform:translateY(-50%); font-size:11px; font-weight:600; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+.day-col { position:relative; border-right:1px solid var(--line);
+    background-image:repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px var(--hour)); }
+.day-col:last-child { border-right:0; }
+.day-col.today { background-color:rgba(47,107,255,.04); }
+.day-col.empty-col::after { content:""; }
+
+.now-line { position:absolute; left:0; right:0; height:2px; background:#e5484d; z-index:3; pointer-events:none; }
+.now-line::before { content:""; position:absolute; left:-5px; top:-4px; width:10px; height:10px; border-radius:50%; background:#e5484d; }
+
+/* event blocks */
+.ev { position:absolute; z-index:2; overflow:hidden; text-align:left; cursor:pointer; padding:5px 8px;
+    border:0; border-left:4px solid var(--ev); border-radius:8px; background:var(--ev-bg); color:var(--ev-text);
+    font-family:inherit; box-shadow:0 2px 8px rgba(30,30,28,.15); outline:2px solid #fff;
+    transition:transform .2s var(--ease), box-shadow .2s var(--ease); }
+.ev:hover { transform:scale(1.02); z-index:4; box-shadow:0 10px 22px rgba(47,107,255,.28); }
+.ev:focus-visible { outline:3px solid rgba(126,163,255,.8); }
+.ev .t  { display:block; font-size:12px; font-weight:800; line-height:1.25; color:var(--ev-title); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ev .tm { display:block; font-size:11px; font-weight:600; color:var(--ev-muted); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.ev .ct { display:block; margin-top:3px; font-size:11px; font-weight:700; color:var(--ev-muted); }
+.ev.available { --ev:#2F6BFF; --ev-bg:#E6EEFF; --ev-title:#1E1E1C; --ev-text:#2c3a66; --ev-muted:#4a5880; }
+.ev.booked    { --ev:#7EA3FF; --ev-bg:#1E1E1C; --ev-title:#fff;    --ev-text:#EFE7D8; --ev-muted:#b9ad94; }
+.ev.closed,
+.ev.other     { --ev:#a89d86; --ev-bg:#EFE7D8; --ev-title:#6b6455; --ev-text:#6b6455; --ev-muted:#8b8472;
+    background-image:repeating-linear-gradient(135deg,transparent 0 8px,rgba(30,30,28,.06) 8px 16px); }
+.ev.short .ct, .ev.short .tm { display:none; }
+.ev.short { padding-top:2px; padding-bottom:2px; }
+
+.cal-empty { text-align:center; padding:14px; font-size:13px; font-weight:600; color:var(--ink-soft); }
+
+/* Modal */
+.modal-bg { position:fixed; inset:0; z-index:50; display:none; align-items:center; justify-content:center; padding:20px;
+    background:rgba(30,30,28,.5); backdrop-filter:blur(3px); }
+.modal-bg.open { display:flex; }
+.modal { width:100%; max-width:440px; max-height:86vh; overflow:auto; background:#FCFAF6; border-radius:20px; padding:26px;
+    box-shadow:0 24px 60px rgba(0,0,0,.35); border-top:6px solid var(--blue-500); animation:up .35s var(--ease); }
+.modal.booked { border-top-color:var(--ink); } .modal.closed, .modal.other { border-top-color:var(--beige); }
+.modal h3 { margin:0 0 4px; font-size:20px; font-weight:800; }
+.modal .when { color:var(--ink-soft); font-size:14px; font-weight:600; margin-bottom:16px; }
+.chips { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+.chip { padding:5px 12px; border-radius:999px; background:var(--beige-100); font-size:12px; font-weight:700; }
+.status { display:inline-flex; align-items:center; gap:7px; padding:6px 13px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.3px; background:#fff; border:1px solid var(--beige); }
+.status::before { content:""; width:7px; height:7px; border-radius:50%; background:currentColor; }
+.status.available { color:var(--blue-600); } .status.available::before { animation:pulse 1.8s infinite; }
+.status.booked { color:var(--ink); } .status.closed, .status.other { color:var(--ink-soft); }
+.modal h4 { margin:18px 0 8px; font-size:11px; font-weight:800; letter-spacing:1px; text-transform:uppercase; color:var(--blue-600); }
+.patient { padding:8px 12px; margin-bottom:6px; background:#fff; border:1px solid var(--beige); border-radius:12px; font-size:13px; font-weight:600; }
+.patient small { display:block; color:var(--ink-soft); font-weight:500; }
+.modal-actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+.cancel-slot-btn { background:#fff; color:var(--blue-600); border:1.5px solid var(--blue-300); padding:9px 16px; border-radius:10px;
+    font:700 13px 'Plus Jakarta Sans',Arial,sans-serif; cursor:pointer; transition:.25s; }
+.cancel-slot-btn:hover { background:#C62828; border-color:transparent; color:#fff; box-shadow:0 8px 16px rgba(198,40,40,.35); }
+.cancelled-label { color:var(--ink-soft); font-size:13px; font-weight:600; align-self:center; }
+
+.srow { padding:10px 0; border-top:1px solid var(--line); }
+.srow:first-of-type { border-top:0; }
+.srow-top { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:6px; font-size:13px; }
+.srow-top b { min-width:112px; font-variant-numeric:tabular-nums; }
+.srow-act { margin-left:auto; }
+.srow .cancel-slot-btn { padding:6px 10px; font-size:12px; }
+
+@media (max-width:1100px){ .summary-grid{grid-template-columns:repeat(2,1fr)} }
+@media (max-width:700px){
+    .layout{display:block} .sidebar{width:100%;min-width:0;padding:15px} .logo{margin-bottom:15px} .menu-heading{display:none}
+    .nav-link{display:inline-flex;padding:10px 12px;margin:3px}
+    .content{padding:20px 15px} .topbar{padding:18px} .page-heading{padding:20px}
+    .summary-grid{gap:10px} .summary-card{padding:16px} .summary-card .value{font-size:26px}
+    .schedule-card{padding:14px} .legend{margin-left:0}
+}
+@media (max-width:400px){ .summary-grid{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){ *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important} }
+</style>
 </head>
 
 <body>
-
 <div class="layout">
 
     <!-- Sidebar -->
     <aside class="sidebar">
-
-        <div class="logo">
-            <i class="bi bi-heart-pulse-fill"></i> MediSlot
-        </div>
-
+        <div class="logo"><i class="bi bi-heart-pulse-fill"></i> MediSlot</div>
         <div class="menu-heading">MAIN MENU</div>
-
         <nav>
-
-            <a href="{{ url_for('dashboard.index') }}"
-               class="nav-link">
-                <i class="bi bi-grid"></i>
-                Dashboard
-            </a>
-
-            <a href="{{ url_for('profile.index') }}"
-               class="nav-link">
-                <i class="bi bi-person"></i>
-                My Profile
-            </a>
-
-            <a href="{{ url_for('consultation_types.consultation_types') }}"
-               class="nav-link">
-                <i class="bi bi-clipboard2-plus"></i>
-                Consultation Types
-            </a>
-
-            <a href="/blackouts" class="nav-link">
-                <i class="bi bi-calendar-x"></i>
-                Blackout Dates
-            </a>
-
-            <a href="{{ url_for('schedule.index') }}"
-               class="nav-link active">
-                <i class="bi bi-calendar-week"></i>
-                My Schedule
-            </a>
-
-            <a href="/appointments" class="nav-link">
-                <i class="bi bi-calendar-check"></i>
-                Appointments
-            </a>
-
+            <a href="{{ url_for('dashboard.index') }}" class="nav-link"><i class="bi bi-grid"></i> Dashboard</a>
+            <a href="{{ url_for('profile.index') }}" class="nav-link"><i class="bi bi-person"></i> My Profile</a>
+            <a href="{{ url_for('consultation_types.consultation_types') }}" class="nav-link"><i class="bi bi-clipboard2-plus"></i> Consultation Types</a>
+            <a href="/blackouts" class="nav-link"><i class="bi bi-calendar-x"></i> Blackout Dates</a>
+            <a href="{{ url_for('schedule.index') }}" class="nav-link active"><i class="bi bi-calendar-week"></i> My Schedule</a>
+            <a href="/appointments" class="nav-link"><i class="bi bi-calendar-check"></i> Appointments</a>
         </nav>
-
     </aside>
 
-
-    <!-- Main content -->
     <main class="main">
-
         <header class="topbar">
             <h3>My Schedule</h3>
             <p>View your generated consultation slots and bookings.</p>
         </header>
 
-
         <section class="content">
 
-            <!-- Flash messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="flash-message {{ category }}">
-                            {{ message }}
-                        </div>
+                        <div class="flash-message {{ category }}">{{ message }}</div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
 
-
-            <!-- Page heading and date filter -->
             <div class="page-heading">
-
                 <div>
                     <h1>My Schedule</h1>
-                    <p>
-                        View and manage your generated consultation slots.
-                    </p>
+                    <p>View and manage your generated consultation slots, week by week.</p>
                 </div>
-
-                <form method="GET"
-                      action="{{ url_for('schedule.index') }}"
-                      class="date-filter">
-
-                    <label for="scheduleDate">Select Date</label>
-
-                    <input
-                        type="date"
-                        id="scheduleDate"
-                        name="date"
-                        value="{{ selected_date }}"
-                        required
-                        onchange="this.form.submit()"
-                    >
-
+                <form method="GET" action="{{ url_for('schedule.index') }}" class="date-filter">
+                    <label for="scheduleDate">Jump to date</label>
+                    <input type="date" id="scheduleDate" name="date" value="{{ selected_date }}" required onchange="this.form.submit()">
                 </form>
-
             </div>
 
-
-            <!-- Summary cards -->
             <div class="summary-grid">
-
-                <div class="summary-card total">
-                    <div class="label">Total Slots</div>
-                    <div class="value">
-                        {{ summary.get('totalSlots', 0) }}
-                    </div>
-                </div>
-
-                <div class="summary-card available">
-                    <div class="label">Available Slots</div>
-                    <div class="value">
-                        {{ summary.get('availableSlots', 0) }}
-                    </div>
-                </div>
-
-                <div class="summary-card booked">
-                    <div class="label">Booked Slots</div>
-                    <div class="value">
-                        {{ summary.get('bookedSlots', 0) }}
-                    </div>
-                </div>
-
-                <div class="summary-card closed">
-                    <div class="label">Closed Slots</div>
-                    <div class="value">
-                        {{ summary.get('closedSlots', 0) }}
-                    </div>
-                </div>
-
+                <div class="summary-card total"><div class="label">Total Slots</div><div class="value" id="sumTotal">{{ summary.get('totalSlots', 0) }}</div></div>
+                <div class="summary-card available"><div class="label">Available Slots</div><div class="value" id="sumAvail">{{ summary.get('availableSlots', 0) }}</div></div>
+                <div class="summary-card booked"><div class="label">Booked Slots</div><div class="value" id="sumBooked">{{ summary.get('bookedSlots', 0) }}</div></div>
+                <div class="summary-card closed"><div class="label">Closed Slots</div><div class="value" id="sumClosed">{{ summary.get('closedSlots', 0) }}</div></div>
             </div>
 
-
-            <!-- Slots table -->
+            <!-- Week calendar -->
             <div class="schedule-card">
-
-                <div class="schedule-header">
-
-                    <div>
-                        <h2>Generated Slots</h2>
-                        <p>
-                            Schedule for {{ selected_date }}
-                        </p>
-                    </div>
-
+                <div class="cal-toolbar">
+                    <a class="cal-btn" id="btnToday" href="#">Today</a>
+                    <a class="cal-btn icon" id="btnPrev" href="#" aria-label="Previous week"><i class="bi bi-chevron-left"></i></a>
+                    <a class="cal-btn icon" id="btnNext" href="#" aria-label="Next week"><i class="bi bi-chevron-right"></i></a>
+                    <h2 id="weekLabel">Week</h2>
+                    <div class="legend"><span class="l-av">Available</span><span class="l-bk">Booked</span><span class="l-cl">Closed</span></div>
                 </div>
 
-
-                {% if slots %}
-
-                    <div class="table-wrapper">
-
-                        <table>
-
-                            <thead>
-                                <tr>
-                                    <th>Consultation Type</th>
-                                    <th>Start Time</th>
-                                    <th>End Time</th>
-                                    <th>Duration</th>
-                                    <th>Capacity</th>
-                                    <th>Booked</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-
-                                {% for slot in slots %}
-
-                                    {% set status = slot.get('status', 'UNKNOWN')|upper %}
-
-                                    <tr>
-
-                                        <td>
-                                            <span class="consultation-name">
-                                                {{ slot.get('consultationType', 'N/A') }}
-                                            </span>
-                                        </td>
-
-                                        <td>
-                                            {{ slot.get('startTime', 'N/A') }}
-                                        </td>
-
-                                        <td>
-                                            {{ slot.get('endTime', 'N/A') }}
-                                        </td>
-
-                                        <td>
-                                            {{ slot.get('durationMinutes', 'N/A') }} min
-                                        </td>
-
-                                        <td class="capacity">
-                                            {{ slot.get('capacity', 0) }}
-                                        </td>
-
-                                        <td>
-                                            {{ slot.get('bookedCount', 0) }}
-                                        </td>
-
-                                        <td>
-                                            <span class="status
-                                                {% if status == 'AVAILABLE' %}
-                                                    available
-                                                {% elif status in ['BOOKED', 'FULLY_BOOKED'] %}
-                                                    booked
-                                                {% elif status in ['CLOSED', 'CANCELLED'] %}
-                                                    closed
-                                                {% else %}
-                                                    other
-                                                {% endif %}
-                                            ">
-                                                {{ status.replace('_', ' ') }}
-                                            </span>
-                                        </td>
-
-                                        <!-- Cancel slot action -->
-                                        <td>
-
-                                            {% if status not in ['CLOSED', 'CANCELLED'] %}
-
-                                                <form
-                                                    method="POST"
-                                                    action="{{ url_for(
-                                                        'schedule.cancel_slot',
-                                                        slot_id=slot.get('slotId')
-                                                    ) }}"
-                                                    onsubmit="return confirm(
-                                                        'Are you sure you want to cancel this slot? Associated appointments may also be cancelled and refunds may be initiated.'
-                                                    );"
-                                                >
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="date"
-                                                        value="{{ selected_date }}"
-                                                    >
-
-                                                    <button
-                                                        type="submit"
-                                                        class="cancel-slot-btn"
-                                                    >
-                                                        <i class="bi bi-x-circle"></i>
-                                                        Cancel Slot
-                                                    </button>
-
-                                                </form>
-
-                                            {% else %}
-
-                                                <span class="cancelled-label">
-                                                    <i class="bi bi-check-circle"></i>
-                                                    Cancelled
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-                                    </tr>
-
-
-                                    <!-- Patient information -->
-                                    {% if slot.get('patients') %}
-
-                                        <tr>
-                                            <td colspan="8">
-
-                                                <strong>Patients:</strong>
-
-                                                <div class="patient-list">
-
-                                                    {% for patient in slot.get('patients', []) %}
-
-                                                        <div>
-                                                            {{ patient.get('name', patient.get('fullName', 'Patient')) }}
-
-                                                            {% if patient.get('email') %}
-                                                                — {{ patient.get('email') }}
-                                                            {% endif %}
-
-                                                            {% if patient.get('phone') %}
-                                                                — {{ patient.get('phone') }}
-                                                            {% endif %}
-                                                        </div>
-
-                                                    {% endfor %}
-
-                                                </div>
-
-                                            </td>
-                                        </tr>
-
-                                    {% endif %}
-
-                                {% endfor %}
-
-                            </tbody>
-
-                        </table>
-
+                <div class="cal-scroll" id="calScroll">
+                    <div class="cal-inner">
+                        <div class="cal-head" id="calHead"></div>
+                        <div class="cal-body" id="calBody"></div>
                     </div>
-
-                {% else %}
-
-                    <div class="empty-state">
-
-                        <div class="icon">
-                            <i class="bi bi-calendar2-x"></i>
-                        </div>
-
-                        <h3>No Slots Available</h3>
-
-                        <p>
-                            No generated consultation slots were found
-                            for {{ selected_date }}.
-                        </p>
-
-                        <p>
-                            Select another date to view your schedule.
-                        </p>
-
-                    </div>
-
-                {% endif %}
-
+                </div>
+                <div class="cal-empty" id="calEmpty" hidden>No generated slots were found for this week. Pick another date to view your schedule.</div>
             </div>
-
         </section>
-
     </main>
-
 </div>
 
+<!-- Slot details -->
+<div class="modal-bg" id="modalBg" aria-hidden="true">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"></div>
+</div>
+
+<script>
+(function () {
+    const SLOTS    = {{ slots|default([])|tojson }};
+    const SELECTED = {{ selected_date|tojson }};
+    // Route is /schedule/slots/<int:slot_id>/cancel, so build it with 0 and swap in the real id in JS.
+    const CANCEL_URL = {{ url_for('schedule.cancel_slot', slot_id=0)|tojson }};
+    const cancelUrl = id => CANCEL_URL.replace(/\/0(\/|$)/, (m, tail) => '/' + encodeURIComponent(id) + tail);
+    const SCHEDULE_URL = {{ url_for('schedule.index')|tojson }};
+    const HOUR = 64, DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    const pad = n => String(n).padStart(2, '0');
+    const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+    const parseISO = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+    const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
+    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function toMin(t) {
+        const m = /(\d{1,2}):(\d{2})(?::\d{2})?\s*([AaPp][Mm])?/.exec(String(t == null ? '' : t));
+        if (!m) return null;
+        let h = +m[1]; const mm = +m[2];
+        if (m[3]) { const pm = m[3].toLowerCase() === 'p'; if (pm && h < 12) h += 12; if (!pm && h === 12) h = 0; }
+        return h * 60 + mm;
+    }
+    const fmt = mins => { let h = Math.floor(mins / 60) % 24; const m = mins % 60, ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12; return h + (m ? ':' + pad(m) : '') + ' ' + ap; };
+    const statusClass = s => s === 'AVAILABLE' ? 'available' : (s === 'BOOKED' || s === 'FULLY_BOOKED') ? 'booked' : (s === 'CLOSED' || s === 'CANCELLED') ? 'closed' : 'other';
+
+    /* ---- week range (Sunday to Saturday) ---- */
+    const sel = parseISO(SELECTED);
+    const weekStart = addDays(sel, -sel.getDay());
+    const weekDates = Array.from({length: 7}, (_, i) => addDays(weekStart, i));
+    const weekISO = weekDates.map(iso);
+    const todayISO = iso(new Date());
+
+    /* ---- normalise slots ---- */
+    const events = [];
+    SLOTS.forEach(s => {
+        const date = String(s.date || s.slotDate || SELECTED).slice(0, 10);
+        if (!weekISO.includes(date)) return;
+        const start = toMin(s.startTime); if (start == null) return;
+        let end = toMin(s.endTime);
+        if (end == null || end <= start) end = start + (parseInt(s.durationMinutes, 10) || 30);
+        events.push({ raw: s, date, start, end, status: String(s.status || 'UNKNOWN').toUpperCase() });
+    });
+
+    /* ---- summary for the visible week ---- */
+    if (events.length) {
+        const c = k => events.filter(e => statusClass(e.status) === k).length;
+        document.getElementById('sumTotal').textContent  = events.length;
+        document.getElementById('sumAvail').textContent  = c('available');
+        document.getElementById('sumBooked').textContent = c('booked');
+        document.getElementById('sumClosed').textContent = c('closed');
+    }
+
+    /* ---- toolbar ---- */
+    const go = d => SCHEDULE_URL + '?date=' + iso(d);
+    document.getElementById('btnToday').href = go(new Date());
+    document.getElementById('btnPrev').href  = go(addDays(sel, -7));
+    document.getElementById('btnNext').href  = go(addDays(sel, 7));
+    const a = weekDates[0], b = weekDates[6];
+    document.getElementById('weekLabel').textContent =
+        a.getMonth() === b.getMonth()
+            ? MONTHS[a.getMonth()] + ' ' + a.getDate() + ' – ' + b.getDate() + ', ' + b.getFullYear()
+            : MONTHS[a.getMonth()] + ' ' + a.getDate() + ' – ' + MONTHS[b.getMonth()] + ' ' + b.getDate() + ', ' + b.getFullYear();
+
+    /* ---- visible hour range ---- */
+    let minH = 8, maxH = 18;
+    events.forEach(e => { minH = Math.min(minH, Math.floor(e.start / 60)); maxH = Math.max(maxH, Math.ceil(e.end / 60)); });
+    maxH = Math.min(maxH, 24);
+    const totalH = (maxH - minH) * HOUR;
+
+    /* ---- header ---- */
+    document.getElementById('calHead').innerHTML = '<div class="corner"></div>' + weekDates.map((d, i) =>
+        '<a class="day-head' + (weekISO[i] === todayISO ? ' today' : '') + (weekISO[i] === SELECTED ? ' selected' : '') + '" href="' + go(d) + '">' +
+        '<div class="dow">' + DAYS[d.getDay()] + '</div><div class="num">' + d.getDate() + '</div></a>').join('');
+
+    /* ---- overlap layout: side-by-side columns for clashing slots ---- */
+    function layout(list) {
+        list.sort((x, y) => x.start - y.start || y.end - x.end);
+        let cluster = [], clusterEnd = -1;
+        const flush = () => {
+            const cols = [];
+            cluster.forEach(e => {
+                let i = cols.findIndex(end => end <= e.start);
+                if (i < 0) { i = cols.length; cols.push(0); }
+                cols[i] = e.end; e.col = i;
+            });
+            cluster.forEach(e => e.cols = cols.length);
+            cluster = []; clusterEnd = -1;
+        };
+        list.forEach(e => { if (cluster.length && e.start >= clusterEnd) flush(); cluster.push(e); clusterEnd = Math.max(clusterEnd, e.end); });
+        if (cluster.length) flush();
+    }
+
+    /* ---- body ---- */
+    let html = '<div class="time-col" style="height:' + totalH + 'px">';
+    for (let h = minH; h <= maxH; h++) {
+        if (h === minH) continue;
+        html += '<span class="tick" style="top:' + (h - minH) * HOUR + 'px">' + fmt(h * 60) + '</span>';
+    }
+    html += '</div>';
+
+    /* merge back-to-back slots of the same type + status into one block (no clutter) */
+    function group(day) {
+        day.sort((x, y) => x.start - y.start || x.end - y.end);
+        const out = [];
+        day.forEach(e => {
+            const cls = statusClass(e.status), type = e.raw.consultationType || '';
+            const last = out[out.length - 1];
+            if (last && last.cls === cls && last.type === type && e.start >= last.end && e.start - last.end <= 15) {
+                last.items.push(e); last.end = Math.max(last.end, e.end);
+            } else out.push({ date: e.date, start: e.start, end: e.end, cls, type, items: [e] });
+        });
+        return out;
+    }
+    const sum = (items, k) => items.reduce((t, e) => t + (Number(e.raw[k]) || 0), 0);
+
+    const registry = [];
+    weekISO.forEach(day => {
+        const list = group(events.filter(e => e.date === day));
+        layout(list);
+        html += '<div class="day-col' + (day === todayISO ? ' today' : '') + '" style="height:' + totalH + 'px">';
+        list.forEach(g => {
+            const idx = registry.push(g) - 1;
+            const top = (g.start - minH * 60) / 60 * HOUR;
+            const h = Math.max((g.end - g.start) / 60 * HOUR - 2, 20);
+            const w = 100 / g.cols, n = g.items.length;
+            const title = (g.type || 'Consultation') + (n > 1 ? ' ×' + n : '');
+            const count = n > 1
+                ? n + ' slots · ' + sum(g.items, 'bookedCount') + '/' + sum(g.items, 'capacity') + ' booked'
+                : sum(g.items, 'bookedCount') + '/' + sum(g.items, 'capacity') + ' booked';
+            html += '<button type="button" class="ev ' + g.cls + (h < 44 ? ' short' : '') + '" data-i="' + idx + '" ' +
+                'style="top:' + top + 'px;height:' + h + 'px;left:calc(' + g.col * w + '% + 2px);width:calc(' + w + '% - 4px)" ' +
+                'title="' + esc(title + ' · ' + fmt(g.start) + ' – ' + fmt(g.end)) + '">' +
+                '<span class="t">' + esc(title) + '</span>' +
+                '<span class="tm">' + fmt(g.start) + ' – ' + fmt(g.end) + '</span>' +
+                '<span class="ct">' + esc(count) + '</span></button>';
+        });
+        if (day === todayISO) {
+            const nw = new Date(), nm = nw.getHours() * 60 + nw.getMinutes();
+            if (nm >= minH * 60 && nm <= maxH * 60) html += '<div class="now-line" style="top:' + (nm - minH * 60) / 60 * HOUR + 'px"></div>';
+        }
+        html += '</div>';
+    });
+    document.getElementById('calBody').innerHTML = html;
+    if (!events.length) document.getElementById('calEmpty').hidden = false;
+
+    /* scroll to the first slot of the week */
+    if (events.length) {
+        const first = Math.min.apply(null, events.map(e => e.start));
+        document.getElementById('calScroll').scrollTop = Math.max(0, (first - minH * 60) / 60 * HOUR - 20);
+    }
+
+    /* ---- details modal ---- */
+    const bg = document.getElementById('modalBg'), modal = document.getElementById('modal');
+    const close = () => { bg.classList.remove('open'); bg.setAttribute('aria-hidden', 'true'); };
+    function slotRow(e) {
+        const s = e.raw, cls = statusClass(e.status), cancelled = cls === 'closed';
+        const pts = (s.patients || []).map(p =>
+            '<div class="patient">' + esc(p.name || p.fullName || 'Patient') +
+            ((p.email || p.phone) ? '<small>' + esc([p.email, p.phone].filter(Boolean).join(' — ')) + '</small>' : '') + '</div>').join('');
+        const action = cancelled
+            ? '<span class="cancelled-label"><i class="bi bi-check-circle"></i> Cancelled</span>'
+            : '<form method="POST" action="' + esc(cancelUrl(s.slotId)) + '" ' +
+              'onsubmit="return confirm(\'Are you sure you want to cancel this slot? Associated appointments may also be cancelled and refunds may be initiated.\');">' +
+              '<input type="hidden" name="date" value="' + esc(SELECTED) + '">' +
+              '<button type="submit" class="cancel-slot-btn"><i class="bi bi-x-circle"></i> Cancel</button></form>';
+        return '<div class="srow"><div class="srow-top"><b>' + fmt(e.start) + ' – ' + fmt(e.end) + '</b>' +
+            '<span class="status ' + cls + '">' + esc(e.status.replace(/_/g, ' ')) + '</span>' +
+            '<span class="chip">' + esc(s.bookedCount != null ? s.bookedCount : 0) + '/' + esc(s.capacity != null ? s.capacity : 0) + ' booked</span>' +
+            '<span class="srow-act">' + action + '</span></div>' + pts + '</div>';
+    }
+    function open(g) {
+        const d = parseISO(g.date), n = g.items.length;
+        modal.className = 'modal ' + g.cls;
+        modal.innerHTML =
+            '<h3 id="mTitle">' + esc(g.type || 'Consultation') + '</h3>' +
+            '<div class="when">' + DAYS[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate() + ' · ' + fmt(g.start) + ' – ' + fmt(g.end) +
+            (n > 1 ? ' · ' + n + ' slots' : '') + '</div>' +
+            g.items.map(slotRow).join('') +
+            '<div class="modal-actions"><button type="button" class="cal-btn" id="mClose">Close</button></div>';
+        bg.classList.add('open'); bg.setAttribute('aria-hidden', 'false');
+        document.getElementById('mClose').onclick = close;
+        document.getElementById('mClose').focus();
+    }
+    document.getElementById('calBody').addEventListener('click', ev => {
+        const btn = ev.target.closest('.ev'); if (btn) open(registry[+btn.dataset.i]);
+    });
+    bg.addEventListener('click', ev => { if (ev.target === bg) close(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape') close(); });
+})();
+</script>
 </body>
 </html>

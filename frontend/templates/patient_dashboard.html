@@ -1,14 +1,482 @@
 {% extends "base.html" %}
+
 {% block title %}Find Doctors | MediSlot{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --theme-charcoal: #1E1E1C;
+        --theme-beige: #D8CBB3;
+        --theme-blue: #2F6BFF;
+        --theme-muted: rgba(30, 30, 28, 0.68);
+        --theme-blue-soft: rgba(47, 107, 255, 0.14);
+        --theme-beige-soft: rgba(216, 203, 179, 0.35);
+        --theme-border: rgba(30, 30, 28, 0.13);
+    }
+
+    .doctor-search-page {
+        position: relative;
+        isolation: isolate;
+        min-height: calc(100vh - 6rem);
+        overflow: hidden;
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .doctor-search-page::before,
+    .doctor-search-page::after {
+        position: absolute;
+        z-index: -1;
+        content: "";
+        border-radius: 50%;
+        pointer-events: none;
+        filter: blur(8px);
+    }
+
+    .doctor-search-page::before {
+        top: 2rem;
+        right: -9rem;
+        width: 23rem;
+        height: 23rem;
+        background: radial-gradient(circle, var(--theme-blue-soft), transparent 70%);
+        animation: driftBlue 14s ease-in-out infinite;
+    }
+
+    .doctor-search-page::after {
+        bottom: 1rem;
+        left: -9rem;
+        width: 24rem;
+        height: 24rem;
+        background: radial-gradient(circle, var(--theme-beige-soft), transparent 70%);
+        animation: driftBeige 17s ease-in-out infinite;
+    }
+
+    .search-heading,
+    .doctor-results-heading,
+    .search-card,
+    .doctor-results,
+    .doctor-pagination {
+        position: relative;
+        z-index: 1;
+    }
+
+    .search-heading {
+        animation: fadeRise 0.65s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .search-heading h2,
+    .doctor-results-heading h4 {
+        color: var(--theme-charcoal);
+        font-weight: 700;
+    }
+
+    .search-heading p,
+    .doctor-results-heading .text-muted {
+        color: var(--theme-muted) !important;
+    }
+
+    .search-card {
+        border: 1px solid var(--theme-border) !important;
+        border-radius: 1.25rem !important;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 12px 30px rgba(30, 30, 28, 0.08) !important;
+        animation: fadeRise 0.7s 0.08s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .search-card .form-label {
+        color: var(--theme-charcoal);
+        font-weight: 600;
+    }
+
+    .search-card .form-control {
+        border-color: var(--theme-border);
+        border-radius: 0.75rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .search-card .form-control:hover {
+        border-color: var(--theme-beige);
+    }
+
+    .search-card .form-control:focus {
+        border-color: var(--theme-blue);
+        box-shadow: 0 0 0 0.22rem var(--theme-blue-soft);
+        transform: translateY(-1px);
+    }
+
+    .doctor-search-page .btn-primary {
+        border: 0;
+        background: linear-gradient(110deg, var(--theme-charcoal), var(--theme-blue)) !important;
+        background-size: 200% 100% !important;
+        box-shadow: 0 7px 18px rgba(47, 107, 255, 0.2);
+        transition: background-position 0.4s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .doctor-search-page .btn-primary:hover,
+    .doctor-search-page .btn-primary:focus-visible {
+        background-position: 100% 0 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(47, 107, 255, 0.28);
+    }
+
+    .doctor-search-page .btn-outline-primary {
+        --bs-btn-color: var(--theme-blue);
+        --bs-btn-border-color: var(--theme-blue);
+        --bs-btn-hover-bg: var(--theme-blue);
+        --bs-btn-hover-border-color: var(--theme-blue);
+        --bs-btn-hover-color: #FFFFFF;
+        --bs-btn-active-bg: var(--theme-charcoal);
+        --bs-btn-active-border-color: var(--theme-charcoal);
+        border-radius: 0.75rem;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .doctor-search-page .btn-outline-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(47, 107, 255, 0.18);
+    }
+
+    .doctor-search-page .btn-light {
+        border: 1px solid var(--theme-border);
+        background: var(--theme-beige-soft);
+        color: var(--theme-charcoal);
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .doctor-search-page .btn-light:hover {
+        background: var(--theme-beige);
+        transform: translateY(-1px);
+    }
+
+    .doctor-results-heading {
+        animation: fadeRise 0.65s 0.12s ease both;
+    }
+
+    .doctor-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--theme-border) !important;
+        border-radius: 1.25rem !important;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 8px 22px rgba(30, 30, 28, 0.07) !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: cardReveal 0.7s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .doctor-card::before {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 4px;
+        content: "";
+        background: linear-gradient(
+            90deg,
+            var(--theme-charcoal),
+            var(--theme-blue),
+            var(--theme-beige),
+            var(--theme-blue)
+        );
+        background-size: 250% 100%;
+        animation: accentFlow 6s linear infinite;
+    }
+
+    .doctor-card:hover {
+        transform: translateY(-7px);
+        box-shadow: 0 18px 34px rgba(47, 107, 255, 0.16) !important;
+    }
+
+    .doctor-avatar {
+        color: var(--theme-charcoal);
+        background: var(--theme-beige) !important;
+        box-shadow: inset 0 0 0 1px var(--theme-border);
+        animation: iconFloat 3.2s ease-in-out infinite;
+    }
+
+    .doctor-card h5 {
+        color: var(--theme-charcoal);
+        font-weight: 700;
+    }
+
+    .doctor-card .text-muted {
+        color: var(--theme-muted) !important;
+    }
+
+    .doctor-card p {
+        color: var(--theme-charcoal);
+        line-height: 1.6;
+    }
+
+    .doctor-card p strong {
+        color: var(--theme-charcoal);
+    }
+
+    .doctor-card .btn {
+        position: relative;
+        z-index: 1;
+    }
+
+    .doctor-result:nth-child(1) .doctor-card { animation-delay: 0.08s; }
+    .doctor-result:nth-child(2) .doctor-card { animation-delay: 0.16s; }
+    .doctor-result:nth-child(3) .doctor-card { animation-delay: 0.24s; }
+    .doctor-result:nth-child(4) .doctor-card { animation-delay: 0.32s; }
+    .doctor-result:nth-child(5) .doctor-card { animation-delay: 0.40s; }
+    .doctor-result:nth-child(6) .doctor-card { animation-delay: 0.48s; }
+
+    .doctor-search-page .alert-light {
+        border: 1px solid var(--theme-border);
+        border-radius: 1rem;
+        background: var(--theme-beige-soft);
+        color: var(--theme-charcoal);
+        animation: fadeRise 0.6s ease both;
+    }
+
+    .doctor-pagination {
+        animation: fadeRise 0.6s 0.15s ease both;
+    }
+
+    .doctor-pagination .page-link {
+        border-color: var(--theme-border);
+        color: var(--theme-charcoal);
+        transition: color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .doctor-pagination .page-link:hover {
+        background: var(--theme-beige-soft);
+        color: var(--theme-blue);
+        transform: translateY(-1px);
+    }
+
+    .doctor-pagination .page-item.active .page-link {
+        border-color: var(--theme-blue);
+        background: var(--theme-blue);
+        color: #FFFFFF;
+    }
+
+    .doctor-search-page a:focus-visible,
+    .doctor-search-page button:focus-visible {
+        outline: 3px solid var(--theme-blue);
+        outline-offset: 3px;
+    }
+
+    @keyframes fadeRise {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes cardReveal {
+        from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes iconFloat {
+        0%, 100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-6px);
+        }
+    }
+
+    @keyframes accentFlow {
+        from {
+            background-position: 0 0;
+        }
+
+        to {
+            background-position: 250% 0;
+        }
+    }
+
+    @keyframes driftBlue {
+        0%, 100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(-32px, 24px);
+        }
+    }
+
+    @keyframes driftBeige {
+        0%, 100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(28px, -20px);
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .search-heading {
+            align-items: flex-start !important;
+            gap: 1rem;
+        }
+
+        .search-heading > a {
+            flex-shrink: 0;
+        }
+
+        .search-card {
+            padding: 1rem !important;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            animation-delay: 0s !important;
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        .doctor-card:hover,
+        .doctor-search-page .btn-primary:hover,
+        .doctor-search-page .btn-outline-primary:hover {
+            transform: none;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4"><div><h2 class="mb-1">Find your doctor</h2><p class="text-muted mb-0">Search by doctor, hospital, specialisation or city.</p></div><a class="btn btn-outline-primary" href="{{ url_for('patient.profile') }}">Edit profile</a></div>
-<div class="card border-0 shadow-sm p-3 mb-4"><form method="get" class="row g-3">
-<div class="col-md-3"><label class="form-label">Doctor name</label><input class="form-control" name="name" value="{{ filters.name }}" placeholder="e.g. John"></div>
-<div class="col-md-3"><label class="form-label">Hospital</label><input class="form-control" name="hospital" value="{{ filters.hospital }}"></div>
-<div class="col-md-3"><label class="form-label">Specialisation</label><input class="form-control" name="specialisation" value="{{ filters.specialisation }}"></div>
-<div class="col-md-3"><label class="form-label">City</label><input class="form-control" name="city" value="{{ filters.city }}"></div>
-<div class="col-12"><button class="btn btn-primary">Search doctors</button> <a class="btn btn-light" href="{{ url_for('patient.dashboard') }}">Clear</a></div></form></div>
-<div class="d-flex justify-content-between mb-3"><h4>Available doctors</h4><span class="text-muted">{{ pagination.total|default(0) }} results</span></div>
-<div class="row g-3">{% for doctor in doctors %}<div class="col-md-6 col-lg-4"><div class="card h-100 border-0 shadow-sm p-3"><div class="d-flex align-items-center gap-3 mb-3"><div class="rounded-circle bg-light p-3">👨‍⚕️</div><div><h5 class="mb-0">{{ doctor.name }}</h5><small class="text-muted">{{ doctor.years_experience or 0 }} years experience</small></div></div><p class="mb-1"><strong>Specialisation:</strong> {{ doctor.specialisations or 'Not specified' }}</p><p class="mb-3"><strong>Hospital:</strong> {{ doctor.hospitals or 'Not specified' }}<br><strong>City:</strong> {{ doctor.cities or 'Not specified' }}</p><a class="btn btn-outline-primary mt-auto" href="{{ url_for('patient.doctor_detail', doctor_id=doctor.doctor_id) }}">View profile & slots</a></div></div>{% else %}<div class="col-12"><div class="alert alert-light">No doctors matched your search. Try changing the filters.</div></div>{% endfor %}</div>
-{% if pagination.totalPages|default(0) > 1 %}<nav class="mt-4"><ul class="pagination">{% for p in range(1, pagination.totalPages + 1) %}<li class="page-item {{ 'active' if p == pagination.page else '' }}"><a class="page-link" href="{{ url_for('patient.dashboard', page=p, name=filters.name, hospital=filters.hospital, specialisation=filters.specialisation, city=filters.city) }}">{{ p }}</a></li>{% endfor %}</ul></nav>{% endif %}
+
+<div class="doctor-search-page">
+
+    <div class="search-heading d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Find your doctor</h2>
+            <p class="text-muted mb-0">
+                Search by doctor, hospital, specialisation or city.
+            </p>
+        </div>
+
+        <a class="btn btn-outline-primary"
+           href="{{ url_for('patient.profile') }}">
+            Edit profile
+        </a>
+    </div>
+
+    <div class="search-card card border-0 shadow-sm p-3 mb-4">
+        <form method="get" class="row g-3">
+
+            <div class="col-md-3">
+                <label class="form-label">Doctor name</label>
+                <input class="form-control"
+                       name="name"
+                       value="{{ filters.name }}"
+                       placeholder="e.g. John">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Hospital</label>
+                <input class="form-control"
+                       name="hospital"
+                       value="{{ filters.hospital }}">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Specialisation</label>
+                <input class="form-control"
+                       name="specialisation"
+                       value="{{ filters.specialisation }}">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">City</label>
+                <input class="form-control"
+                       name="city"
+                       value="{{ filters.city }}">
+            </div>
+
+            <div class="col-12">
+                <button class="btn btn-primary">Search doctors</button>
+                <a class="btn btn-light"
+                   href="{{ url_for('patient.dashboard') }}">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="doctor-results-heading d-flex justify-content-between mb-3">
+        <h4>Available doctors</h4>
+        <span class="text-muted">{{ pagination.total|default(0) }} results</span>
+    </div>
+
+    <div class="doctor-results row g-3">
+        {% for doctor in doctors %}
+            <div class="doctor-result col-md-6 col-lg-4">
+                <div class="doctor-card card h-100 border-0 shadow-sm p-3">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="doctor-avatar rounded-circle bg-light p-3">👨‍⚕️</div>
+                        <div>
+                            <h5 class="mb-0">{{ doctor.name }}</h5>
+                            <small class="text-muted">
+                                {{ doctor.years_experience or 0 }} years experience
+                            </small>
+                        </div>
+                    </div>
+
+                    <p class="mb-1">
+                        <strong>Specialisation:</strong>
+                        {{ doctor.specialisations or 'Not specified' }}
+                    </p>
+
+                    <p class="mb-3">
+                        <strong>Hospital:</strong>
+                        {{ doctor.hospitals or 'Not specified' }}<br>
+                        <strong>City:</strong>
+                        {{ doctor.cities or 'Not specified' }}
+                    </p>
+
+                    <a class="btn btn-outline-primary mt-auto"
+                       href="{{ url_for('patient.doctor_detail', doctor_id=doctor.doctor_id) }}">
+                        View profile &amp; slots
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-light">
+                    No doctors matched your search. Try changing the filters.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.totalPages|default(0) > 1 %}
+        <nav class="doctor-pagination mt-4">
+            <ul class="pagination">
+                {% for p in range(1, pagination.totalPages + 1) %}
+                    <li class="page-item {{ 'active' if p == pagination.page else '' }}">
+                        <a class="page-link"
+                           href="{{ url_for('patient.dashboard', page=p, name=filters.name, hospital=filters.hospital, specialisation=filters.specialisation, city=filters.city) }}">
+                            {{ p }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
+    {% endif %}
+
+</div>
+
 {% endblock %}

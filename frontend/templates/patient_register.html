@@ -1,6 +1,283 @@
 {% extends "base.html" %}
 {% block title %}Patient Registration | MediSlot{% endblock %}
 {% block content %}
+<style>
+    /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
+       Styles are scoped to this page's registration card. */
+    :root {
+        --pr-ink: #1E1E1C;
+        --pr-ink-soft: #6b6455;
+        --pr-beige: #D8CBB3;
+        --pr-beige-pale: #F6F1E7;
+        --pr-blue: #2F6BFF;
+        --pr-blue-deep: #1B4FD6;
+        --pr-blue-light: #7EA3FF;
+        --pr-ease: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    body {
+        position: relative;
+        overflow-x: hidden;
+        color: var(--pr-ink);
+        background:
+            radial-gradient(1000px 600px at 100% -10%, rgba(47, 107, 255, .14), transparent 60%),
+            radial-gradient(900px 500px at 0% 40%, rgba(216, 203, 179, .6), transparent 60%),
+            linear-gradient(180deg, #F6F1E7 0%, #E9DFCB 100%) !important;
+        background-attachment: fixed !important;
+        animation: prPageFade .9s ease backwards;
+    }
+
+    /* drifting dot grid + floating orbs (behind content) */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image: radial-gradient(rgba(30, 30, 28, .08) 1.5px, transparent 1.5px);
+        background-size: 30px 30px;
+        animation: prGridDrift 30s linear infinite;
+    }
+    body::after {
+        content: "";
+        position: fixed;
+        width: 420px; height: 420px;
+        left: -120px; bottom: -120px;
+        border-radius: 50%;
+        background: rgba(47, 107, 255, .26);
+        filter: blur(80px);
+        z-index: -1;
+        pointer-events: none;
+        animation: prOrb 17s ease-in-out infinite;
+    }
+
+    /* ---------- Card ---------- */
+    .col-md-8.col-lg-7 > .card {
+        position: relative;
+        overflow: hidden;
+        background: rgba(252, 250, 246, .95);
+        border: 1px solid var(--pr-beige) !important;
+        border-radius: 24px;
+        box-shadow: 0 22px 56px rgba(30, 30, 28, .18) !important;
+        transition: transform .5s var(--pr-ease), box-shadow .5s var(--pr-ease), border-color .4s ease;
+        animation: prCardIn 1s .15s var(--pr-ease) backwards;
+    }
+    .col-md-8.col-lg-7 > .card:hover {
+        box-shadow: 0 26px 60px rgba(47, 107, 255, .22) !important;
+        border-color: var(--pr-blue-light) !important;
+    }
+
+    /* flowing top border */
+    .col-md-8.col-lg-7 > .card::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 5px;
+        background: linear-gradient(90deg, #D8CBB3, #2F6BFF, #1E1E1C, #2F6BFF, #D8CBB3);
+        background-size: 300% 100%;
+        animation: prGradientSlide 4s linear infinite;
+    }
+    /* rotating dashed ring in the corner */
+    .col-md-8.col-lg-7 > .card::after {
+        content: "";
+        position: absolute;
+        width: 220px; height: 220px;
+        right: -100px; top: -100px;
+        border-radius: 50%;
+        border: 2px dashed rgba(47, 107, 255, .35);
+        pointer-events: none;
+        animation: prSpin 22s linear infinite;
+    }
+    .col-md-8.col-lg-7 > .card > * { position: relative; z-index: 1; }
+
+    /* ---------- Heading & text ---------- */
+    .col-md-8.col-lg-7 > .card h2 {
+        position: relative;
+        display: inline-block;
+        padding-bottom: 10px;
+        font-weight: 800;
+        letter-spacing: -.5px;
+        color: var(--pr-ink);
+        background: linear-gradient(100deg, #1E1E1C 0%, #1E1E1C 40%, #2F6BFF 50%, #1E1E1C 60%, #1E1E1C 100%);
+        background-size: 250% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: prSlideRight .8s .3s var(--pr-ease) backwards, prTextSweep 6s 1.5s ease-in-out infinite;
+    }
+    .col-md-8.col-lg-7 > .card h2::after {
+        content: "";
+        position: absolute;
+        left: 0; bottom: 0;
+        height: 4px;
+        width: 56px;
+        border-radius: 4px;
+        background: linear-gradient(90deg, var(--pr-blue-light), var(--pr-blue-deep));
+        -webkit-text-fill-color: initial;
+        animation: prGrowX .9s .7s var(--pr-ease) backwards, prBarGlow 3s 2s ease-in-out infinite;
+    }
+
+    .col-md-8.col-lg-7 > .card > .text-muted {
+        color: var(--pr-ink-soft) !important;
+        font-weight: 500;
+        animation: prSlideUp .8s .5s var(--pr-ease) backwards;
+    }
+
+    /* ---------- Form ---------- */
+    .card form > * { animation: prSlideRight .8s var(--pr-ease) backwards; }
+    .card form > :nth-child(1) { animation-delay: .60s; }
+    .card form > :nth-child(2) { animation-delay: .72s; }
+    .card form > :nth-child(3) { animation-delay: .84s; }
+    .card form > :nth-child(4) { animation-delay: .96s; }
+    .card form > :nth-child(5) { animation-delay: 1.08s; }
+    .card form > :nth-child(6) { animation-delay: 1.20s; animation-name: prSlideUp; }
+
+    .card .form-label {
+        color: var(--pr-ink);
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 7px;
+        transition: color .3s ease, transform .3s var(--pr-ease);
+    }
+    .card .mb-3:focus-within > .form-label {
+        color: var(--pr-blue-deep);
+        transform: translateX(4px);
+    }
+
+    .card .form-control {
+        padding: 12px 14px;
+        border: 2px solid var(--pr-beige);
+        border-radius: 12px;
+        background: var(--pr-beige-pale);
+        color: var(--pr-ink);
+        font-weight: 500;
+        transition: border-color .3s ease, box-shadow .3s ease, background .3s ease, transform .3s var(--pr-ease);
+    }
+    .card .form-control:hover { border-color: var(--pr-blue-light); }
+    .card .form-control:focus {
+        background: #fff;
+        border-color: var(--pr-blue);
+        color: var(--pr-ink);
+        box-shadow: 0 0 0 .28rem rgba(47, 107, 255, .22);
+        transform: translateY(-2px);
+        animation: prFocusRing 1.8s ease-in-out infinite;
+    }
+    /* filled required fields get a soft blue border */
+    .card input[required]:valid:not(:focus) {
+        border-color: var(--pr-blue-light);
+        background: #fff;
+    }
+
+    .card .form-text {
+        color: var(--pr-ink-soft);
+        font-size: 12.5px;
+        font-weight: 500;
+        padding: 6px 10px;
+        margin-top: 8px;
+        border-left: 3px solid var(--pr-beige);
+        border-radius: 0 8px 8px 0;
+        background: var(--pr-beige-pale);
+        transition: border-color .3s ease, transform .3s var(--pr-ease);
+        animation: prFadeIn 1s 1.3s ease backwards;
+    }
+    .card .mb-3:focus-within > .form-text {
+        border-left-color: var(--pr-blue);
+        transform: translateX(4px);
+    }
+
+    /* ---------- Button ---------- */
+    .card .btn-primary {
+        position: relative;
+        overflow: hidden;
+        padding: 13px;
+        border: none;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 15px;
+        background: linear-gradient(135deg, var(--pr-blue-light), var(--pr-blue) 55%, var(--pr-blue-deep));
+        box-shadow: 0 12px 24px rgba(47, 107, 255, .35);
+        transition: transform .3s var(--pr-ease), box-shadow .3s var(--pr-ease);
+        animation: prSlideUp .8s 1.2s var(--pr-ease) backwards, prSoftPulse 2.8s 2.4s ease-in-out infinite;
+    }
+    .card .btn-primary::after {
+        content: "";
+        position: absolute;
+        top: 0; left: -120%;
+        width: 60%; height: 100%;
+        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .5), transparent);
+        transform: skewX(-20deg);
+        animation: prBtnShine 3.6s 2s ease-in-out infinite;
+        pointer-events: none;
+    }
+    .card .btn-primary:hover,
+    .card .btn-primary:focus {
+        background: linear-gradient(135deg, var(--pr-blue), var(--pr-blue-deep));
+        transform: translateY(-3px);
+        box-shadow: 0 16px 30px rgba(47, 107, 255, .45);
+        animation: none;
+    }
+    .card .btn-primary:active { transform: scale(.96); }
+    .card .btn-primary:focus-visible {
+        outline: 3px solid rgba(126, 163, 255, .7);
+        outline-offset: 2px;
+    }
+
+    /* ---------- Sign-in link ---------- */
+    .col-md-8.col-lg-7 > .card > p.mt-3 {
+        color: var(--pr-ink-soft);
+        font-weight: 500;
+        animation: prFadeIn .9s 1.4s ease backwards;
+    }
+    .col-md-8.col-lg-7 > .card > p.mt-3 a {
+        position: relative;
+        color: var(--pr-blue-deep);
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .col-md-8.col-lg-7 > .card > p.mt-3 a::after {
+        content: "";
+        position: absolute;
+        left: 0; bottom: -2px;
+        width: 100%; height: 2px;
+        background: var(--pr-blue);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .4s var(--pr-ease);
+    }
+    .col-md-8.col-lg-7 > .card > p.mt-3 a:hover { color: var(--pr-blue); }
+    .col-md-8.col-lg-7 > .card > p.mt-3 a:hover::after { transform: scaleX(1); }
+
+    /* ---------- Keyframes ---------- */
+    @keyframes prPageFade     { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes prFadeIn       { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes prSlideUp      { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+    @keyframes prSlideRight   { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+    @keyframes prCardIn       { from { opacity: 0; transform: translateY(60px) scale(.94); } to { opacity: 1; transform: none; } }
+    @keyframes prGrowX        { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
+    @keyframes prBarGlow      { 0%, 100% { box-shadow: 0 0 0 rgba(47, 107, 255, 0); } 50% { box-shadow: 0 0 12px rgba(47, 107, 255, .7); } }
+    @keyframes prGradientSlide { from { background-position: 0% 0; } to { background-position: 300% 0; } }
+    @keyframes prTextSweep    { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
+    @keyframes prSpin         { to { transform: rotate(360deg); } }
+    @keyframes prGridDrift    { from { background-position: 0 0; } to { background-position: 60px 60px; } }
+    @keyframes prOrb          { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(90px, -70px); } }
+    @keyframes prFocusRing    { 0%, 100% { box-shadow: 0 0 0 .28rem rgba(47, 107, 255, .22); } 50% { box-shadow: 0 0 0 .5rem rgba(47, 107, 255, .08); } }
+    @keyframes prSoftPulse    {
+        0%, 100% { box-shadow: 0 12px 24px rgba(47, 107, 255, .35), 0 0 0 0 rgba(47, 107, 255, .4); }
+        50%      { box-shadow: 0 12px 24px rgba(47, 107, 255, .35), 0 0 0 10px rgba(47, 107, 255, 0); }
+    }
+    @keyframes prBtnShine     { 0%, 55% { left: -120%; } 100% { left: 160%; } }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: .01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+</style>
+
 <div class="row justify-content-center"><div class="col-md-8 col-lg-7"><div class="card shadow-sm border-0 p-4">
 <h2>Create patient account</h2><p class="text-muted">Enter your details to get started.</p>
 <form method="post"><div class="row"><div class="col-md-6 mb-3"><label class="form-label">First name</label><input class="form-control" name="firstName" required></div>

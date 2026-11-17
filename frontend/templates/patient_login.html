@@ -1,11 +1,316 @@
 {% extends "base.html" %}
+
 {% block title %}Patient Login | MediSlot{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --theme-charcoal: #1E1E1C;
+        --theme-beige: #D8CBB3;
+        --theme-blue: #2F6BFF;
+        --theme-muted: rgba(30, 30, 28, 0.68);
+        --theme-blue-soft: rgba(47, 107, 255, 0.14);
+        --theme-beige-soft: rgba(216, 203, 179, 0.35);
+    }
+
+    .patient-login-page {
+        position: relative;
+        isolation: isolate;
+        display: flex;
+        align-items: center;
+        min-height: calc(100vh - 7rem);
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .patient-login-page::before,
+    .patient-login-page::after {
+        position: absolute;
+        z-index: -1;
+        content: "";
+        border-radius: 50%;
+        pointer-events: none;
+        filter: blur(8px);
+    }
+
+    .patient-login-page::before {
+        top: 4%;
+        left: -8rem;
+        width: 21rem;
+        height: 21rem;
+        background: radial-gradient(circle, var(--theme-blue-soft), transparent 70%);
+        animation: driftBlue 13s ease-in-out infinite;
+    }
+
+    .patient-login-page::after {
+        right: -7rem;
+        bottom: 1%;
+        width: 23rem;
+        height: 23rem;
+        background: radial-gradient(circle, var(--theme-beige-soft), transparent 70%);
+        animation: driftBeige 16s ease-in-out infinite;
+    }
+
+    .patient-login-card {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(30, 30, 28, 0.12) !important;
+        border-radius: 1.5rem !important;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 18px 42px rgba(30, 30, 28, 0.1) !important;
+        animation: cardReveal 0.75s cubic-bezier(.22, 1, .36, 1) both;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .patient-login-card::before {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 5px;
+        content: "";
+        background: linear-gradient(
+            90deg,
+            var(--theme-charcoal),
+            var(--theme-blue),
+            var(--theme-beige),
+            var(--theme-blue)
+        );
+        background-size: 250% 100%;
+        animation: accentFlow 6s linear infinite;
+    }
+
+    .patient-login-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 24px 50px rgba(47, 107, 255, 0.16) !important;
+    }
+
+    .patient-login-card h2 {
+        color: var(--theme-charcoal);
+        font-weight: 700;
+        animation: fadeRise 0.6s 0.1s ease both;
+    }
+
+    .patient-login-description {
+        color: var(--theme-muted) !important;
+        animation: fadeRise 0.6s 0.18s ease both;
+    }
+
+    .patient-login-card .form-label {
+        color: var(--theme-charcoal);
+        font-weight: 600;
+    }
+
+    .patient-login-card .form-control {
+        border: 1px solid rgba(30, 30, 28, 0.18);
+        border-radius: 0.75rem;
+        padding: 0.75rem 0.9rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .patient-login-card .form-control:hover {
+        border-color: var(--theme-beige);
+    }
+
+    .patient-login-card .form-control:focus {
+        border-color: var(--theme-blue);
+        box-shadow: 0 0 0 0.22rem var(--theme-blue-soft);
+        transform: translateY(-1px);
+    }
+
+    .patient-login-card form .mb-3 {
+        animation: fadeRise 0.55s ease both;
+    }
+
+    .patient-login-card form .mb-3:nth-child(1) {
+        animation-delay: 0.24s;
+    }
+
+    .patient-login-card form .mb-3:nth-child(2) {
+        animation-delay: 0.34s;
+    }
+
+    .patient-login-card .btn-primary {
+        border: 0;
+        background: linear-gradient(110deg, var(--theme-charcoal), var(--theme-blue)) !important;
+        background-size: 200% 100% !important;
+        box-shadow: 0 8px 20px rgba(47, 107, 255, 0.22);
+        animation: buttonGlow 3s 1s ease-in-out infinite;
+        transition: background-position 0.4s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .patient-login-card .btn-primary:hover,
+    .patient-login-card .btn-primary:focus-visible {
+        background-position: 100% 0 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 13px 26px rgba(47, 107, 255, 0.3);
+    }
+
+    .patient-login-card a:not(.btn) {
+        color: var(--theme-blue);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .patient-login-card a:not(.btn):hover {
+        color: var(--theme-charcoal);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+
+    .patient-login-card p a {
+        display: inline-block;
+    }
+
+    .patient-login-card p.mt-3 {
+        animation: fadeRise 0.55s 0.45s ease both;
+    }
+
+    .patient-login-card p.mt-2 {
+        animation: fadeRise 0.55s 0.55s ease both;
+    }
+
+    .patient-login-page a:focus-visible,
+    .patient-login-page button:focus-visible {
+        outline: 3px solid var(--theme-blue);
+        outline-offset: 3px;
+    }
+
+    @keyframes cardReveal {
+        from {
+            opacity: 0;
+            transform: translateY(28px) scale(0.98);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes fadeRise {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes accentFlow {
+        from {
+            background-position: 0 0;
+        }
+
+        to {
+            background-position: 250% 0;
+        }
+    }
+
+    @keyframes buttonGlow {
+        0%, 100% {
+            box-shadow: 0 8px 20px rgba(47, 107, 255, 0.18);
+        }
+
+        50% {
+            box-shadow: 0 10px 26px rgba(47, 107, 255, 0.32);
+        }
+    }
+
+    @keyframes driftBlue {
+        0%, 100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(30px, 22px);
+        }
+    }
+
+    @keyframes driftBeige {
+        0%, 100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(-26px, -20px);
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .patient-login-page {
+            min-height: auto;
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            animation-delay: 0s !important;
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        .patient-login-card:hover,
+        .patient-login-card .btn-primary:hover {
+            transform: none;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center"><div class="col-md-6 col-lg-5"><div class="card shadow-sm border-0 p-4">
-<h2 class="mb-2">Patient sign in</h2><p class="text-muted">Access your MediSlot patient account.</p>
-<form method="post"><div class="mb-3"><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div>
-<div class="mb-3"><label class="form-label">Password</label><input class="form-control" type="password" name="password" required></div>
-<button class="btn btn-primary w-100" type="submit">Sign in</button></form>
-<p class="mt-3 mb-0">New to MediSlot? <a href="{{ url_for('patient.register') }}">Create patient account</a></p>
-<p class="mt-2"><a href="{{ url_for('auth.login') }}">Doctor login</a></p></div></div></div>
+
+<div class="patient-login-page row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="patient-login-card card shadow-sm border-0 p-4">
+
+            <h2 class="mb-2">Patient sign in</h2>
+            <p class="patient-login-description">
+                Access your MediSlot patient account.
+            </p>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input class="form-control"
+                           type="email"
+                           name="email"
+                           required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input class="form-control"
+                           type="password"
+                           name="password"
+                           required>
+                </div>
+
+                <button class="btn btn-primary w-100" type="submit">
+                    Sign in
+                </button>
+            </form>
+
+            <p class="mt-3 mb-0">
+                New to MediSlot?
+                <a href="{{ url_for('patient.register') }}">Create patient account</a>
+            </p>
+
+            <p class="mt-2">
+                <a href="{{ url_for('auth.login') }}">Doctor login</a>
+            </p>
+
+        </div>
+    </div>
+</div>
+
 {% endblock %}

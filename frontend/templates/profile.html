@@ -18,20 +18,21 @@
 
     <style>
         :root {
-            --pink-primary: #F8B4C8;
-            --pink-blush: #FCE4EC;
-            --pink-rose: #D81B60;
-            --pink-deep: #AD1457;
-            --pink-bg: #FFF5F8;
-            --pink-border: #F9D3DF;
-            --pink-text: #4A2A36;
-            --pink-muted: #9A7584;
-            --pink-shadow: 0 6px 20px rgba(216, 27, 96, 0.08);
-            --pink-shadow-hover: 0 12px 28px rgba(216, 27, 96, 0.16);
+            --pink-primary: #D8CBB3;
+            --pink-blush: #D8CBB3;
+            --pink-rose: #2F6BFF;
+            --pink-deep: #1E1E1C;
+            --pink-bg: #D8CBB3;
+            --pink-border: #D8CBB3;
+            --pink-text: #1E1E1C;
+            --pink-muted: rgba(30, 30, 28, 0.65);
+            --pink-shadow: 0 6px 20px rgba(47, 107, 255, 0.08);
+            --pink-shadow-hover: 0 12px 28px rgba(47, 107, 255, 0.16);
+            --motion-ease: cubic-bezier(.22, 1, .36, 1);
         }
 
         html, body {
-            background: linear-gradient(180deg, #FFF5F8 0%, #FFFFFF 100%) !important;
+            background: linear-gradient(180deg, #D8CBB3 0%, #FFFFFF 100%) !important;
             color: var(--pink-text) !important;
             font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
             -webkit-font-smoothing: antialiased;
@@ -41,15 +42,16 @@
             display: flex !important;
             min-height: 100vh;
             background: transparent !important;
+            animation: pageReveal 0.55s var(--motion-ease) both;
         }
 
         /* ---------- Sidebar ---------- */
         .sidebar {
             width: 260px !important;
             flex-shrink: 0;
-            background: linear-gradient(180deg, #FFFFFF 0%, #FFF5F8 100%) !important;
+            background: linear-gradient(180deg, #FFFFFF 0%, #D8CBB3 100%) !important;
             border-right: 1px solid var(--pink-border) !important;
-            box-shadow: 4px 0 24px rgba(248, 180, 200, 0.18);
+            box-shadow: 4px 0 24px rgba(47, 107, 255, 0.18);
             padding: 24px 16px !important;
             display: flex !important;
             flex-direction: column;
@@ -57,6 +59,7 @@
             top: 0;
             height: 100vh;
             overflow-y: auto;
+            animation: sidebarReveal 0.6s var(--motion-ease) both;
         }
 
         .sidebar .brand {
@@ -77,10 +80,10 @@
             align-items: center;
             justify-content: center;
             border-radius: 12px;
-            background: linear-gradient(135deg, #F8B4C8, #D81B60);
+            background: linear-gradient(135deg, #1E1E1C, #2F6BFF);
             color: #FFFFFF !important;
             font-size: 1.2rem;
-            box-shadow: 0 6px 14px rgba(216, 27, 96, 0.28);
+            box-shadow: 0 6px 14px rgba(47, 107, 255, 0.28);
         }
 
         .sidebar-label {
@@ -97,6 +100,17 @@
             flex-direction: column;
             gap: 4px;
         }
+
+        .sidebar-nav .nav-item {
+            animation: navItemReveal 0.45s var(--motion-ease) both;
+        }
+
+        .sidebar-nav .nav-item:nth-child(1) { animation-delay: 0.08s; }
+        .sidebar-nav .nav-item:nth-child(2) { animation-delay: 0.14s; }
+        .sidebar-nav .nav-item:nth-child(3) { animation-delay: 0.20s; }
+        .sidebar-nav .nav-item:nth-child(4) { animation-delay: 0.26s; }
+        .sidebar-nav .nav-item:nth-child(5) { animation-delay: 0.32s; }
+        .sidebar-nav .nav-item:nth-child(6) { animation-delay: 0.38s; }
 
         .sidebar a.nav-item,
         .sidebar .logout-btn {
@@ -136,9 +150,9 @@
         }
 
         .sidebar a.nav-item.active {
-            background: linear-gradient(135deg, #F8B4C8 0%, #F48FB1 100%) !important;
+            background: linear-gradient(135deg, #1E1E1C 0%, #2F6BFF 100%) !important;
             color: #FFFFFF !important;
-            box-shadow: 0 8px 18px rgba(216, 27, 96, 0.25);
+            box-shadow: 0 8px 18px rgba(47, 107, 255, 0.25);
         }
 
         .sidebar a.nav-item.active i {
@@ -171,10 +185,11 @@
             background: rgba(255, 255, 255, 0.85) !important;
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--pink-border) !important;
-            box-shadow: 0 4px 16px rgba(248, 180, 200, 0.15);
+            box-shadow: 0 4px 16px rgba(47, 107, 255, 0.15);
             position: sticky;
             top: 0;
             z-index: 10;
+            animation: topbarReveal 0.5s 0.1s var(--motion-ease) both;
         }
 
         .topbar h5 {
@@ -196,11 +211,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #F8B4C8, #D81B60) !important;
+            background: linear-gradient(135deg, #1E1E1C, #2F6BFF) !important;
             color: #FFFFFF !important;
             font-size: 1.3rem;
-            box-shadow: 0 6px 14px rgba(216, 27, 96, 0.3);
+            box-shadow: 0 6px 14px rgba(47, 107, 255, 0.3);
             border: 2px solid #FFFFFF;
+            animation: avatarFloat 3.2s 0.8s ease-in-out infinite;
         }
 
         .dashboard-content {
@@ -211,6 +227,7 @@
 
         .page-heading {
             margin-bottom: 24px;
+            animation: fadeRise 0.55s 0.12s var(--motion-ease) both;
         }
 
         .page-heading h2 {
@@ -232,10 +249,24 @@
             box-shadow: var(--pink-shadow);
             padding: 26px !important;
             transition: box-shadow 0.3s ease, transform 0.3s ease;
+            animation: cardReveal 0.65s var(--motion-ease) both;
         }
 
         .content-card:hover {
             box-shadow: var(--pink-shadow-hover);
+            transform: translateY(-3px);
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
+            animation-delay: 0.08s;
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(2) {
+            animation-delay: 0.16s;
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) {
+            animation-delay: 0.24s;
         }
 
         .card-heading {
@@ -267,6 +298,7 @@
             color: var(--pink-rose);
             font-size: 1rem;
             margin-right: 10px !important;
+            animation: iconPop 0.55s 0.2s var(--motion-ease) both;
         }
 
         .card-heading p {
@@ -281,6 +313,7 @@
             overflow: hidden;
             padding: 0 !important;
             margin-bottom: 24px !important;
+            animation-delay: 0.06s;
         }
 
         .content-card:has(.profile-picture-section)::before {
@@ -289,7 +322,7 @@
             height: 110px;
             background:
                 radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0) 45%),
-                linear-gradient(120deg, #F8B4C8 0%, #F48FB1 55%, #D81B60 120%);
+                linear-gradient(120deg, #D8CBB3 0%, #2F6BFF 55%, #2F6BFF 120%);
         }
 
         .content-card:has(.profile-picture-section) > .d-flex {
@@ -315,9 +348,16 @@
             margin-top: -62px;
             border-radius: 50%;
             padding: 5px;
-            background: linear-gradient(135deg, #FFFFFF, #FCE4EC);
-            box-shadow: 0 10px 26px rgba(216, 27, 96, 0.28);
+            background: linear-gradient(135deg, #FFFFFF, #D8CBB3);
+            box-shadow: 0 10px 26px rgba(47, 107, 255, 0.28);
             position: relative;
+            animation: avatarReveal 0.75s 0.2s var(--motion-ease) both;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .profile-picture-preview:hover {
+            transform: scale(1.045) rotate(2deg);
+            box-shadow: 0 14px 32px rgba(47, 107, 255, 0.34);
         }
 
         .profile-picture-preview img,
@@ -384,20 +424,20 @@
         }
 
         #uploadPhotoBtn {
-            background: linear-gradient(135deg, #F48FB1, #D81B60);
+            background: linear-gradient(135deg, #1E1E1C, #2F6BFF);
             color: #FFFFFF;
             border: 1.5px solid transparent;
-            box-shadow: 0 8px 16px rgba(216, 27, 96, 0.25);
+            box-shadow: 0 8px 16px rgba(47, 107, 255, 0.25);
         }
 
         #uploadPhotoBtn:hover:not(:disabled) {
             transform: translateY(-1px);
-            box-shadow: 0 12px 22px rgba(216, 27, 96, 0.35);
+            box-shadow: 0 12px 22px rgba(47, 107, 255, 0.35);
         }
 
         #uploadPhotoBtn:disabled {
             background: var(--pink-blush);
-            color: #D9A5B7;
+            color: #1E1E1C;
             box-shadow: none;
             cursor: not-allowed;
             border-color: var(--pink-border);
@@ -424,31 +464,31 @@
         }
 
         /* ---------- Form layout ---------- */
-        form[method="POST"] {
+        .dashboard-content > form[method="POST"] {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 24px;
             align-items: start;
         }
 
-        form[method="POST"] > .content-card {
+        .dashboard-content > form[method="POST"] > .content-card {
             margin: 0 !important;
         }
 
-        form[method="POST"] > .content-card:nth-child(1) {
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
             grid-column: 1 / -1;
         }
 
-        form[method="POST"] > .content-card:nth-child(2) .col-md-6,
-        form[method="POST"] > .content-card:nth-child(3) .col-md-6 {
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(2) .col-md-6,
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) .col-md-6 {
             width: 100%;
         }
 
-        form[method="POST"] > .content-card:nth-child(3) {
-            background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F8 100%) !important;
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) {
+            background: linear-gradient(135deg, #FFFFFF 0%, #D8CBB3 100%) !important;
         }
 
-        form[method="POST"] > .d-flex {
+        .dashboard-content > form[method="POST"] > .d-flex {
             grid-column: 1 / -1;
             margin: 0 !important;
             padding: 18px 22px;
@@ -479,6 +519,7 @@
             background: #FFFFFF;
             color: var(--pink-text);
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            animation: controlReveal 0.45s var(--motion-ease) both;
         }
 
         .form-control:hover {
@@ -487,7 +528,7 @@
 
         .form-control:focus {
             border-color: var(--pink-rose) !important;
-            box-shadow: 0 0 0 0.25rem rgba(248, 180, 200, 0.45) !important;
+            box-shadow: 0 0 0 0.25rem rgba(47, 107, 255, 0.45) !important;
             background: #FFFFFF;
             outline: none;
         }
@@ -505,7 +546,7 @@
         }
 
         .form-control::placeholder {
-            color: #D7B3C1;
+            color: rgba(30, 30, 28, 0.55);
         }
 
         .content-card small.text-muted {
@@ -524,17 +565,19 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #F48FB1 0%, #D81B60 100%) !important;
+            background: linear-gradient(135deg, #1E1E1C 0%, #2F6BFF 100%) !important;
+            background-size: 200% 100% !important;
             border: none !important;
             color: #FFFFFF !important;
-            box-shadow: 0 8px 18px rgba(216, 27, 96, 0.28);
+            box-shadow: 0 8px 18px rgba(47, 107, 255, 0.28);
+            transition: background-position 0.4s ease, transform 0.25s ease, box-shadow 0.25s ease;
         }
 
         .btn-primary:hover,
         .btn-primary:focus {
-            background: linear-gradient(135deg, #D81B60 0%, #AD1457 100%) !important;
+            background-position: 100% 0;
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(216, 27, 96, 0.38);
+            box-shadow: 0 12px 24px rgba(47, 107, 255, 0.38);
         }
 
         .btn-primary:active {
@@ -565,9 +608,9 @@
         }
 
         .badge.bg-success {
-            background-color: #FCE4EC !important;
-            color: #AD1457 !important;
-            border-color: #F8B4C8;
+            background-color: #D8CBB3 !important;
+            color: #1E1E1C !important;
+            border-color: #D8CBB3;
         }
 
         /* ---------- Alerts ---------- */
@@ -578,12 +621,13 @@
             padding: 14px 18px;
             font-weight: 500;
             margin-bottom: 20px;
+            animation: fadeRise 0.5s var(--motion-ease) both;
         }
 
         .alert-success {
-            background: #FCE4EC;
-            color: #AD1457;
-            border-color: #F8B4C8;
+            background: #D8CBB3;
+            color: #1E1E1C;
+            border-color: #D8CBB3;
         }
 
         .alert-danger {
@@ -599,13 +643,13 @@
         }
 
         .alert-info {
-            background: #F3E5F5;
-            color: #7B1FA2;
-            border-color: #E1BEE7;
+            background: rgba(47, 107, 255, 0.12);
+            color: #1E1E1C;
+            border-color: #2F6BFF;
         }
 
         .btn-close:focus {
-            box-shadow: 0 0 0 0.2rem rgba(248, 180, 200, 0.5);
+            box-shadow: 0 0 0 0.2rem rgba(47, 107, 255, 0.5);
         }
 
         /* ---------- Misc ---------- */
@@ -627,6 +671,56 @@
         button:focus-visible {
             outline: 2px solid var(--pink-rose);
             outline-offset: 2px;
+        }
+
+        @keyframes pageReveal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes sidebarReveal {
+            from { opacity: 0; transform: translateX(-14px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes navItemReveal {
+            from { opacity: 0; transform: translateX(-8px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes topbarReveal {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes cardReveal {
+            from { opacity: 0; transform: translateY(22px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes avatarReveal {
+            from { opacity: 0; transform: scale(0.82) rotate(-8deg); }
+            to { opacity: 1; transform: scale(1) rotate(0); }
+        }
+
+        @keyframes avatarFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes iconPop {
+            from { opacity: 0; transform: scale(0.72); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes controlReveal {
+            from { opacity: 0.75; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ---------- Responsive ---------- */
@@ -668,11 +762,11 @@
                 position: relative;
             }
 
-            form[method="POST"] {
+            .dashboard-content > form[method="POST"] {
                 grid-template-columns: minmax(0, 1fr);
             }
 
-            form[method="POST"] > .content-card:nth-child(1) {
+            .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
                 grid-column: auto;
             }
         }
@@ -713,19 +807,38 @@
                 text-align: center;
             }
 
-            form[method="POST"] > .d-flex {
+            .dashboard-content > form[method="POST"] > .d-flex {
                 position: static;
                 flex-direction: column-reverse;
             }
 
-            form[method="POST"] > .d-flex .btn {
+            .dashboard-content > form[method="POST"] > .d-flex .btn {
                 width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                animation-delay: 0s !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .content-card:hover,
+            .profile-picture-preview:hover,
+            .sidebar a.nav-item:hover,
+            .sidebar .logout-btn:hover {
+                transform: none;
             }
         }
     </style>
 </head>
 
-<body style="background: linear-gradient(180deg, #FFF5F8 0%, #FFFFFF 100%); color: #4A2A36; margin: 0;">
+<body style="background: linear-gradient(180deg, #D8CBB3 0%, #FFFFFF 100%); color: #1E1E1C; margin: 0;">
 
 <div class="dashboard-wrapper">
 
@@ -791,8 +904,8 @@
         <header class="topbar">
 
             <div>
-                <h5 style="color: #AD1457; font-weight: 700;">My Profile</h5>
-                <p style="color: #9A7584;">Manage your professional information.</p>
+                <h5 style="color: #1E1E1C; font-weight: 700;">My Profile</h5>
+                <p style="color: rgba(30, 30, 28, 0.65);">Manage your professional information.</p>
             </div>
 
             <div class="topbar-right">
@@ -808,8 +921,8 @@
 
             <div class="page-heading">
                 <div>
-                    <h2 style="color: #AD1457; font-weight: 700;">Doctor Profile</h2>
-                    <p style="color: #9A7584;">Manage your registered information.</p>
+                    <h2 style="color: #1E1E1C; font-weight: 700;">Doctor Profile</h2>
+                    <p style="color: rgba(30, 30, 28, 0.65);">Manage your registered information.</p>
                 </div>
             </div>
 
@@ -994,6 +1107,23 @@
                                    max="80"
                                    step="1"
                                    required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label" for="languagesSpoken">
+                                Languages Spoken
+                            </label>
+
+                            <input type="text"
+                                   id="languagesSpoken"
+                                   name="languagesSpoken"
+                                   class="form-control"
+                                   value="{{ profile.get('languagesSpoken', [])|join(', ') }}"
+                                   placeholder="English, Hindi, Telugu">
+
+                            <small class="text-muted">
+                                Separate languages with commas.
+                            </small>
                         </div>
 
                         <div class="col-md-6">

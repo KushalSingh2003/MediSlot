@@ -119,11 +119,17 @@ def index():
         if years_experience < 0:
             flash("Experience cannot be negative.", "danger")
             return redirect(url_for("profile.index"))
+        languages_spoken = [
+            language.strip()
+            for language in request.form.get("languagesSpoken", "").split(",")
+            if language.strip()
+        ]
 
         payload = {
             "fullName": full_name,
             "phone": phone,
-            "yearsExperience": years_experience
+            "yearsExperience": years_experience,
+            "languagesSpoken": languages_spoken
         }
 
         response = APIClient.request(

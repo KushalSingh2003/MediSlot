@@ -22,20 +22,20 @@
 
         /* ---------- Design tokens ---------- */
         :root {
-            --ms-ink: #3a1226;
-            --ms-ink-soft: #7a5566;
-            --ms-teal: #e0457b;
-            --ms-teal-deep: #b81d5b;
-            --ms-aqua: #ff8fb8;
-            --ms-mist: #fff0f5;
-            --ms-line: #f6d3e0;
-            --ms-amber: #ffffff;
+            --ms-ink: #1E1E1C;
+            --ms-ink-soft: rgba(30, 30, 28, 0.68);
+            --ms-teal: #2F6BFF;
+            --ms-teal-deep: #1E1E1C;
+            --ms-aqua: #D8CBB3;
+            --ms-mist: rgba(216, 203, 179, 0.35);
+            --ms-line: rgba(30, 30, 28, 0.12);
+            --ms-amber: #D8CBB3;
             --ms-surface: #ffffff;
             --ms-radius-lg: 22px;
             --ms-radius-md: 14px;
-            --ms-shadow-sm: 0 2px 10px rgba(58, 18, 38, 0.06);
-            --ms-shadow-md: 0 14px 34px rgba(224, 69, 123, 0.14);
-            --ms-shadow-lg: 0 26px 60px rgba(184, 29, 91, 0.22);
+            --ms-shadow-sm: 0 2px 10px rgba(30, 30, 28, 0.06);
+            --ms-shadow-md: 0 14px 34px rgba(47, 107, 255, 0.14);
+            --ms-shadow-lg: 0 26px 60px rgba(47, 107, 255, 0.22);
             --ms-ease: cubic-bezier(.22, 1, .36, 1);
         }
 
@@ -46,14 +46,16 @@
             font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
             color: var(--ms-ink);
             background:
-                radial-gradient(1200px 600px at 100% -10%, rgba(255, 143, 184, 0.16), transparent 60%),
-                radial-gradient(900px 500px at -10% 30%, rgba(224, 69, 123, 0.12), transparent 60%),
-                linear-gradient(180deg, #fffafc 0%, #fff0f5 100%) !important;
+                radial-gradient(1200px 600px at 100% -10%, rgba(47, 107, 255, 0.16), transparent 60%),
+                radial-gradient(900px 500px at -10% 30%, rgba(47, 107, 255, 0.12), transparent 60%),
+                linear-gradient(180deg, #FFFFFF 0%, rgba(216, 203, 179, 0.35) 100%) !important;
             background-attachment: fixed !important;
             overflow-x: hidden;
             position: relative;
             animation: pageFade .9s var(--ms-ease) both;
         }
+
+        body.bg-light { background-color: var(--ms-mist) !important; }
 
         /* floating background orbs */
         body::before,
@@ -69,13 +71,13 @@
         body::before {
             width: 380px; height: 380px;
             top: 18%; left: -120px;
-            background: rgba(255, 143, 184, 0.35);
+            background: rgba(47, 107, 255, 0.35);
             animation: orbOne 16s ease-in-out infinite;
         }
         body::after {
             width: 440px; height: 440px;
             bottom: -140px; right: -140px;
-            background: rgba(224, 69, 123, 0.30);
+            background: rgba(47, 107, 255, 0.30);
             animation: orbTwo 19s ease-in-out infinite;
         }
 
@@ -87,19 +89,16 @@
         .text-muted { color: var(--ms-ink-soft) !important; }
 
         nav,
-.container {
-    position: relative;
-    z-index: 1;
-}
+        .container { position: relative; z-index: 1; }
 
-        ::selection { background: var(--ms-aqua); color: #5a0f2c; }
+        ::selection { background: var(--ms-aqua); color: #1E1E1C; }
 
         /* ---------- Navbar ---------- */
         .navbar.bg-primary {
-            background: linear-gradient(110deg, var(--ms-teal-deep), var(--ms-teal) 55%, #f06292) !important;
+            background: linear-gradient(110deg, var(--ms-teal-deep), var(--ms-teal) 55%, #2F6BFF) !important;
             background-size: 200% 200%;
             animation: navDrop .8s var(--ms-ease) both, gradientShift 12s ease-in-out infinite;
-            box-shadow: 0 10px 30px rgba(184, 29, 91, 0.28);
+            box-shadow: 0 10px 30px rgba(47, 107, 255, 0.28);
             padding-top: .85rem;
             padding-bottom: .85rem;
             position: sticky;
@@ -183,8 +182,8 @@
             border-radius: var(--ms-radius-lg);
             color: #fff;
             background:
-                radial-gradient(600px 240px at 90% 0%, rgba(255, 143, 184, .55), transparent 70%),
-                linear-gradient(120deg, var(--ms-teal-deep), var(--ms-teal) 60%, #f06292);
+                radial-gradient(600px 240px at 90% 0%, rgba(47, 107, 255, .55), transparent 70%),
+                linear-gradient(120deg, var(--ms-teal-deep), var(--ms-teal) 60%, #2F6BFF);
             background-size: 100% 100%, 200% 200%;
             box-shadow: var(--ms-shadow-lg);
             animation: heroIn 1s var(--ms-ease) both, gradientShift 14s ease-in-out infinite;
@@ -228,7 +227,7 @@
             animation: slideUp .9s .4s var(--ms-ease) both;
         }
 
-        /* ---------- Section headings ---------- */
+        /* ---------- Section heading ---------- */
         .section-head {
             position: relative;
             padding-left: 1.1rem;
@@ -246,15 +245,6 @@
         }
         .section-head h4 { color: var(--ms-ink); font-weight: 700 !important; }
 
-        hr.my-5 {
-            border: 0;
-            height: 2px;
-            opacity: 1;
-            background: linear-gradient(90deg, transparent, var(--ms-aqua), var(--ms-teal), transparent);
-            transform-origin: center;
-            animation: growX 1.2s var(--ms-ease) both;
-        }
-
         /* ---------- Alerts ---------- */
         .alert {
             border: 0;
@@ -270,12 +260,7 @@
         .alert .btn-close { transition: transform .35s var(--ms-ease); }
         .alert .btn-close:hover { transform: rotate(90deg) scale(1.15); }
 
-        /* ---------- Available type cards ---------- */
-        .type-col {
-            animation: cardIn .8s var(--ms-ease) both;
-            animation-delay: calc(var(--i, 0) * 110ms + 250ms);
-        }
-
+        /* ---------- Cards ---------- */
         .card {
             position: relative;
             border-radius: var(--ms-radius-lg) !important;
@@ -283,39 +268,6 @@
             overflow: hidden;
             transition: transform .5s var(--ms-ease), box-shadow .5s var(--ms-ease);
         }
-
-        .type-col .card {
-            box-shadow: var(--ms-shadow-sm) !important;
-            border: 1px solid var(--ms-line) !important;
-        }
-        .type-col .card::before {
-            content: "";
-            position: absolute;
-            inset: 0 0 auto 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--ms-aqua), var(--ms-teal), var(--ms-aqua));
-            background-size: 200% 100%;
-            animation: gradientSlide 4s linear infinite;
-        }
-        .type-col .card::after {
-            content: "";
-            position: absolute;
-            width: 170px; height: 170px;
-            right: -70px; bottom: -70px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(255, 143, 184, .22), transparent 70%);
-            transition: transform .7s var(--ms-ease);
-            pointer-events: none;
-        }
-        .type-col .card:hover {
-            transform: translateY(-10px) rotate(-.4deg);
-            box-shadow: var(--ms-shadow-md) !important;
-        }
-        .type-col .card:hover::after { transform: scale(2.2); }
-
-        .type-col .card-body { padding: 1.6rem 1.5rem 1.5rem; position: relative; z-index: 1; }
-        .type-col .card-body h5 { font-size: 1.2rem; font-weight: 700 !important; color: var(--ms-ink); }
-        .type-col .card-body p { font-size: .92rem; font-weight: 500; }
 
         /* ---------- Badges ---------- */
         .badge {
@@ -326,12 +278,15 @@
             border-radius: 999px;
         }
         .badge.bg-info {
-            background: linear-gradient(120deg, #ffe3ee, #ffd2e4) !important;
+            background: linear-gradient(120deg, rgba(216, 203, 179, 0.35), #D8CBB3) !important;
             color: var(--ms-teal-deep) !important;
+        }
+        .badge.bg-success {
             position: relative;
             overflow: hidden;
+            background: linear-gradient(120deg, #2F6BFF, #1E1E1C) !important;
+            animation: badgePop .7s .5s var(--ms-ease) both;
         }
-        .badge.bg-info::after,
         .badge.bg-success::after {
             content: "";
             position: absolute;
@@ -340,13 +295,10 @@
             background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .7), transparent);
             animation: shimmer 3.4s ease-in-out infinite;
         }
-        .badge.bg-success {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(120deg, #e0457b, #b81d5b) !important;
-            animation: badgePop .7s .5s var(--ms-ease) both;
+        .badge.bg-secondary {
+            background: #D8CBB3 !important;
+            color: var(--ms-ink) !important;
         }
-        .badge.bg-secondary { background: #b79aa8 !important; }
 
         /* ---------- Buttons ---------- */
         .btn {
@@ -382,12 +334,10 @@
         }
         .btn-outline-primary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 22px rgba(224, 69, 123, .3);
+            box-shadow: 0 10px 22px rgba(47, 107, 255, .3);
         }
 
-        .btn-outline-danger {
-            border-width: 2px;
-        }
+        .btn-outline-danger { border-width: 2px; }
         .btn-outline-danger:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 22px rgba(220, 53, 69, .3);
@@ -397,7 +347,7 @@
             background: linear-gradient(120deg, var(--ms-teal-deep), var(--ms-teal) 55%, var(--ms-aqua));
             background-size: 200% 100%;
             border: 0;
-            box-shadow: 0 8px 20px rgba(224, 69, 123, .28);
+            box-shadow: 0 8px 20px rgba(47, 107, 255, .28);
             transition: background-position .6s var(--ms-ease), transform .35s var(--ms-ease), box-shadow .35s var(--ms-ease);
         }
         .btn-primary:hover,
@@ -405,7 +355,12 @@
             background-position: 100% 0;
             background-color: transparent;
             transform: translateY(-3px);
-            box-shadow: 0 14px 28px rgba(224, 69, 123, .38);
+            box-shadow: 0 14px 28px rgba(47, 107, 255, .38);
+        }
+        .btn-primary:disabled {
+            background: #D8CBB3;
+            box-shadow: none;
+            color: var(--ms-ink-soft);
         }
 
         .btn-secondary {
@@ -414,18 +369,19 @@
             border: 0;
         }
         .btn-secondary:hover {
-            background: #f6d3e0;
+            background: rgba(30, 30, 28, 0.12);
             color: var(--ms-ink);
             transform: translateY(-2px);
         }
 
         .add-type-btn { animation: softPulse 2.8s ease-in-out 1.4s infinite; }
-        .add-type-btn:hover { animation: none; }
+        .add-type-btn:hover,
+        .add-type-btn:disabled { animation: none; }
 
         .btn:focus-visible,
         .nav-link:focus-visible,
         .form-control:focus-visible {
-            outline: 3px solid rgba(255, 143, 184, .55);
+            outline: 3px solid rgba(47, 107, 255, .55);
             outline-offset: 2px;
         }
 
@@ -439,7 +395,7 @@
         .table-card .card-body { padding: 1rem 1.25rem; }
 
         .table {
-            --bs-table-hover-bg: rgba(255, 143, 184, .09);
+            --bs-table-hover-bg: rgba(47, 107, 255, .09);
             border-collapse: separate;
             border-spacing: 0 8px;
             margin-bottom: 0;
@@ -463,8 +419,8 @@
         }
         .table tbody tr:hover {
             transform: translateX(6px) scale(1.005);
-            box-shadow: 0 10px 24px rgba(224, 69, 123, .14);
-            background: #fff5f9;
+            box-shadow: 0 10px 24px rgba(47, 107, 255, .14);
+            background: rgba(216, 203, 179, 0.35);
         }
         .table tbody td {
             border: 0;
@@ -479,44 +435,39 @@
             color: var(--ms-ink);
         }
         .table tbody td:last-child { border-radius: 0 14px 14px 0; white-space: nowrap; }
-        .table tbody td .btn + form,
         .table tbody td form { margin-left: .35rem; }
 
         /* ---------- Empty state ---------- */
-        .empty-card .card-body { position: relative; }
         .empty-card h5 { font-weight: 700 !important; animation: floatY 4s ease-in-out infinite; }
         .empty-card {
-            border: 2px dashed #f3b6cf !important;
-            background: linear-gradient(135deg, #fff, #fff3f8);
+            border: 2px dashed rgba(47, 107, 255, 0.55) !important;
+            background: linear-gradient(135deg, #fff, rgba(216, 203, 179, 0.35));
             animation: cardIn .9s .2s var(--ms-ease) both;
         }
         .empty-card:hover { transform: translateY(-4px); }
 
         /* ---------- Modals ---------- */
-        .modal-backdrop.show { opacity: 1; background: rgba(58, 18, 38, .55); backdrop-filter: blur(6px); }
+        .modal-backdrop.show { opacity: 1; background: rgba(30, 30, 28, .55); backdrop-filter: blur(6px); }
 
         .modal.fade .modal-dialog {
             transform: translateY(40px) scale(.9) rotateX(8deg);
             opacity: 0;
             transition: transform .55s var(--ms-ease), opacity .4s ease;
         }
-        .modal.show .modal-dialog {
-            transform: none;
-            opacity: 1;
-        }
+        .modal.show .modal-dialog { transform: none; opacity: 1; }
 
         .modal-content {
             border: 0;
             border-radius: 26px;
             overflow: hidden;
-            box-shadow: 0 40px 90px rgba(58, 18, 38, .38);
+            box-shadow: 0 40px 90px rgba(30, 30, 28, .38);
         }
         .modal-header {
             position: relative;
             border: 0;
             padding: 1.4rem 1.6rem;
             color: #fff;
-            background: linear-gradient(120deg, var(--ms-teal-deep), var(--ms-teal) 60%, #f06292);
+            background: linear-gradient(120deg, var(--ms-teal-deep), var(--ms-teal) 60%, #2F6BFF);
             background-size: 200% 200%;
             animation: gradientShift 10s ease-in-out infinite;
         }
@@ -528,6 +479,7 @@
             border-radius: 50%;
             background: rgba(255, 255, 255, .12);
             animation: floatY 5s ease-in-out infinite;
+            pointer-events: none;
         }
         .modal-header .btn-close {
             filter: invert(1) grayscale(1) brightness(2);
@@ -537,22 +489,16 @@
         }
         .modal-header .btn-close:hover { transform: rotate(180deg) scale(1.15); opacity: 1; }
 
-        .modal-body { padding: 1.7rem 1.6rem 1.2rem; background: #fffcfd; }
+        .modal-body { padding: 1.7rem 1.6rem 1.2rem; background: #FFFFFF; }
         .modal.show .modal-body .mb-3,
-        .modal.show .modal-body .form-check {
-            animation: slideUp .6s var(--ms-ease) both;
-        }
+        .modal.show .modal-body .form-check { animation: slideUp .6s var(--ms-ease) both; }
         .modal.show .modal-body .mb-3:nth-child(1) { animation-delay: .12s; }
         .modal.show .modal-body .mb-3:nth-child(2) { animation-delay: .20s; }
         .modal.show .modal-body .mb-3:nth-child(3) { animation-delay: .28s; }
         .modal.show .modal-body .mb-3:nth-child(4) { animation-delay: .36s; }
         .modal.show .modal-body .form-check        { animation-delay: .44s; }
 
-        .modal-footer {
-            border: 0;
-            padding: 1rem 1.6rem 1.5rem;
-            background: #fffcfd;
-        }
+        .modal-footer { border: 0; padding: 1rem 1.6rem 1.5rem; background: #FFFFFF; }
 
         .form-label {
             font-weight: 700;
@@ -572,20 +518,46 @@
         .form-control:focus,
         .form-select:focus {
             border-color: var(--ms-aqua);
-            box-shadow: 0 0 0 .28rem rgba(255, 143, 184, .2);
+            box-shadow: 0 0 0 .28rem rgba(47, 107, 255, .2);
             transform: translateY(-2px);
         }
-        .form-control:disabled {
+        .form-control[readonly] {
             background: var(--ms-mist);
             color: var(--ms-ink-soft);
             border-style: dashed;
         }
         .modal-body small { display: block; margin-top: .4rem; font-weight: 500; }
 
+        /* name of the consultation being edited */
+        .type-display {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #E6EEFF, #F6F1E7);
+            border: 2px solid rgba(47, 107, 255, .25);
+        }
+        .type-display .type-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px; height: 44px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+        }
+        .type-display .type-name { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.15rem; line-height: 1.2; }
+        .type-display .type-meta { font-size: .85rem; font-weight: 600; color: var(--ms-ink-soft); }
+
         .form-check-input {
             width: 1.35em;
             height: 1.35em;
-            border: 2px solid #e8a3c0;
+            border: 2px solid #2F6BFF;
             cursor: pointer;
             transition: transform .3s var(--ms-ease), background-color .3s, border-color .3s, box-shadow .3s;
         }
@@ -595,7 +567,7 @@
             border-color: var(--ms-teal);
             animation: checkPop .45s var(--ms-ease);
         }
-        .form-check-input:focus { box-shadow: 0 0 0 .28rem rgba(255, 143, 184, .25); }
+        .form-check-input:focus { box-shadow: 0 0 0 .28rem rgba(47, 107, 255, .25); }
         .form-check-label { font-weight: 700; cursor: pointer; margin-left: .25rem; }
 
         /* ---------- Responsive ---------- */
@@ -618,10 +590,8 @@
         @keyframes badgePop   { 0% { opacity: 0; transform: scale(.4); } 70% { transform: scale(1.12); } 100% { opacity: 1; transform: scale(1); } }
         @keyframes checkPop   { 0% { transform: scale(.7); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
         @keyframes growY      { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-        @keyframes growX      { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
         @keyframes shimmer    { 0%, 55% { left: -100%; } 100% { left: 160%; } }
         @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
-        @keyframes gradientSlide { from { background-position: 0% 0; } to { background-position: 200% 0; } }
         @keyframes floatY     { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
         @keyframes spinSlow   { to { transform: rotate(360deg); } }
         @keyframes orbOne     { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(90px, -70px); } }
@@ -632,8 +602,8 @@
             100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
         }
         @keyframes softPulse  {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(224, 69, 123, .35); }
-            50%      { box-shadow: 0 0 0 9px rgba(224, 69, 123, 0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(47, 107, 255, .35); }
+            50%      { box-shadow: 0 0 0 9px rgba(47, 107, 255, 0); }
         }
 
         /* ---------- Respect reduced motion ---------- */
@@ -641,6 +611,7 @@
             *, *::before, *::after {
                 animation-duration: .01ms !important;
                 animation-iteration-count: 1 !important;
+                animation-delay: 0s !important;
                 transition-duration: .01ms !important;
                 scroll-behavior: auto !important;
             }
@@ -737,109 +708,12 @@
     {% endwith %}
 
 
-    <!-- ================= AVAILABLE TYPES ================= -->
-
-    <div class="mb-4">
-
-        <div class="section-head mb-4">
-            <h4 class="fw-semibold mb-1">
-                Available Consultation Types
-            </h4>
-
-            <p class="text-muted mb-0">
-                Select from the consultation types supported by MediSlot.
-            </p>
-        </div>
-
-        <div class="row g-4">
-
-            {% for item in master_types %}
-
-                {% set assigned = doctor_types | selectattr(
-                    'consultationTypeId', 'equalto',
-                    item.consultationTypeId
-                ) | list %}
-
-                <div class="col-md-6 col-lg-3 type-col" style="--i: {{ loop.index0 }};">
-
-                    <div class="card h-100 shadow-sm border-0">
-
-                        <div class="card-body">
-
-                            <h5 class="fw-bold">
-                                {{ item.name }}
-                            </h5>
-
-                            <p class="text-muted mb-3">
-                                Duration: {{ item.durationMin }} minutes
-                            </p>
-
-                            {% if item.name == "Health Camp Session" %}
-
-                                <span class="badge bg-info text-dark mb-3">
-                                    Capacity: 2–10 patients
-                                </span>
-
-                            {% else %}
-
-                                <span class="badge bg-info text-dark mb-3">
-                                    Capacity: 1 patient
-                                </span>
-
-                            {% endif %}
-
-                            <div class="mt-2">
-
-                                {% if assigned %}
-
-                                    <span class="badge bg-success">
-                                        Added to your profile
-                                    </span>
-
-                                {% else %}
-
-                                    <button type="button"
-                                            class="btn btn-outline-primary btn-sm add-type-btn"
-                                            data-id="{{ item.consultationTypeId }}"
-                                            data-name="{{ item.name }}"
-                                            data-duration="{{ item.durationMin }}"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#addConsultationModal">
-
-                                        + Add Consultation
-
-                                    </button>
-
-                                {% endif %}
-
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-
-            {% else %}
-
-                <div class="col-12">
-                    <div class="alert alert-warning">
-                        No consultation types are currently available.
-                    </div>
-                </div>
-
-            {% endfor %}
-
-        </div>
-
-    </div>
-
-
-    <hr class="my-5">
-
-
     <!-- ================= MY CONSULTATION TYPES ================= -->
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    {% set assigned_ids = doctor_types | map(attribute='consultationTypeId') | list %}
+    {% set remaining = master_types | rejectattr('consultationTypeId', 'in', assigned_ids) | list %}
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
 
         <div class="section-head">
             <h4 class="fw-semibold mb-1">
@@ -847,9 +721,17 @@
             </h4>
 
             <p class="text-muted mb-0">
-                Manage the consultation services currently offered by you.
+                Add a consultation type from the list and manage the ones you offer.
             </p>
         </div>
+
+        <button type="button"
+                class="btn btn-primary add-type-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#addConsultationModal"
+                {% if not remaining %}disabled title="All consultation types are already added"{% endif %}>
+            + Add Consultation
+        </button>
 
     </div>
 
@@ -924,6 +806,7 @@
 
                                                 data-id="{{ item.consultationTypeId }}"
                                                 data-name="{{ item.name }}"
+                                                data-duration="{{ item.durationMin }}"
                                                 data-fee="{{ item.fee }}"
                                                 data-capacity="{{ item.capacity }}"
                                                 data-active="{{ 'true' if item.active else 'false' }}"
@@ -975,7 +858,7 @@
                 </h5>
 
                 <p class="text-muted mb-0">
-                    Choose a consultation type from the available options above
+                    Click "+ Add Consultation" and pick a consultation type
                     to start offering appointments.
                 </p>
 
@@ -1016,7 +899,7 @@
 
                     <div class="mb-3">
 
-                        <label class="form-label">
+                        <label class="form-label" for="consultationTypeId">
                             Consultation Type
                         </label>
 
@@ -1031,22 +914,16 @@
 
                             {% for item in master_types %}
 
-                                {% set assigned = doctor_types | selectattr(
-                                    'consultationTypeId', 'equalto',
-                                    item.consultationTypeId
-                                ) | list %}
+                                {% set already = item.consultationTypeId in assigned_ids %}
 
-                                {% if not assigned %}
+                                <option value="{{ item.consultationTypeId }}"
+                                        data-name="{{ item.name }}"
+                                        {% if already %}disabled{% endif %}>
 
-                                    <option value="{{ item.consultationTypeId }}"
-                                            data-name="{{ item.name }}">
+                                    {{ item.name }}
+                                    ({{ item.durationMin|float|int }} min){% if already %} — already added{% endif %}
 
-                                        {{ item.name }}
-                                        ({{ item.durationMin }} min)
-
-                                    </option>
-
-                                {% endif %}
+                                </option>
 
                             {% endfor %}
 
@@ -1057,7 +934,7 @@
 
                     <div class="mb-3">
 
-                        <label class="form-label">
+                        <label class="form-label" for="fee">
                             Consultation Fee (₹)
                         </label>
 
@@ -1076,7 +953,7 @@
 
                     <div class="mb-3">
 
-                        <label class="form-label">
+                        <label class="form-label" for="capacity">
                             Patient Capacity
                         </label>
 
@@ -1142,6 +1019,7 @@
 
                     <h5 class="modal-title fw-semibold">
                         Edit Consultation Type
+                        <span id="editTitleName"></span>
                     </h5>
 
                     <button type="button" class="btn-close"
@@ -1163,17 +1041,20 @@
                             Consultation Type
                         </label>
 
-                        <input type="text"
-                               class="form-control"
-                               id="editConsultationName"
-                               disabled>
+                        <div class="type-display">
+                            <span class="type-icon" id="editIcon">C</span>
+                            <div>
+                                <div class="type-name" id="editName">—</div>
+                                <div class="type-meta" id="editMeta"></div>
+                            </div>
+                        </div>
 
                     </div>
 
 
                     <div class="mb-3">
 
-                        <label class="form-label">
+                        <label class="form-label" for="editFee">
                             Consultation Fee (₹)
                         </label>
 
@@ -1191,7 +1072,7 @@
 
                     <div class="mb-3">
 
-                        <label class="form-label">
+                        <label class="form-label" for="editCapacity">
                             Patient Capacity
                         </label>
 
@@ -1263,7 +1144,79 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
 
-<script src="{{ url_for('static', filename='js/consultation_types.js') }}">
+<script>
+(function () {
+
+    /* Health Camp Session allows 2-10 patients; every other type is 1 patient. */
+    function isCamp(name) { return /health\s*camp/i.test(name || ''); }
+
+    function applyCapacityRules(input, help, name, keepValue) {
+        if (isCamp(name)) {
+            input.min = 2;
+            input.max = 10;
+            input.readOnly = false;
+            var v = parseInt(input.value, 10);
+            input.value = (keepValue && v >= 2 && v <= 10) ? v : 2;
+            help.textContent = 'Health Camp Session supports 2–10 patients per slot.';
+        } else {
+            input.min = 1;
+            input.max = 1;
+            input.value = 1;
+            input.readOnly = true;
+            help.textContent = 'This consultation type supports 1 patient per slot.';
+        }
+    }
+
+    /* ---------- Add modal ---------- */
+    var addModal  = document.getElementById('addConsultationModal');
+    var addSelect = document.getElementById('consultationTypeId');
+    var addCap    = document.getElementById('capacity');
+    var addHelp   = document.getElementById('capacityHelp');
+
+    addSelect.addEventListener('change', function () {
+        var opt = addSelect.options[addSelect.selectedIndex];
+        if (!opt || !opt.value) {
+            addCap.readOnly = false; addCap.min = 1; addCap.max = 10; addCap.value = 1;
+            addHelp.textContent = 'Select a consultation type to configure capacity.';
+            return;
+        }
+        applyCapacityRules(addCap, addHelp, opt.dataset.name, false);
+    });
+
+    addModal.addEventListener('show.bs.modal', function () {
+        document.getElementById('addConsultationForm').reset();
+        addCap.readOnly = false; addCap.min = 1; addCap.max = 10; addCap.value = 1;
+        addHelp.textContent = 'Select a consultation type to configure capacity.';
+    });
+
+    /* ---------- Edit modal ---------- */
+    var editModal = document.getElementById('editConsultationModal');
+
+    editModal.addEventListener('show.bs.modal', function (event) {
+        var btn = event.relatedTarget;
+        if (!btn) return;
+
+        var name = btn.getAttribute('data-name') || '';
+        var dur  = parseFloat(btn.getAttribute('data-duration'));
+
+        document.getElementById('editConsultationTypeId').value = btn.getAttribute('data-id') || '';
+        document.getElementById('editName').textContent  = name;
+        document.getElementById('editTitleName').textContent = name ? '— ' + name : '';
+        document.getElementById('editIcon').textContent  = name ? name.charAt(0).toUpperCase() : 'C';
+        document.getElementById('editMeta').textContent  = isNaN(dur) ? '' : 'Duration: ' + Math.round(dur) + ' minutes';
+        document.getElementById('editFee').value         = btn.getAttribute('data-fee') || '';
+        document.getElementById('editCapacity').value    = btn.getAttribute('data-capacity') || 1;
+        document.getElementById('editActive').checked    = btn.getAttribute('data-active') === 'true';
+
+        applyCapacityRules(
+            document.getElementById('editCapacity'),
+            document.getElementById('editCapacityHelp'),
+            name,
+            true
+        );
+    });
+
+})();
 </script>
 
 </body>

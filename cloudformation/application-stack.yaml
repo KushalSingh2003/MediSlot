@@ -432,6 +432,9 @@ Resources:
         Variables:
           ENV: !Ref Env
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+          PHOTOS_BUCKET:
+            Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-PhotosBucketName'
+          
       VpcConfig:
         SubnetIds: !Split
           - ','
