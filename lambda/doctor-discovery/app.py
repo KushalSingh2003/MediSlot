@@ -71,6 +71,8 @@ def search_doctors(cur, q):
         logger.warning("Invalid pagination params page=%r pageSize=%r",
                        q.get("page"), q.get("pageSize"))
         raise ValueError("page and pageSize must be positive integers")
+        #filters stores SQL conditions.
+        #values stores the actual values that will be passed into those conditions.
     filters, values = [], []
     # Prefix matching retains index usability; use % only after the supplied prefix.
     if q.get("name", "").strip():

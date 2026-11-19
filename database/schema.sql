@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS slot_template (
     is_active    BOOLEAN NOT NULL DEFAULT TRUE,
     working_start_time TIME NOT NULL DEFAULT '09:00:00',
     working_end_time TIME NOT NULL DEFAULT '16:00:00'
+    CONSTRAINT chk_template_times
+       CHECK (working_end_time > working_start_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
@@ -57,6 +59,61 @@ CREATE TABLE IF NOT EXISTS doctor (
     photo_key         VARCHAR(512),
     created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_doctor_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE doctor_shift (
+    doctor_shift_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id       VARCHAR(36) NOT NULL,
+    template_id     INT NOT NULL,
+    shift_date      DATE NOT NULL,
+
+    -- Copied from the selected template; start_time is not doctor-editable.
+    start_time      TIME NOT NULL,
+    base_end_time   TIME NOT NULL,
+
+    -- Defaults to base_end_time; doctor may extend it for overtime.
+    end_time        TIME NOT NULL,
+
+    day_of_week TINYINT
+        GENERATED ALWAYS AS (WEEKDAY(shift_date) + 1) STORED,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_doctor_shift_per_day
+        UNIQUE (doctor_id, shift_date),
+
+    CONSTRAINT fk_doctor_shift_doctor
+        FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id)
+        ON DELETE CASCADE,
+
+    -- Keep templates that are already used; deactivate them instead.
+    CONSTRAINT fk_doctor_shift_template
+        FOREIGN KEY (template_id) REFERENCES slot_template(template_id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT chk_doctor_shift_end
+        CHECK (end_time >= base_end_time),
+    CONSTRAINT chk_doctor_shift_base_times
+        CHECK (base_end_time > start_time)
+
+    INDEX idx_doctor_shift_date (doctor_id, shift_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE doctor_break (
+    break_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    doctor_shift_id BIGINT NOT NULL,
+    starts_at      DATETIME NOT NULL,
+    ends_at        DATETIME NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_doctor_break_shift
+        FOREIGN KEY (doctor_shift_id)
+        REFERENCES doctor_shift(doctor_shift_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_doctor_break_time
+        CHECK (ends_at > starts_at),
+
+    INDEX idx_doctor_break_shift_time (doctor_shift_id, starts_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS doctor_licence (

@@ -959,6 +959,52 @@ Resources:
             - secretsmanager:GetSecretValue
             Resource:
             - Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+  DoctorShiftsRole:
+    Type: AWS::IAM::Role
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W28
+          reason: Explicit role name is required for cross-stack references.
+    Properties:
+      RoleName: !Sub '${ProjectName}-${Env}-doctor-shifts-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+      - PolicyName: doctor-shifts-access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: Logs
+            Effect: Allow
+            Action:
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-${Env}-doctor-shifts:*'
+          - Sid: ReadDatabaseSettings
+            Effect: Allow
+            Action:
+            - ssm:GetParameter
+            - ssm:GetParameters
+            Resource:
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/endpoint'
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/port'
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/name'
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/username'
+            - !Sub 'arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/${Env}/db/secret-arn'
+          - Sid: ReadDatabaseSecret
+            Effect: Allow
+            Action:
+            - secretsmanager:GetSecretValue
+            Resource:
+            - Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
 
 Outputs:
   AuthRegisterRoleArn:
@@ -1040,3 +1086,7 @@ Outputs:
     Value: !GetAtt DoctorAppointmentsRole.Arn
     Export:
       Name: !Sub '${AWS::StackName}-DoctorAppointmentsRoleArn'
+  DoctorShiftsRoleArn:
+    Value: !GetAtt DoctorShiftsRole.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-DoctorShiftsRoleArn'
