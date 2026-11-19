@@ -61,13 +61,13 @@ CREATE TABLE IF NOT EXISTS doctor (
     INDEX idx_doctor_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_shift (
+CREATE TABLE  IF NOT EXISTS doctor_shift (
     doctor_shift_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     doctor_id       VARCHAR(36) NOT NULL,
     template_id     INT NOT NULL,
     shift_date      DATE NOT NULL,
 
-    -- Copied from the selected template; start_time is not doctor-editable.
+    -- Copied from the selected template start_time is not doctor-editable.
     start_time      TIME NOT NULL,
     base_end_time   TIME NOT NULL,
 
@@ -98,7 +98,7 @@ CREATE TABLE doctor_shift (
     INDEX idx_doctor_shift_date (doctor_id, shift_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_break (
+CREATE TABLE IF NOT EXISTS doctor_break (
     break_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
     doctor_shift_id BIGINT NOT NULL,
     starts_at      DATETIME NOT NULL,
