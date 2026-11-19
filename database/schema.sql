@@ -92,8 +92,8 @@ CREATE TABLE doctor_shift (
 
     CONSTRAINT chk_doctor_shift_end
         CHECK (end_time >= base_end_time),
-    CONSTRAINT chk_doctor_shift_base_times
-        CHECK (base_end_time > start_time)
+   
+
 
     INDEX idx_doctor_shift_date (doctor_id, shift_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
