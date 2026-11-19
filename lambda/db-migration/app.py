@@ -86,8 +86,14 @@ def lambda_handler(event, context):
                 if statement.strip()
             ]
 
-            for statement in statements:
-                cursor.execute(statement)
+            for  i ,statement in statements:
+                try:
+                    logger.info("Executing SQL statement: %s", i)
+                    cursor.execute(statement)
+                except Exception as e:
+                    logger.error("Error executing statement: %s",i ,  statement)
+                    logger.exception(e)
+                    raise
 
         # Additive, idempotent upgrades for databases created before Milestone 4.
         with connection.cursor() as cursor:
