@@ -1,9 +1,3 @@
--- Medi-slot schema (MySQL 8 / Amazon RDS)
--- Parent tables are created before the tables that reference them.
-
--- =========================================================
--- Lookup / reference tables
--- =========================================================
 
 CREATE TABLE IF NOT EXISTS specialisations (
     specialisation_id  INT AUTO_INCREMENT PRIMARY KEY,
@@ -45,10 +39,6 @@ CREATE TABLE IF NOT EXISTS slot_template (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
--- =========================================================
--- Doctor and doctor-related tables
--- =========================================================
-
 CREATE TABLE IF NOT EXISTS doctor (
     doctor_id         VARCHAR(36) PRIMARY KEY,
     email             VARCHAR(255) NOT NULL UNIQUE,
@@ -67,11 +57,10 @@ CREATE TABLE  IF NOT EXISTS doctor_shift (
     template_id     INT NOT NULL,
     shift_date      DATE NOT NULL,
 
-    -- Copied from the selected template start_time is not doctor-editable.
     start_time      TIME NOT NULL,
     base_end_time   TIME NOT NULL,
 
-    -- Defaults to base_end_time; doctor may extend it for overtime.
+    
     end_time        TIME NOT NULL,
 
     day_of_week TINYINT
@@ -85,7 +74,7 @@ CREATE TABLE  IF NOT EXISTS doctor_shift (
         FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id)
         ON DELETE CASCADE,
 
-    -- Keep templates that are already used; deactivate them instead.
+    
     CONSTRAINT fk_doctor_shift_template
         FOREIGN KEY (template_id) REFERENCES slot_template(template_id)
         ON DELETE RESTRICT,
@@ -198,9 +187,7 @@ CREATE TABLE IF NOT EXISTS doctor_consultation_type (
     FOREIGN KEY (consultation_type_id) REFERENCES consultation_type(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =========================================================
--- Slot templates
--- =========================================================
+
 CREATE TABLE IF NOT EXISTS template_consultation_rule (
     rule_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     template_id INT NOT NULL,
@@ -234,9 +221,6 @@ CREATE TABLE IF NOT EXISTS template_consultation_rule (
     )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =========================================================
--- Patients, slots, appointments, refunds
--- =========================================================
 
 CREATE TABLE IF NOT EXISTS patients (
     patient_id     VARCHAR(36) PRIMARY KEY,
