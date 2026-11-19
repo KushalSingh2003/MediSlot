@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS slot_template (
     name         VARCHAR(255) NOT NULL,
     is_active    BOOLEAN NOT NULL DEFAULT TRUE,
     working_start_time TIME NOT NULL DEFAULT '09:00:00',
-    working_end_time TIME NOT NULL DEFAULT '16:00:00'
+    working_end_time TIME NOT NULL DEFAULT '16:00:00',
     CONSTRAINT chk_template_times
        CHECK (working_end_time > working_start_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
