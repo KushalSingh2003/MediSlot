@@ -1,0 +1,1 @@
+print("Welcome to MediSlot Doctor Shift Lambda Function")

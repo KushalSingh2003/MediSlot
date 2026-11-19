@@ -258,7 +258,8 @@ jobs:
             doctor-slot-cancellation \
             appointment-outcome \
             slot-template-admin \
-            slot-materializer
+            slot-materializer \
+            doctor-shift
           do
             test -f "lambda/${function}/app.py" || {
               echo "Missing lambda/${function}/app.py"
@@ -315,7 +316,8 @@ jobs:
             doctor-slot-cancellation \
             appointment-outcome \
             slot-template-admin \
-            slot-materializer
+            slot-materializer \
+            doctor-shift
           do
             (
               cd "lambda/${function}"
@@ -365,7 +367,8 @@ jobs:
             doctor-slot-cancellation \
             appointment-outcome \
             slot-template-admin \
-            slot-materializer
+            slot-materializer \
+            doctor-shift
           do
             aws s3 cp \
               "$RUNNER_TEMP/${artifact}.zip" \
@@ -484,7 +487,8 @@ jobs:
             doctor-slot-cancellation \
             appointment-outcome \
             slot-template-admin \
-            slot-materializer
+            slot-materializer \
+            doctor-shift
           do
             echo "Checking ${artifact}.zip"
             aws s3api head-object \

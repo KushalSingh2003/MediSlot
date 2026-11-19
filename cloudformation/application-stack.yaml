@@ -234,7 +234,7 @@ Resources:
         Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-DoctorShiftsRoleArn'
       Code:
         S3Bucket: !Ref ArtifactBucket
-        S3Key: !Sub '${ArtifactPrefix}/doctor-shifts.zip'
+        S3Key: !Sub '${ArtifactPrefix}/doctor-shift.zip'
       Layers:
       - !Ref AuthDependenciesLayer
       MemorySize: 256
