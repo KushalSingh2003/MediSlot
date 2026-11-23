@@ -649,6 +649,7 @@ def lambda_handler(event, context):
                     template_id = parse_template_id(path_parameters)
                     result = get_template(cursor, template_id)
                 else:
+                    # inactive basically lets us see all the templates that are inactive as well as active. By default, we only see active templates.
                     include_inactive = parse_include_inactive(event)
                     result = list_templates(
                         cursor,

@@ -129,6 +129,17 @@ def is_doctor_api(method_arn):
         logger.error("Unable to parse API Gateway method ARN")
         return False
 
+def is_doctor_template_list(method_arn):
+    parts = method_arn.split("/", 3)
+
+    if len(parts) != 4:
+        return False
+
+    method = parts[2].upper()
+    path = "/" + parts[3].lstrip("/")
+
+    return method == "GET" and path == "/slot-templates"
+
 
 # ============================================================
 # JWT ISSUER
@@ -323,7 +334,7 @@ def lambda_handler(event, context):
         # 3. Enforce doctor-only API access.
         role = claims["role"].lower()
 
-        if is_doctor_api(resource) and role != "doctor":
+        if (is_doctor_api(resource) or is_doctor_template_list(resource)) and role != "doctor":
 
             logger.warning(
                 "Access denied: role=%s attempted to access doctor API",
