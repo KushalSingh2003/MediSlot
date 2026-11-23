@@ -530,12 +530,7 @@ Resources:
       ParentId: !Ref DoctorConsultationTypesResource
       PathPart: '{typeId}'
 
-  DoctorAvailabilityResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      RestApiId: !Ref MediSlotApi
-      ParentId: !Ref DoctorMeResource
-      PathPart: availability
+  
 
   DoctorBlackoutsResource:
     Type: AWS::ApiGateway::Resource
@@ -811,23 +806,6 @@ Resources:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-DoctorConsultationTypesFunctionArn'
 
-  DoctorAvailabilityPutMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref MediSlotApi
-      ResourceId: !Ref DoctorAvailabilityResource
-      HttpMethod: PUT
-      AuthorizationType: CUSTOM
-      AuthorizerId: !Ref LambdaAuthorizer
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub:
-          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-          - LambdaArn:
-              Fn::ImportValue:
-                Fn::Sub: '${ProjectName}-${Env}-application-DoctorScheduleFunctionArn'
 
   DoctorBlackoutsPostMethod:
     Type: AWS::ApiGateway::Method
@@ -1019,21 +997,7 @@ Resources:
       ParentId: !Ref DoctorShiftsResource
       PathPart: '{shiftId}'
 
-  # /doctors/me/shifts/{shiftId}/breaks
-  DoctorShiftBreaksResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      RestApiId: !Ref MediSlotApi
-      ParentId: !Ref DoctorShiftIdResource
-      PathPart: breaks
 
-  # /doctors/me/shifts/{shiftId}/breaks/{breakId}
-  DoctorShiftBreakIdResource:
-    Type: AWS::ApiGateway::Resource
-    Properties:
-      RestApiId: !Ref MediSlotApi
-      ParentId: !Ref DoctorShiftBreaksResource
-      PathPart: '{breakId}'
 
   # --------------------------------------------------
   # NEW LAMBDA PERMISSIONS
@@ -1142,82 +1106,66 @@ Resources:
           - LambdaArn:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
-
-  # POST /doctors/me/shifts/{shiftId}/breaks
-  DoctorShiftBreaksPostMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref MediSlotApi
-      ResourceId: !Ref DoctorShiftBreaksResource
-      HttpMethod: POST
-      AuthorizationType: CUSTOM
-      AuthorizerId: !Ref LambdaAuthorizer
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub:
+  DoctorShiftsPostMethod:
+  Type: AWS::ApiGateway::Method
+  Properties:
+    RestApiId: !Ref MediSlotApi
+    ResourceId: !Ref DoctorShiftsResource
+    HttpMethod: POST
+    AuthorizationType: CUSTOM
+    AuthorizerId: !Ref LambdaAuthorizer
+    Integration:
+      Type: AWS_PROXY
+      IntegrationHttpMethod: POST
+      Uri:
+        Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
+  DoctorShiftsGetMethod:
+  Type: AWS::ApiGateway::Method
+  Properties:
+    RestApiId: !Ref MediSlotApi
+    ResourceId: !Ref DoctorShiftsResource
+    HttpMethod: GET
+    AuthorizationType: CUSTOM
+    AuthorizerId: !Ref LambdaAuthorizer
+    RequestParameters:
+      method.request.querystring.from: true
+      method.request.querystring.to: true
+    Integration:
+      Type: AWS_PROXY
+      IntegrationHttpMethod: POST
+      Uri:
+        Fn::Sub:
+          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+          - LambdaArn:
+              Fn::ImportValue:
+                Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
+  DoctorShiftGetMethod:
+  Type: AWS::ApiGateway::Method
+  Properties:
+    RestApiId: !Ref MediSlotApi
+    ResourceId: !Ref DoctorShiftIdResource
+    HttpMethod: GET
+    AuthorizationType: CUSTOM
+    AuthorizerId: !Ref LambdaAuthorizer
+    Integration:
+      Type: AWS_PROXY
+      IntegrationHttpMethod: POST
+      Uri:
+        Fn::Sub:
           - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
           - LambdaArn:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
 
-  # GET /doctors/me/shifts/{shiftId}/breaks
-  DoctorShiftBreaksGetMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref MediSlotApi
-      ResourceId: !Ref DoctorShiftBreaksResource
-      HttpMethod: GET
-      AuthorizationType: CUSTOM
-      AuthorizerId: !Ref LambdaAuthorizer
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub:
-          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-          - LambdaArn:
-              Fn::ImportValue:
-                Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
 
-  # PATCH /doctors/me/shifts/{shiftId}/breaks/{breakId}
-  DoctorShiftBreakPatchMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref MediSlotApi
-      ResourceId: !Ref DoctorShiftBreakIdResource
-      HttpMethod: PATCH
-      AuthorizationType: CUSTOM
-      AuthorizerId: !Ref LambdaAuthorizer
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub:
-          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-          - LambdaArn:
-              Fn::ImportValue:
-                Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
 
-  # DELETE /doctors/me/shifts/{shiftId}/breaks/{breakId}
-  DoctorShiftBreakDeleteMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId: !Ref MediSlotApi
-      ResourceId: !Ref DoctorShiftBreakIdResource
-      HttpMethod: DELETE
-      AuthorizationType: CUSTOM
-      AuthorizerId: !Ref LambdaAuthorizer
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub:
-          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-          - LambdaArn:
-              Fn::ImportValue:
-                Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
+
+  
+
 
   # --------------------------------------------------
   # API DEPLOYMENT
@@ -1259,10 +1207,10 @@ Resources:
     - AdminSlotTemplatesPostMethod
     - AdminSlotTemplatesPatchMethod
     - DoctorShiftPatchMethod
-    - DoctorShiftBreaksPostMethod
-    - DoctorShiftBreaksGetMethod
-    - DoctorShiftBreakPatchMethod
-    - DoctorShiftBreakDeleteMethod
+    - DoctorShiftsPostMethod
+    - DoctorShiftsGetMethod
+    - DoctorShiftGetMethod
+    
     Properties:
       RestApiId: !Ref MediSlotApi
       Description: !Sub 'MediSlot ${Env} API deployment'

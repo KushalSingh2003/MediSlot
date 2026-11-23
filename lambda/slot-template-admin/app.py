@@ -1,95 +1,85 @@
-
 import json
 import logging
 import os
+import re
+from datetime import time as datetime_time
 
 import boto3
 import pymysql
-from botocore.exceptions import ClientError
+from botocore.exceptions import BotoCoreError, ClientError
+from pymysql import err as pymysql_err
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# --------------------------------------------------
-# AWS CLIENTS AND CONFIGURATION
-# --------------------------------------------------
-
 ssm = boto3.client("ssm")
 secretsmanager = boto3.client("secretsmanager")
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
-PARAMETER_PREFIX = f"/medislot/{ENVIRONMENT}/db"
+ENV = os.environ.get("ENV", "dev")
+SSM_PREFIX = os.environ.get(
+    "SSM_PREFIX",
+    f"/medislot/{ENV}",
+)
 
-TEMPLATE_NAME = "UNIVERSAL_TEMPLATE"
-WORKING_START_TIME = os.environ.get("WORKING_START_TIME", "09:00:00")
-WORKING_END_TIME = os.environ.get("WORKING_END_TIME", "17:00:00")
+ADMIN_ROLE = "admin"
+MAX_TEMPLATE_NAME_LENGTH = 255
+TIME_PATTERN = re.compile(r"^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$")
 
-# MySQL convention: Monday = 1, Friday = 5
-WORKING_DAYS = range(1, 6)
 
-# --------------------------------------------------
-# PREDEFINED CONSULTATION TYPES
-# --------------------------------------------------
+def response(status_code, body):
+    return {
+        "statusCode": status_code,
+        "headers": {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+        },
+        "body": json.dumps(body, default=str),
+    }
 
-CONSULTATION_TYPES = [
-    {
-        "name": "Quick Consult",
-        "duration_min": 15,
-        "capacity": 1,
-    },
-    {
-        "name": "Standard Consult",
-        "duration_min": 30,
-        "capacity": 1,
-    },
-    {
-        "name": "Detailed Consult",
-        "duration_min": 60,
-        "capacity": 1,
-    },
-    {
-        "name": "Health Camp Session",
-        "duration_min": 60,
-        "capacity": 2,
-    },
-]
-
-# --------------------------------------------------
-# DATABASE CONNECTION
-# --------------------------------------------------
 
 def get_parameter(name):
-    response = ssm.get_parameter(
-        Name=f"{PARAMETER_PREFIX}/{name}",
+    parameter_name = f"{SSM_PREFIX}/db/{name}"
+
+    logger.info("Reading SSM parameter %s", parameter_name)
+
+    result = ssm.get_parameter(
+        Name=parameter_name,
         WithDecryption=True,
     )
-    return response["Parameter"]["Value"]
+
+    value = result["Parameter"]["Value"]
+
+    if not value:
+        raise ValueError(f"SSM parameter {parameter_name} is empty")
+
+    return value
 
 
 def get_db_connection():
-    logger.info("Reading database configuration")
+    logger.info("Opening RDS database connection")
 
-    endpoint = get_parameter("endpoint")
-    port = int(get_parameter("port"))
-    username = get_parameter("username")
-    database = get_parameter("name")
     secret_arn = get_parameter("secret-arn")
 
-    logger.info("Retrieving database credentials")
-
     secret_response = secretsmanager.get_secret_value(
-        SecretId=secret_arn
+        SecretId=secret_arn,
     )
-    secret = json.loads(secret_response["SecretString"])
 
-    logger.info("Connecting to RDS MySQL")
+    secret_string = secret_response.get("SecretString")
+
+    if not secret_string:
+        raise ValueError("Database secret is empty")
+
+    secret = json.loads(secret_string)
+
+    if not isinstance(secret.get("password"), str):
+        raise ValueError("Database secret does not contain a password")
 
     return pymysql.connect(
-        host=endpoint,
-        port=port,
-        user=username,
+        host=get_parameter("endpoint"),
+        port=int(get_parameter("port")),
+        user=get_parameter("username"),
         password=secret["password"],
-        database=database,
+        database=get_parameter("name"),
         connect_timeout=10,
         read_timeout=30,
         write_timeout=30,
@@ -99,117 +89,134 @@ def get_db_connection():
     )
 
 
-# --------------------------------------------------
-# RESPONSE HELPERS
-# --------------------------------------------------
+def get_http_method(event):
+    if event.get("httpMethod"):
+        return event["httpMethod"].upper()
 
-def response(status_code, body):
+    http_context = (
+        event.get("requestContext", {})
+        .get("http", {})
+    )
+
+    method = http_context.get("method")
+
+    return method.upper() if method else None
+
+
+def get_request_context(event):
+    return event.get("requestContext") or {}
+
+
+def get_authorizer_context(event):
+    request_context = get_request_context(event)
+    authorizer = request_context.get("authorizer") or {}
+
     return {
-        "statusCode": status_code,
-        "headers": {
-            "Content-Type": "application/json",
-        },
-        "body": json.dumps(body, default=str),
+        "user_id": authorizer.get("userId"),
+        "role": authorizer.get("role"),
     }
 
 
-# --------------------------------------------------
-# VALIDATE WORKING HOURS
-# --------------------------------------------------
+def require_admin(event):
+    context = get_authorizer_context(event)
 
-def validate_working_hours(cursor):
-    cursor.execute(
-        """
-        SELECT
-            TIME(%s) AS start_time,
-            TIME(%s) AS end_time
-        """,
-        (WORKING_START_TIME, WORKING_END_TIME),
-    )
+    if context["role"] != ADMIN_ROLE:
+        logger.warning(
+            "Forbidden template request: role=%s user_id=%s",
+            context["role"],
+            context["user_id"],
+        )
+        raise PermissionError("Administrator access is required")
 
-    result = cursor.fetchone()
+    return context["user_id"]
 
-    if (
-        not result
-        or result["start_time"] is None
-        or result["end_time"] is None
-        or result["start_time"] >= result["end_time"]
-    ):
+
+def get_request_body(event):
+    raw_body = event.get("body")
+
+    if raw_body is None or raw_body.strip() == "":
+        raise ValueError("Request body is required")
+
+    try:
+        body = json.loads(raw_body)
+    except json.JSONDecodeError:
+        raise ValueError("Request body must contain valid JSON")
+
+    if not isinstance(body, dict):
+        raise ValueError("Request body must be a JSON object")
+
+    return body
+
+
+def parse_time(value, field_name):
+    if not isinstance(value, str):
+        raise ValueError(f"{field_name} must be a string")
+
+    value = value.strip()
+
+    if not TIME_PATTERN.fullmatch(value):
         raise ValueError(
-            "Invalid working hours. Configure valid HH:MM:SS "
-            "values with end time later than start time."
+            f"{field_name} must use the HH:MM:SS format"
+        )
+
+    hour, minute, second = (int(part) for part in value.split(":"))
+
+    return datetime_time(hour, minute, second)
+
+
+def serialize_time(value):
+    if isinstance(value, datetime_time):
+        return value.strftime("%H:%M:%S")
+
+    if value is None:
+        return None
+
+    return str(value)
+
+
+def validate_name(value):
+    if not isinstance(value, str):
+        raise ValueError("name must be a string")
+
+    name = value.strip()
+
+    if not name:
+        raise ValueError("name must not be empty")
+
+    if len(name) > MAX_TEMPLATE_NAME_LENGTH:
+        raise ValueError(
+            f"name must not exceed "
+            f"{MAX_TEMPLATE_NAME_LENGTH} characters"
+        )
+
+    return name
+
+
+def validate_template_times(start_time, end_time):
+    if start_time >= end_time:
+        raise ValueError(
+            "working_end_time must be later than working_start_time"
         )
 
 
-# --------------------------------------------------
-# SEED PREDEFINED CONSULTATION TYPES
-# --------------------------------------------------
+def serialize_template(template):
+    if template is None:
+        return None
 
-def seed_consultation_types(cursor):
-    """
-    Ensure the four predefined consultation types exist.
-
-    The existing consultation_type table does not contain a capacity
-    column. Capacity is therefore configured when appointment slots
-    are generated, not stored in this table.
-    It checks whether the consultation type already exists. If it does, it verifies that the duration matches the predefined value. If the duration differs, it raises a ValueError to indicate a conflict. If the consultation type does not exist, it inserts a new record into the consultation_type table with the specified name and duration.
-    """
-
-    consultation_type_ids = {}
-
-    for consultation_type in CONSULTATION_TYPES:
-        cursor.execute(
-            """
-            SELECT id, duration_min
-            FROM consultation_type
-            WHERE name = %s
-            FOR UPDATE
-            """,
-            (consultation_type["name"],),
-        )
-
-        existing = cursor.fetchone()
-
-        if existing:
-            # Keep the existing record and its duration unchanged.
-            if float(existing["duration_min"]) != float(
-                consultation_type["duration_min"]
-            ):
-                raise ValueError(
-                    f"Consultation type '{consultation_type['name']}' "
-                    "already exists with a different duration. "
-                    "Resolve the schema data before initializing "
-                    "the universal template."
-                )
-
-            consultation_type_ids[consultation_type["name"]] = (
-                existing["id"]
-            )
-            continue
-
-        cursor.execute(
-            """
-            INSERT INTO consultation_type (name, duration_min)
-            VALUES (%s, %s)
-            """,
-            (
-                consultation_type["name"],
-                consultation_type["duration_min"],
-            ),
-        )
-
-        consultation_type_ids[consultation_type["name"]] = (
-            cursor.lastrowid
-        )
-
-    return consultation_type_ids
+    return {
+        "template_id": template["template_id"],
+        "name": template["name"],
+        "is_active": bool(template["is_active"]),
+        "working_start_time": serialize_time(
+            template["working_start_time"]
+        ),
+        "working_end_time": serialize_time(
+            template["working_end_time"]
+        ),
+    }
 
 
-# --------------------------------------------------
-# CREATE OR RETRIEVE UNIVERSAL TEMPLATE
-# --------------------------------------------------
-
-def get_or_create_template(cursor):
+def get_template(cursor, template_id):
     cursor.execute(
         """
         SELECT
@@ -219,16 +226,146 @@ def get_or_create_template(cursor):
             working_start_time,
             working_end_time
         FROM slot_template
-        WHERE name = %s
-        FOR UPDATE
+        WHERE template_id = %s
         """,
-        (TEMPLATE_NAME,),
+        (template_id,),
     )
 
     template = cursor.fetchone()
 
-    if template:
-        return template, False
+    if not template:
+        raise LookupError("Slot template not found")
+
+    return response(
+        200,
+        {"template": serialize_template(template)},
+    )
+
+
+def list_templates(cursor, include_inactive):
+    if include_inactive:
+        cursor.execute(
+            """
+            SELECT
+                template_id,
+                name,
+                is_active,
+                working_start_time,
+                working_end_time
+            FROM slot_template
+            ORDER BY name, template_id
+            """
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT
+                template_id,
+                name,
+                is_active,
+                working_start_time,
+                working_end_time
+            FROM slot_template
+            WHERE is_active = TRUE
+            ORDER BY name, template_id
+            """
+        )
+
+    templates = cursor.fetchall()
+
+    return response(
+        200,
+        {
+            "templates": [
+                serialize_template(template)
+                for template in templates
+            ],
+            "count": len(templates),
+        },
+    )
+
+
+def ensure_unique_name(cursor, name, excluding_template_id=None):
+    if excluding_template_id is None:
+        cursor.execute(
+            """
+            SELECT template_id
+            FROM slot_template
+            WHERE LOWER(name) = LOWER(%s)
+            LIMIT 1
+            """,
+            (name,),
+        )
+    else:
+        cursor.execute(
+            """
+            SELECT template_id
+            FROM slot_template
+            WHERE LOWER(name) = LOWER(%s)
+              AND template_id != %s
+            LIMIT 1
+            """,
+            (name, excluding_template_id),
+        )
+
+    existing = cursor.fetchone()
+
+    if existing:
+        raise ValueError(
+            f"A slot template named '{name}' already exists"
+        )
+
+
+def create_template(cursor, body):
+    allowed_fields = {
+        "name",
+        "working_start_time",
+        "working_end_time",
+        "is_active",
+    }
+
+    unknown_fields = set(body) - allowed_fields
+
+    if unknown_fields:
+        raise ValueError(
+            "Unknown fields: "
+            + ", ".join(sorted(unknown_fields))
+        )
+
+    required_fields = {
+        "name",
+        "working_start_time",
+        "working_end_time",
+    }
+
+    missing_fields = required_fields - set(body)
+
+    if missing_fields:
+        raise ValueError(
+            "Missing required fields: "
+            + ", ".join(sorted(missing_fields))
+        )
+
+    name = validate_name(body["name"])
+
+    start_time = parse_time(
+        body["working_start_time"],
+        "working_start_time",
+    )
+
+    end_time = parse_time(
+        body["working_end_time"],
+        "working_end_time",
+    )
+
+    validate_template_times(start_time, end_time)
+
+    is_active = body.get("is_active", True)
+
+    if not isinstance(is_active, bool):
+        raise ValueError("is_active must be true or false")
+
+    ensure_unique_name(cursor, name)
 
     cursor.execute(
         """
@@ -238,12 +375,13 @@ def get_or_create_template(cursor):
             working_start_time,
             working_end_time
         )
-        VALUES (%s, TRUE, %s, %s)
+        VALUES (%s, %s, %s, %s)
         """,
         (
-            TEMPLATE_NAME,
-            WORKING_START_TIME,
-            WORKING_END_TIME,
+            name,
+            is_active,
+            start_time.strftime("%H:%M:%S"),
+            end_time.strftime("%H:%M:%S"),
         ),
     )
 
@@ -263,155 +401,378 @@ def get_or_create_template(cursor):
         (template_id,),
     )
 
-    return cursor.fetchone(), True
+    template = cursor.fetchone()
+
+    return response(
+        201,
+        {
+            "message": "Slot template created successfully",
+            "template": serialize_template(template),
+        },
+    )
 
 
-# --------------------------------------------------
-# CREATE MONDAY-FRIDAY CONSULTATION RULES
-# --------------------------------------------------
+def update_template(cursor, template_id, body):
+    if not body:
+        raise ValueError("Request body must contain at least one field")
 
-def create_consultation_rules(cursor, template_id, type_ids):
-    rules_created = 0
+    allowed_fields = {
+        "name",
+        "working_start_time",
+        "working_end_time",
+        "is_active",
+    }
 
-    for day_of_week in WORKING_DAYS:
-        for consultation_type in CONSULTATION_TYPES:
-            consultation_type_id = type_ids[
-                consultation_type["name"]
-            ]
+    unknown_fields = set(body) - allowed_fields
 
-            cursor.execute(
-                """
-                INSERT INTO template_consultation_rule (
-                    template_id,
-                    day_of_week,
-                    consultation_type_id,
-                    allocation_weight,
-                    time_period,
-                    is_active
-                )
-                VALUES (%s, %s, %s, 1, 'ANY', TRUE)
-                ON DUPLICATE KEY UPDATE
-                    rule_id = rule_id
-                """,
-                (
-                    template_id,
-                    day_of_week,
-                    consultation_type_id,
-                ),
-            )
+    if unknown_fields:
+        raise ValueError(
+            "Unknown fields: "
+            + ", ".join(sorted(unknown_fields))
+        )
 
-            if cursor.rowcount == 1:
-                rules_created += 1
+    cursor.execute(
+        """
+        SELECT
+            template_id,
+            name,
+            is_active,
+            working_start_time,
+            working_end_time
+        FROM slot_template
+        WHERE template_id = %s
+        FOR UPDATE
+        """,
+        (template_id,),
+    )
 
-    return rules_created
+    existing = cursor.fetchone()
+
+    if not existing:
+        raise LookupError("Slot template not found")
+
+    start_time = parse_time(
+        serialize_time(existing["working_start_time"]),
+        "working_start_time",
+    )
+
+    end_time = parse_time(
+        serialize_time(existing["working_end_time"]),
+        "working_end_time",
+    )
+
+    if "name" in body:
+        name = validate_name(body["name"])
+        ensure_unique_name(
+            cursor,
+            name,
+            excluding_template_id=template_id,
+        )
+    else:
+        name = existing["name"]
+
+    if "working_start_time" in body:
+        start_time = parse_time(
+            body["working_start_time"],
+            "working_start_time",
+        )
+
+    if "working_end_time" in body:
+        end_time = parse_time(
+            body["working_end_time"],
+            "working_end_time",
+        )
+
+    validate_template_times(start_time, end_time)
+
+    if "is_active" in body:
+        is_active = body["is_active"]
+
+        if not isinstance(is_active, bool):
+            raise ValueError("is_active must be true or false")
+    else:
+        is_active = bool(existing["is_active"])
+
+    cursor.execute(
+        """
+        UPDATE slot_template
+        SET name = %s,
+            is_active = %s,
+            working_start_time = %s,
+            working_end_time = %s
+        WHERE template_id = %s
+        """,
+        (
+            name,
+            is_active,
+            start_time.strftime("%H:%M:%S"),
+            end_time.strftime("%H:%M:%S"),
+            template_id,
+        ),
+    )
+
+    cursor.execute(
+        """
+        SELECT
+            template_id,
+            name,
+            is_active,
+            working_start_time,
+            working_end_time
+        FROM slot_template
+        WHERE template_id = %s
+        """,
+        (template_id,),
+    )
+
+    template = cursor.fetchone()
+
+    return response(
+        200,
+        {
+            "message": "Slot template updated successfully",
+            "template": serialize_template(template),
+        },
+    )
 
 
-# --------------------------------------------------
-# LAMBDA HANDLER
-# --------------------------------------------------
+def deactivate_template(cursor, template_id):
+    cursor.execute(
+        """
+        UPDATE slot_template
+        SET is_active = FALSE
+        WHERE template_id = %s
+        """,
+        (template_id,),
+    )
+
+    if cursor.rowcount == 0:
+        raise LookupError("Slot template not found")
+
+    cursor.execute(
+        """
+        SELECT
+            template_id,
+            name,
+            is_active,
+            working_start_time,
+            working_end_time
+        FROM slot_template
+        WHERE template_id = %s
+        """,
+        (template_id,),
+    )
+
+    template = cursor.fetchone()
+
+    return response(
+        200,
+        {
+            "message": "Slot template deactivated successfully",
+            "template": serialize_template(template),
+        },
+    )
+
+
+def parse_template_id(path_parameters):
+    if not path_parameters:
+        raise LookupError("templateId is required")
+
+    raw_template_id = path_parameters.get("templateId")
+
+    if not raw_template_id:
+        raise LookupError("templateId is required")
+
+    if not str(raw_template_id).isdigit():
+        raise ValueError("templateId must be a positive integer")
+
+    template_id = int(raw_template_id)
+
+    if template_id <= 0:
+        raise ValueError("templateId must be a positive integer")
+
+    return template_id
+
+
+def parse_include_inactive(event):
+    query_parameters = event.get("queryStringParameters") or {}
+
+    raw_value = query_parameters.get("includeInactive")
+
+    if raw_value is None:
+        return False
+
+    if str(raw_value).lower() not in ("true", "false"):
+        raise ValueError(
+            "includeInactive must be true or false"
+        )
+
+    return str(raw_value).lower() == "true"
+
 
 def lambda_handler(event, context):
-    logger.info("Initializing universal slot template")
+    request_id = getattr(context, "aws_request_id", "unknown")
 
     connection = None
 
     try:
+        logger.info(
+            "Template request started: request_id=%s",
+            request_id,
+        )
+
+        admin_user_id = require_admin(event)
+
+        method = get_http_method(event)
+        path_parameters = event.get("pathParameters") or {}
+
+        logger.info(
+            "Template request: request_id=%s method=%s "
+            "admin_user_id=%s path_parameters=%s",
+            request_id,
+            method,
+            admin_user_id,
+            path_parameters,
+        )
+
+        if method not in ("GET", "POST", "PATCH", "DELETE"):
+            return response(
+                405,
+                {"message": "Method not allowed"},
+            )
+
         connection = get_db_connection()
 
         with connection.cursor() as cursor:
-            validate_working_hours(cursor)
+            if method == "GET":
+                if "templateId" in path_parameters:
+                    template_id = parse_template_id(path_parameters)
+                    result = get_template(cursor, template_id)
+                else:
+                    include_inactive = parse_include_inactive(event)
+                    result = list_templates(
+                        cursor,
+                        include_inactive,
+                    )
 
-            # 1. Ensure predefined consultation types exist.
-            type_ids = seed_consultation_types(cursor)
+            elif method == "POST":
+                body = get_request_body(event)
+                result = create_template(cursor, body)
 
-            # 2. Create or retrieve the universal template.
-            template, template_created = get_or_create_template(
-                cursor
-            )
+            elif method == "PATCH":
+                template_id = parse_template_id(path_parameters)
+                body = get_request_body(event)
+                result = update_template(
+                    cursor,
+                    template_id,
+                    body,
+                )
 
-            # 3. Generate Monday-Friday consultation rules.
-            rules_created = create_consultation_rules(
-                cursor,
-                template["template_id"],
-                type_ids,
-            )
+            elif method == "DELETE":
+                template_id = parse_template_id(path_parameters)
+                result = deactivate_template(
+                    cursor,
+                    template_id,
+                )
 
         connection.commit()
 
         logger.info(
-            "Template initialized successfully: template_id=%s",
-            template["template_id"],
+            "Template request completed: request_id=%s "
+            "method=%s status_code=%s",
+            request_id,
+            method,
+            result["statusCode"],
         )
 
-        return response(
-            200,
-            {
-                "message": (
-                    "Universal template created successfully."
-                    if template_created
-                    else "Universal template already exists; "
-                         "missing consultation rules were added."
-                ),
-                "template_id": template["template_id"],
-                "template_name": template["name"],
-                "template_created": template_created,
-                "working_start_time": str(
-                    template["working_start_time"]
-                ),
-                "working_end_time": str(
-                    template["working_end_time"]
-                ),
-                "consultation_types": [
-                    {
-                        "name": item["name"],
-                        "consultation_type_id": type_ids[item["name"]],
-                        "duration_min": item["duration_min"],
-                        "default_slot_capacity": item["capacity"],
-                    }
-                    for item in CONSULTATION_TYPES
-                ],
-                "working_days": [
-                    "Monday",
-                    "Tuesday",
-                    "Wednesday",
-                    "Thursday",
-                    "Friday",
-                ],
-                "rules_created": rules_created,
-            },
+        return result
+
+    except PermissionError as exc:
+        if connection:
+            connection.rollback()
+
+        logger.warning(
+            "Forbidden template request: request_id=%s error=%s",
+            request_id,
+            exc,
         )
+
+        return response(403, {"message": str(exc)})
+
+    except LookupError as exc:
+        if connection:
+            connection.rollback()
+
+        logger.info(
+            "Template resource not found: request_id=%s error=%s",
+            request_id,
+            exc,
+        )
+
+        return response(404, {"message": str(exc)})
 
     except ValueError as exc:
         if connection:
             connection.rollback()
 
-        logger.warning("Initialization validation failed: %s", exc)
-
-        return response(
-            400,
-            {"message": str(exc)},
+        logger.warning(
+            "Template request validation failed: "
+            "request_id=%s error=%s",
+            request_id,
+            exc,
         )
 
-    except (ClientError, pymysql.MySQLError):
+        return response(400, {"message": str(exc)})
+
+    except pymysql_err.IntegrityError as exc:
         if connection:
             connection.rollback()
 
-        logger.exception("Template initialization failed")
+        logger.warning(
+            "Template database constraint violated: "
+            "request_id=%s error=%s",
+            request_id,
+            exc,
+        )
+
+        if getattr(exc, "args", None) and exc.args[0] == 1062:
+            return response(
+                409,
+                {"message": "A slot template with that name already exists"},
+            )
+
+        return response(
+            409,
+            {"message": "The template conflicts with database constraints"},
+        )
+
+    except (pymysql.MySQLError, BotoCoreError, ClientError):
+        if connection:
+            connection.rollback()
+
+        logger.exception(
+            "Template infrastructure or database error: "
+            "request_id=%s",
+            request_id,
+        )
 
         return response(
             500,
-            {"message": "Template initialization failed."},
+            {"message": "Unable to complete the template request"},
         )
 
     except Exception:
         if connection:
             connection.rollback()
 
-        logger.exception("Unexpected initialization error")
+        logger.exception(
+            "Unexpected template request error: request_id=%s",
+            request_id,
+        )
 
         return response(
             500,
-            {"message": "An unexpected error occurred."},
+            {"message": "An unexpected error occurred"},
         )
 
     finally:

@@ -35,8 +35,22 @@ CREATE TABLE IF NOT EXISTS slot_template (
     working_start_time TIME NOT NULL DEFAULT '09:00:00',
     working_end_time TIME NOT NULL DEFAULT '16:00:00',
     CONSTRAINT chk_template_times
-       CHECK (working_end_time > working_start_time)
+       CHECK (working_end_time > working_start_time),
+    ADD CONSTRAINT uq_slot_template_name UNIQUE (name);
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+INSERT INTO slot_template (
+    name,
+    is_active,
+    working_start_time,
+    working_end_time
+)
+VALUES
+    ('Early Shift',   TRUE, '08:00:00', '16:00:00'),
+    ('Morning Shift', TRUE, '09:00:00', '17:00:00'),
+    ('Late Shift',    TRUE, '12:00:00', '20:00:00'),
+    ('Half-Day Shift', TRUE, '09:00:00', '13:00:00')
+ON DUPLICATE KEY UPDATE
+    template_id = LAST_INSERT_ID(template_id);
 
 
 CREATE TABLE IF NOT EXISTS doctor (
