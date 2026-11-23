@@ -117,16 +117,16 @@ def get_authorizer_context(event):
     }
 
 
-def require_admin(event):
+def require_doctor(event):
     context = get_authorizer_context(event)
 
-    if context["role"] != ADMIN_ROLE:
+    if context["role"] not in ("doctor", "DOCTOR"):
         logger.warning(
             "Forbidden template request: role=%s user_id=%s",
             context["role"],
             context["user_id"],
         )
-        raise PermissionError("Administrator access is required")
+        raise PermissionError("Doctor access is required")
 
     return context["user_id"]
 
@@ -621,7 +621,7 @@ def lambda_handler(event, context):
             request_id,
         )
 
-        admin_user_id = require_admin(event)
+        admin_user_id = require_doctor(event)
 
         method = get_http_method(event)
         path_parameters = event.get("pathParameters") or {}

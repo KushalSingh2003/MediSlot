@@ -1160,6 +1160,25 @@ Resources:
             - LambdaArn:
                 Fn::ImportValue:
                   Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
+    # DELETE /admin/slot-templates/{templateId}
+  DoctorShiftsDeleteMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorShiftsResource
+      HttpMethod: DELETE
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn:
+                Fn::ImportValue:
+                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
+
 
 
 
@@ -1209,6 +1228,7 @@ Resources:
     - DoctorShiftsPostMethod
     - DoctorShiftsGetMethod
     - DoctorShiftGetMethod
+    - DoctorShiftsDeleteMethod
     
     Properties:
       RestApiId: !Ref MediSlotApi

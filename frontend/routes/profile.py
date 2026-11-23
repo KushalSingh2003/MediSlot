@@ -128,8 +128,7 @@ def index():
         payload = {
             "fullName": full_name,
             "phone": phone,
-            "yearsExperience": years_experience,
-            "languagesSpoken": languages_spoken
+            "yearsExperience": years_experience
         }
 
         response = APIClient.request(
@@ -195,4 +194,24 @@ def index():
         profile=profile
     )
 
+@profile_bp.route("/availability/templates", methods=["GET"])
+@login_required
+def select_template():
+    api_response = APIClient.request("GET", "/slot-templates")
+
+    if api_response.status_code != 200:
+        flash("Unable to load available shift templates.", "danger")
+        return redirect(url_for("profile.index"))
+
+    try:
+        data = api_response.json()
+    except ValueError:
+        flash("The templates service returned an invalid response.", "danger")
+        return redirect(url_for("profile.index"))
+
+    templates = data.get("templates", [])
+    return render_template(
+        "select_template.html",
+        templates=templates,
+    )
   

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MediSlot | Choose a Shift</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --sand: #D8CBB3;
+            --blue: #2F6BFF;
+            --ink: #1E1E1C;
+            --muted: rgba(30, 30, 28, .65);
+            --white: #FFFFFF;
+            --line: rgba(30, 30, 28, .12);
+            --shadow: 0 12px 32px rgba(30, 30, 28, .10);
+            --ease: cubic-bezier(.22, 1, .36, 1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--ink);
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont,
+                         "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(180deg, var(--sand) 0%, #fff 58%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page-shell {
+            min-height: 100vh;
+            animation: page-in .6s var(--ease) both;
+        }
+
+        /* ---------- Top bar ---------- */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem clamp(1rem, 5vw, 4rem);
+            background: rgba(255, 255, 255, .86);
+            border-bottom: 1px solid var(--line);
+            box-shadow: 0 4px 18px rgba(47, 107, 255, .10);
+            backdrop-filter: blur(12px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: .7rem;
+            color: var(--ink);
+            font-size: 1.15rem;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            display: grid;
+            width: 42px;
+            height: 42px;
+            place-items: center;
+            border-radius: 14px;
+            color: var(--white);
+            background: linear-gradient(135deg, var(--ink), var(--blue));
+            box-shadow: 0 7px 18px rgba(47, 107, 255, .24);
+            transition: transform .4s var(--ease);
+        }
+
+        .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.08); }
+
+        .topbar-links {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+        }
+
+        .topbar-links a {
+            padding: .6rem .85rem;
+            border-radius: 10px;
+            color: var(--ink);
+            font-weight: 650;
+            text-decoration: none;
+            transition: background .2s ease, transform .2s ease;
+        }
+
+        .topbar-links a:hover {
+            background: rgba(216, 203, 179, .55);
+            transform: translateY(-2px);
+        }
+
+        /* ---------- Layout ---------- */
+        .content {
+            width: min(1120px, calc(100% - 2rem));
+            margin: 0 auto;
+            padding: clamp(2rem, 5vw, 4rem) 0 clamp(3rem, 6vw, 5rem);
+        }
+
+        /* ---------- Hero ---------- */
+        .hero {
+            position: relative;
+            overflow: hidden;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            border: 1px solid rgba(255, 255, 255, .75);
+            border-radius: 28px;
+            background:
+                radial-gradient(circle at 90% 10%, rgba(255,255,255,.55), transparent 30%),
+                linear-gradient(120deg, var(--sand), rgba(47,107,255,.18), var(--sand));
+            background-size: 100% 100%, 220% 220%;
+            box-shadow: var(--shadow);
+            animation: rise-in .7s .08s var(--ease) both,
+                       gradient-drift 12s ease-in-out infinite alternate;
+        }
+
+        .hero::before,
+        .hero::after {
+            position: absolute;
+            border: 1px solid rgba(47, 107, 255, .2);
+            border-radius: 50%;
+            content: "";
+            pointer-events: none;
+        }
+
+        .hero::before {
+            top: -70px;
+            left: 48%;
+            width: 140px;
+            height: 140px;
+            animation: float 9s ease-in-out infinite reverse;
+        }
+
+        .hero::after {
+            right: 7%;
+            bottom: -85px;
+            width: 210px;
+            height: 210px;
+            animation: float 7s ease-in-out infinite;
+        }
+
+        .hero > * { position: relative; z-index: 1; }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: 1rem;
+            padding: .45rem .75rem;
+            border: 1px solid rgba(47, 107, 255, .18);
+            border-radius: 999px;
+            color: var(--blue);
+            background: rgba(255,255,255,.72);
+            font-size: .78rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            max-width: 700px;
+            margin: 0;
+            font-size: clamp(2rem, 5vw, 3.4rem);
+            font-weight: 800;
+            letter-spacing: -.045em;
+        }
+
+        .hero p {
+            max-width: 650px;
+            margin: 1rem 0 0;
+            color: var(--muted);
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+
+        /* ---------- Section heading ---------- */
+        .section-heading {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+            margin: 2.75rem 0 1.25rem;
+            animation: rise-in .6s .16s var(--ease) both;
+        }
+
+        .section-heading h2 {
+            margin: 0;
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+
+        .section-heading p {
+            margin: .35rem 0 0;
+            color: var(--muted);
+        }
+
+        .count-badge {
+            padding: .45rem .85rem;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: rgba(255,255,255,.85);
+            font-size: .82rem;
+            font-weight: 750;
+            white-space: nowrap;
+        }
+
+        /* ---------- Template cards ---------- */
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+            gap: 1.1rem;
+        }
+
+        .template-option {
+            position: relative;
+            display: block;
+            cursor: pointer;
+            animation: rise-in .55s var(--ease) both;
+        }
+
+        .template-option:nth-child(1) { animation-delay: .08s; }
+        .template-option:nth-child(2) { animation-delay: .14s; }
+        .template-option:nth-child(3) { animation-delay: .20s; }
+        .template-option:nth-child(4) { animation-delay: .26s; }
+        .template-option:nth-child(5) { animation-delay: .32s; }
+        .template-option:nth-child(6) { animation-delay: .38s; }
+        .template-option:nth-child(7) { animation-delay: .44s; }
+        .template-option:nth-child(8) { animation-delay: .50s; }
+
+        .template-option input {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            opacity: 0;
+        }
+
+        .template-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 210px;
+            padding: 1.35rem;
+            overflow: hidden;
+            isolation: isolate;
+            border: 2px solid rgba(30, 30, 28, .10);
+            border-radius: 20px;
+            background: rgba(255,255,255,.9);
+            box-shadow: 0 8px 22px rgba(30, 30, 28, .06);
+            transition: transform .25s var(--ease), border-color .25s ease,
+                        box-shadow .25s ease, background .25s ease;
+        }
+
+        /* light sweep on hover */
+        .template-card::before {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            content: "";
+            background: linear-gradient(110deg, transparent 30%,
+                        rgba(47,107,255,.10) 50%, transparent 70%);
+            transform: translateX(-120%);
+            transition: transform .8s var(--ease);
+        }
+
+        /* growing accent bar when selected */
+        .template-card::after {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 5px;
+            content: "";
+            background: linear-gradient(90deg, var(--ink), var(--blue));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .45s var(--ease);
+        }
+
+        .template-option:hover .template-card {
+            transform: translateY(-5px);
+            border-color: rgba(47,107,255,.45);
+            box-shadow: var(--shadow);
+        }
+
+        .template-option:hover .template-card::before { transform: translateX(120%); }
+        .template-option:active .template-card { transform: scale(.98); }
+
+        .template-option input:checked + .template-card {
+            border-color: var(--blue);
+            background: linear-gradient(145deg, #fff, rgba(47,107,255,.08));
+            box-shadow: 0 12px 30px rgba(47,107,255,.18);
+            transform: translateY(-3px);
+        }
+
+        .template-option input:checked + .template-card::after { transform: scaleX(1); }
+
+        .template-option input:focus-visible + .template-card {
+            outline: 3px solid rgba(47,107,255,.35);
+            outline-offset: 3px;
+        }
+
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: .75rem;
+        }
+
+        .shift-icon {
+            display: grid;
+            width: 46px;
+            height: 46px;
+            flex: 0 0 46px;
+            place-items: center;
+            border-radius: 15px;
+            color: var(--blue);
+            background: rgba(216,203,179,.5);
+            font-size: 1.2rem;
+            transition: transform .3s var(--ease), background .3s ease, color .3s ease;
+        }
+
+        .template-option:hover .shift-icon { transform: rotate(-8deg) scale(1.06); }
+
+        .template-option input:checked + .template-card .shift-icon {
+            color: var(--white);
+            background: linear-gradient(135deg, var(--ink), var(--blue));
+            animation: icon-pulse 1.8s ease-out infinite;
+        }
+
+        .check-mark {
+            display: grid;
+            width: 26px;
+            height: 26px;
+            place-items: center;
+            border: 1px solid var(--line);
+            border-radius: 50%;
+            color: transparent;
+            font-size: .85rem;
+            transition: all .2s ease;
+        }
+
+        .check-mark i {
+            transform: scale(0);
+            transition: transform .35s var(--ease) .05s;
+        }
+
+        .template-option input:checked + .template-card .check-mark {
+            border-color: var(--blue);
+            color: white;
+            background: var(--blue);
+            animation: pop-in .45s var(--ease) both;
+        }
+
+        .template-option input:checked + .template-card .check-mark i { transform: scale(1); }
+
+        .card-body { margin: 1.1rem 0 1rem; }
+
+        .template-card h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+            word-break: break-word;
+        }
+
+        .card-footer-time {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: .5rem;
+            margin-top: auto;
+            padding-top: .9rem;
+            border-top: 1px dashed var(--line);
+            color: var(--muted);
+            font-size: .95rem;
+        }
+
+        .card-footer-time i { color: var(--blue); }
+
+        .card-footer-time strong {
+            padding: .2rem .55rem;
+            border-radius: 8px;
+            color: var(--ink);
+            background: rgba(216,203,179,.45);
+            font-weight: 750;
+            font-variant-numeric: tabular-nums;
+            transition: background .25s ease, color .25s ease;
+        }
+
+        .template-option:hover .card-footer-time strong {
+            color: var(--blue);
+            background: rgba(47,107,255,.12);
+        }
+
+        /* ---------- Selection panel ---------- */
+        .selection-panel {
+            display: grid;
+            grid-template-columns: 1fr minmax(220px, 300px) auto;
+            align-items: end;
+            gap: 1.25rem;
+            margin-top: 1.75rem;
+            padding: 1.35rem;
+            border: 1px solid rgba(255,255,255,.8);
+            border-radius: 22px;
+            background: rgba(255,255,255,.82);
+            box-shadow: 0 8px 24px rgba(30,30,28,.06);
+            animation: rise-in .6s .25s var(--ease) both;
+            transition: transform .3s var(--ease), box-shadow .3s ease;
+        }
+
+        .selection-panel:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .selection-note {
+            color: var(--muted);
+            font-size: .92rem;
+            line-height: 1.6;
+        }
+
+        .form-label { font-weight: 750; }
+
+        .form-control {
+            min-height: 48px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+        }
+
+        .form-control:focus {
+            border-color: var(--blue);
+            box-shadow: 0 0 0 .22rem rgba(47,107,255,.18);
+        }
+
+        .btn-select {
+            min-height: 48px;
+            padding: .7rem 1.2rem;
+            border: 0;
+            border-radius: 12px;
+            color: white;
+            background: linear-gradient(135deg, var(--ink), var(--blue));
+            box-shadow: 0 8px 18px rgba(47,107,255,.24);
+            font-weight: 750;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .btn-select i { display: inline-block; transition: transform .25s var(--ease); }
+
+        .btn-select:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(47,107,255,.32);
+        }
+
+        .btn-select:hover i { transform: translateX(5px); }
+        .btn-select:active { transform: scale(.97); }
+
+        /* ---------- Empty + flash ---------- */
+        .empty-state {
+            padding: 3rem 1rem;
+            border: 1px dashed rgba(30,30,28,.22);
+            border-radius: 20px;
+            color: var(--muted);
+            background: rgba(255,255,255,.65);
+            text-align: center;
+        }
+
+        .empty-state i {
+            display: block;
+            margin-bottom: .8rem;
+            color: var(--blue);
+            font-size: 2rem;
+        }
+
+        .flash-message {
+            margin-bottom: 1rem;
+            animation: rise-in .4s var(--ease) both;
+        }
+
+        /* ---------- Animations ---------- */
+        @keyframes page-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes rise-in {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-14px); }
+        }
+
+        @keyframes gradient-drift {
+            from { background-position: 0 0, 0% 50%; }
+            to { background-position: 0 0, 100% 50%; }
+        }
+
+        @keyframes pop-in {
+            0% { transform: scale(.4); }
+            60% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes icon-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(47,107,255,.45); }
+            70% { box-shadow: 0 0 0 14px rgba(47,107,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(47,107,255,0); }
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 760px) {
+            .selection-panel { grid-template-columns: 1fr; }
+            .section-heading { align-items: flex-start; flex-direction: column; }
+        }
+
+        @media (max-width: 520px) {
+            .topbar { padding: .8rem 1rem; }
+            .topbar-links a { padding: .5rem; font-size: .9rem; }
+            .content { width: min(100% - 1.25rem, 1120px); }
+            .hero { border-radius: 20px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="page-shell">
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('dashboard.index') }}">
+            <span class="brand-mark"><i class="bi bi-heart-pulse-fill"></i></span>
+            <span>MediSlot</span>
+        </a>
+
+        <nav class="topbar-links" aria-label="Main navigation">
+            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+            <a href="{{ url_for('profile.index') }}">My Profile</a>
+            <form action="{{ url_for('auth.logout') }}" method="POST" class="m-0">
+                <button type="submit" class="btn btn-sm btn-outline-dark">
+                    <i class="bi bi-box-arrow-right me-1"></i> Log out
+                </button>
+            </form>
+        </nav>
+    </header>
+
+    <main class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} flash-message" role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero">
+            <span class="eyebrow">
+                <i class="bi bi-calendar2-check"></i>
+                Schedule setup
+            </span>
+            <h1>Choose your working shift</h1>
+            <p>
+                Select the shift template that fits your practice.
+                Your selected template sets your standard start and end times.
+                You can extend the end time later for overtime.
+            </p>
+        </section>
+
+        <div class="section-heading">
+            <div>
+                <h2>Available templates</h2>
+                <p>Choose one template to continue.</p>
+            </div>
+            <span class="count-badge">
+                {{ templates|length }} available
+            </span>
+        </div>
+
+        {% if templates %}
+            <form method="POST" action="{{ url_for('profile.select_template') }}"
+                  id="templateForm">
+                <div class="template-grid" role="radiogroup" aria-label="Shift templates">
+                    {% for template in templates %}
+                        <label class="template-option">
+                            <input type="radio"
+                                   name="template_id"
+                                   value="{{ template.template_id }}"
+                                   required>
+                            <div class="template-card">
+                                <div class="card-top">
+                                    <div class="shift-icon">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <div class="check-mark" aria-hidden="true">
+                                        <i class="bi bi-check-lg"></i>
+                                    </div>
+                                </div>
+
+                                <div class="card-body p-0">
+                                    <h3>{{ template.name }}</h3>
+                                </div>
+
+                                <div class="card-footer-time">
+                                    <i class="bi bi-clock"></i>
+                                    <strong>{{ template.working_start_time }}</strong>
+                                    <span>to</span>
+                                    <strong>{{ template.working_end_time }}</strong>
+                                </div>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+
+                <section class="selection-panel">
+                    <div class="selection-note">
+                        <strong class="d-block mb-1">When should this shift begin?</strong>
+                        Your schedule will be created for the configured number
+                        of working days.
+                    </div>
+
+                    <div>
+                        <label class="form-label" for="startDate">Start date</label>
+                        <input class="form-control"
+                               type="date"
+                               id="startDate"
+                               name="start_date"
+                               required>
+                    </div>
+
+                    <button class="btn btn-select" type="submit" id="continueButton">
+                        Continue
+                        <i class="bi bi-arrow-right ms-2"></i>
+                    </button>
+                </section>
+            </form>
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-calendar-x"></i>
+                <h2 class="h5 fw-bold text-dark">No shift templates available</h2>
+                <p class="mb-0">Please try again later or contact support.</p>
+            </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+    const startDate = document.getElementById("startDate");
+    if (startDate) {
+        const today = new Date();
+        const localToday = new Date(
+            today.getTime() - today.getTimezoneOffset() * 60000
+        ).toISOString().slice(0, 10);
+
+        startDate.min = localToday;
+        startDate.value = localToday;
+    }
+
+    const form = document.getElementById("templateForm");
+    const continueButton = document.getElementById("continueButton");
+
+    if (form && continueButton) {
+        form.addEventListener("submit", () => {
+            continueButton.disabled = true;
+            continueButton.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' +
+                "Saving selection…";
+        });
+    }
+</script>
+</body>
+</html>
