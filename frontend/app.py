@@ -13,6 +13,9 @@ from routes.schedule import schedule_bp
 from routes.appointments import appointments_bp
 from routes.blackouts import blackouts_bp
 from routes.patient_portal import patient_bp
+from routes.doctor_shifts import doctor_shifts_bp
+
+
 
 
 
@@ -36,6 +39,7 @@ def create_app():
     app.register_blueprint(appointments_bp)
     app.register_blueprint(blackouts_bp)
     app.register_blueprint(patient_bp)
+    app.register_blueprint(doctor_shifts_bp)
 
     @app.route("/")
     def index():

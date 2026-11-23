@@ -1,0 +1,1565 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+      rel="stylesheet">
+
+<noscript>
+    <style>#pageLoader { display: none !important; }</style>
+</noscript>
+
+<style>
+    :root {
+        --sand: #D8CBB3;
+        --blue: #2F6BFF;
+        --ink: #1E1E1C;
+        --muted: rgba(30, 30, 28, .65);
+        --white: #FFFFFF;
+        --line: rgba(30, 30, 28, .12);
+        --shadow: 0 12px 32px rgba(30, 30, 28, .10);
+        --ease: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: "Segoe UI", -apple-system, BlinkMacSystemFont,
+                     "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(180deg, var(--sand) 0%, #fff 58%);
+        background-attachment: fixed;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    .shifts-page {
+        width: min(1120px, calc(100% - 2rem));
+        margin: 0 auto;
+        padding: clamp(2rem, 5vw, 4rem) 0 clamp(3rem, 6vw, 5rem);
+        animation: page-in .6s var(--ease) both;
+    }
+
+    /* ---------- Page loader ---------- */
+    #pageLoader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        background: var(--ink);
+        transition: opacity .55s ease, visibility .55s ease;
+    }
+
+    #pageLoader.hide { opacity: 0; visibility: hidden; }
+
+    .loader-logo {
+        position: relative;
+        display: grid;
+        width: 78px;
+        height: 78px;
+        place-items: center;
+        border-radius: 22px;
+        color: #fff;
+        font-size: 2rem;
+        background: linear-gradient(135deg, #7EA3FF, var(--blue));
+        box-shadow: 0 10px 30px rgba(47, 107, 255, .55);
+        animation: beat 1.4s ease-in-out infinite;
+    }
+
+    .loader-logo::after {
+        position: absolute;
+        inset: -12px;
+        border: 2px solid rgba(126, 163, 255, .55);
+        border-radius: 30px;
+        content: "";
+        animation: ring-out 1.4s ease-out infinite;
+    }
+
+    .loader-title {
+        color: var(--sand);
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: .3px;
+    }
+
+    .ecg { width: 210px; height: 42px; }
+
+    .ecg path {
+        fill: none;
+        stroke: var(--blue);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 340;
+        stroke-dashoffset: 340;
+        animation: ecg-draw 1.8s linear infinite;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+        position: relative;
+        overflow: hidden;
+        padding: clamp(1.5rem, 4vw, 3rem);
+        border: 1px solid rgba(255, 255, 255, .75);
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at 90% 10%, rgba(255,255,255,.55), transparent 30%),
+            linear-gradient(120deg, var(--sand), rgba(47,107,255,.18), var(--sand));
+        background-size: 100% 100%, 220% 220%;
+        box-shadow: var(--shadow);
+        animation: rise-in .7s .08s var(--ease) both,
+                   gradient-drift 12s ease-in-out infinite alternate;
+    }
+
+    .hero::before,
+    .hero::after {
+        position: absolute;
+        border: 1px solid rgba(47, 107, 255, .2);
+        border-radius: 50%;
+        content: "";
+        pointer-events: none;
+    }
+
+    .hero::before {
+        top: -70px;
+        left: 48%;
+        width: 140px;
+        height: 140px;
+        animation: float 9s ease-in-out infinite reverse;
+    }
+
+    .hero::after {
+        right: 7%;
+        bottom: -85px;
+        width: 210px;
+        height: 210px;
+        animation: float 7s ease-in-out infinite;
+    }
+
+    .hero > * { position: relative; z-index: 1; }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        margin-bottom: 1rem;
+        padding: .45rem .75rem;
+        border: 1px solid rgba(47, 107, 255, .18);
+        border-radius: 999px;
+        color: var(--blue);
+        background: rgba(255,255,255,.72);
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+
+    .hero h1 {
+        max-width: 700px;
+        margin: 0;
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        font-weight: 800;
+        letter-spacing: -.045em;
+    }
+
+    .hero p {
+        max-width: 650px;
+        margin: 1rem 0 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.7;
+    }
+
+    /* ---------- Section heading ---------- */
+    .section-heading {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin: 2.75rem 0 1.25rem;
+        animation: rise-in .6s .16s var(--ease) both;
+    }
+
+    .section-heading h2 {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 800;
+    }
+
+    .section-heading p {
+        margin: .35rem 0 0;
+        color: var(--muted);
+    }
+
+    .count-badge {
+        padding: .45rem .85rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255,255,255,.85);
+        font-size: .82rem;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+    .count-badge .bump { display: inline-block; }
+    .count-badge .bump.go { animation: bump .45s var(--ease); }
+
+    /* ---------- Filter panel ---------- */
+    .filter-panel {
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255,255,255,.85);
+        border-radius: 22px;
+        background: rgba(255,255,255,.88);
+        box-shadow: 0 8px 24px rgba(30,30,28,.06);
+        animation: rise-in .6s .2s var(--ease) both;
+    }
+
+    /* thin progress bar that runs while shifts are loading */
+    .filter-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        overflow: hidden;
+        opacity: 0;
+        transition: opacity .2s ease;
+    }
+
+    .filter-progress::before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 40%;
+        content: "";
+        border-radius: 3px;
+        background: linear-gradient(90deg, transparent, var(--blue), transparent);
+        animation: progress-slide 1s ease-in-out infinite;
+    }
+
+    .filter-panel.is-loading .filter-progress { opacity: 1; }
+
+    .filter-head {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: 1rem 1.35rem;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .filter-head .fh-icon {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        place-items: center;
+        border-radius: 11px;
+        color: var(--blue);
+        background: rgba(47,107,255,.10);
+    }
+
+    .filter-head h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .filter-head p {
+        margin: .1rem 0 0;
+        color: var(--muted);
+        font-size: .85rem;
+    }
+
+    .filter-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.6fr);
+        align-items: stretch;
+        gap: 1.5rem;
+        padding: 1.25rem 1.35rem 1.35rem;
+    }
+
+    .filter-group { min-width: 0; }
+
+    .group-label {
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        margin: 0 0 .65rem;
+        color: var(--ink);
+        font-size: .88rem;
+        font-weight: 750;
+    }
+
+    .group-label i { color: var(--blue); }
+
+    .group-label small {
+        color: var(--muted);
+        font-size: .78rem;
+        font-weight: 600;
+    }
+
+    .filter-divider {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .5rem;
+        color: var(--muted);
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    .filter-divider::before,
+    .filter-divider::after {
+        flex: 1;
+        width: 1px;
+        content: "";
+        background: var(--line);
+    }
+
+    /* segmented quick select with sliding thumb */
+    .segmented {
+        position: relative;
+        display: flex;
+        width: 100%;
+        padding: 4px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: rgba(216,203,179,.28);
+    }
+
+    .seg-thumb {
+        position: absolute;
+        top: 4px;
+        bottom: 4px;
+        left: 0;
+        width: 0;
+        border-radius: 10px;
+        background: linear-gradient(135deg, var(--ink), #2b3f7a);
+        box-shadow: 0 6px 14px rgba(30,30,28,.22);
+        opacity: 0;
+        transition: transform .4s var(--ease), width .4s var(--ease), opacity .2s ease;
+        pointer-events: none;
+    }
+
+    .seg-btn {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        min-height: 42px;
+        padding: .5rem .6rem;
+        border: 0;
+        border-radius: 10px;
+        color: var(--ink);
+        background: transparent;
+        font-size: .9rem;
+        font-weight: 750;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: color .25s ease;
+    }
+
+    .seg-btn:hover { color: var(--blue); }
+    .seg-btn.active,
+    .seg-btn.active:hover { color: #fff; }
+
+    .seg-btn:focus-visible,
+    .btn-apply:focus-visible,
+    .btn-reset:focus-visible {
+        outline: 3px solid rgba(47,107,255,.35);
+        outline-offset: 2px;
+    }
+
+    /* custom range */
+    .range-row {
+        display: flex;
+        align-items: flex-end;
+        flex-wrap: wrap;
+        gap: .65rem;
+    }
+
+    .range-group.shake { animation: shake .4s ease; }
+
+    .date-field {
+        position: relative;
+        flex: 1 1 150px;
+        min-width: 0;
+    }
+
+    .date-field label {
+        display: block;
+        margin-bottom: .3rem;
+        color: var(--muted);
+        font-size: .78rem;
+        font-weight: 700;
+    }
+
+    .date-field input[type="date"] {
+        width: 100%;
+        min-height: 46px;
+        padding: .55rem .8rem;
+        border: 1px solid rgba(30,30,28,.2);
+        border-radius: 12px;
+        color: var(--ink);
+        background: #fff;
+        font-size: .95rem;
+        transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .date-field input[type="date"]:hover { border-color: rgba(47,107,255,.5); }
+
+    .date-field input[type="date"]:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 4px rgba(47,107,255,.18);
+        outline: none;
+        transform: translateY(-1px);
+    }
+
+    .date-field input[type="date"].has-error {
+        border-color: #b3261e;
+        box-shadow: 0 0 0 4px rgba(179,38,30,.12);
+    }
+
+    .range-arrow {
+        display: grid;
+        width: 28px;
+        height: 46px;
+        place-items: center;
+        color: var(--blue);
+        animation: nudge 2s ease-in-out infinite;
+    }
+
+    .btn-apply {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 46px;
+        padding: .55rem 1.3rem;
+        overflow: hidden;
+        border: 0;
+        border-radius: 12px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--ink), var(--blue));
+        box-shadow: 0 8px 18px rgba(47,107,255,.24);
+        font-size: .92rem;
+        font-weight: 750;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .btn-apply::after {
+        position: absolute;
+        inset: 0;
+        content: "";
+        background: linear-gradient(110deg, transparent 30%,
+                    rgba(255,255,255,.28) 50%, transparent 70%);
+        transform: translateX(-120%);
+    }
+
+    .btn-apply:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(47,107,255,.32);
+    }
+
+    .btn-apply:hover::after {
+        transform: translateX(120%);
+        transition: transform .7s var(--ease);
+    }
+
+    .btn-apply:active { transform: scale(.97); }
+
+    .filter-error {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        max-height: 0;
+        margin: 0;
+        padding: 0 1.35rem;
+        overflow: hidden;
+        color: #b3261e;
+        background: rgba(179,38,30,.07);
+        font-size: .88rem;
+        font-weight: 700;
+        opacity: 0;
+        transition: max-height .35s var(--ease), padding .35s var(--ease), opacity .25s ease;
+    }
+
+    .filter-error.show {
+        max-height: 80px;
+        padding: .7rem 1.35rem;
+        opacity: 1;
+    }
+
+    /* result summary */
+    .result-line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .6rem;
+        margin-bottom: 1rem;
+        color: var(--muted);
+        font-size: .92rem;
+    }
+
+    .result-line .showing {
+        display: inline-flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .4rem .8rem;
+        border-radius: 999px;
+        color: var(--sand);
+        background: var(--ink);
+        font-size: .82rem;
+        font-weight: 700;
+    }
+
+    .result-line .showing i { color: #7EA3FF; }
+
+    .result-line .swap { animation: swap-in .4s var(--ease); }
+
+    .btn-reset {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: .35rem .7rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--ink);
+        background: rgba(255,255,255,.85);
+        font-size: .8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: border-color .2s ease, color .2s ease, transform .2s ease;
+    }
+
+    .btn-reset[hidden] { display: none; }
+
+    .btn-reset:hover {
+        color: var(--blue);
+        border-color: var(--blue);
+        transform: translateY(-1px);
+    }
+
+    .btn-reset:hover i { transform: rotate(-180deg); }
+    .btn-reset i { transition: transform .4s var(--ease); }
+
+    /* ---------- Grid + skeleton loader ---------- */
+    .grid-wrap {
+        position: relative;
+        min-height: 200px;
+    }
+
+    .skeleton-grid {
+        display: none;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+        gap: 1rem;
+    }
+
+    .grid-wrap.is-loading .skeleton-grid { display: grid; }
+    .grid-wrap.is-loading .shift-grid,
+    .grid-wrap.is-loading .empty-state { display: none; }
+
+    .skeleton-card {
+        display: flex;
+        flex-direction: column;
+        gap: .9rem;
+        padding: 1.25rem;
+        border: 2px solid rgba(30,30,28,.06);
+        border-radius: 20px;
+        background: rgba(255,255,255,.9);
+        animation: rise-in .4s var(--ease) both;
+    }
+
+    .skeleton-card:nth-child(2) { animation-delay: .08s; }
+    .skeleton-card:nth-child(3) { animation-delay: .16s; }
+
+    .sk {
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        background: rgba(216,203,179,.4);
+    }
+
+    .sk::after {
+        position: absolute;
+        inset: 0;
+        content: "";
+        background: linear-gradient(100deg, transparent 20%,
+                    rgba(255,255,255,.75) 50%, transparent 80%);
+        transform: translateX(-100%);
+        animation: shimmer 1.3s ease-in-out infinite;
+    }
+
+    .sk-head { display: flex; align-items: center; justify-content: space-between; }
+    .sk-chip { width: 64px; height: 24px; border-radius: 999px; }
+    .sk-icon { width: 40px; height: 40px; border-radius: 13px; }
+    .sk-title { width: 70%; height: 22px; }
+    .sk-time {
+        height: 34px;
+        margin-top: .5rem;
+        border-radius: 8px;
+    }
+
+    .grid-status {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: .6rem;
+        margin-top: 1rem;
+        color: var(--muted);
+        font-size: .9rem;
+        font-weight: 700;
+    }
+
+    .grid-wrap.is-loading .grid-status { display: flex; }
+
+    .loader-dots { display: flex; gap: 6px; }
+
+    .loader-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--blue);
+        animation: dot-bounce 1s ease-in-out infinite;
+    }
+
+    .loader-dots span:nth-child(2) { animation-delay: .15s; }
+    .loader-dots span:nth-child(3) { animation-delay: .3s; }
+
+    /* ---------- Shift cards ---------- */
+    .shift-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+        gap: 1rem;
+    }
+
+    .shift-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: .9rem;
+        padding: 1.25rem;
+        overflow: hidden;
+        border: 2px solid rgba(30, 30, 28, .10);
+        border-radius: 20px;
+        background: rgba(255,255,255,.9);
+        box-shadow: 0 8px 22px rgba(30, 30, 28, .06);
+        animation: rise-in .55s var(--ease) both;
+        animation-delay: calc(min(var(--i, 0), 14) * 45ms + .1s);
+        transition: transform .25s var(--ease), border-color .25s ease,
+                    box-shadow .25s ease;
+    }
+
+    /* the class above sets display:flex, which would beat the hidden attribute */
+    .shift-card[hidden] { display: none; }
+
+    .shift-card::before {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 5px;
+        content: "";
+        background: linear-gradient(180deg, var(--ink), var(--blue));
+        transform: scaleY(.35);
+        transform-origin: top;
+        transition: transform .45s var(--ease);
+    }
+
+    .shift-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(47,107,255,.45);
+        box-shadow: var(--shadow);
+    }
+
+    .shift-card:hover::before { transform: scaleY(1); }
+
+    /* today's card gets a quiet highlight */
+    .shift-card.is-today { border-color: rgba(47,107,255,.5); }
+    .shift-card.is-today::before { transform: scaleY(1); }
+
+    .shift-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .day-chip {
+        padding: .3rem .7rem;
+        border-radius: 999px;
+        color: var(--blue);
+        background: rgba(47,107,255,.10);
+        font-size: .78rem;
+        font-weight: 800;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+    }
+
+    .shift-icon {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        place-items: center;
+        border-radius: 13px;
+        color: var(--blue);
+        background: rgba(216,203,179,.5);
+        transition: transform .3s var(--ease), background .3s ease, color .3s ease;
+    }
+
+    .shift-card:hover .shift-icon {
+        color: var(--white);
+        background: linear-gradient(135deg, var(--ink), var(--blue));
+        transform: rotate(-8deg) scale(1.08);
+    }
+
+    .shift-date {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .time-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .5rem;
+        padding-top: .9rem;
+        border-top: 1px dashed var(--line);
+        color: var(--muted);
+        font-size: .95rem;
+    }
+
+    .time-row i { color: var(--blue); }
+
+    .time-row strong {
+        padding: .2rem .55rem;
+        border-radius: 8px;
+        color: var(--ink);
+        background: rgba(216,203,179,.45);
+        font-weight: 750;
+        font-variant-numeric: tabular-nums;
+        transition: background .25s ease, color .25s ease;
+    }
+
+    .shift-card:hover .time-row strong {
+        color: var(--blue);
+        background: rgba(47,107,255,.12);
+    }
+
+    /* ---------- Panels ---------- */
+    .panel {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.25rem;
+        margin-top: 1.75rem;
+        padding: 1.35rem;
+        border: 1px solid rgba(255,255,255,.8);
+        border-radius: 22px;
+        background: rgba(255,255,255,.82);
+        box-shadow: 0 8px 24px rgba(30,30,28,.06);
+        animation: rise-in .6s .25s var(--ease) both;
+        transition: transform .3s var(--ease), box-shadow .3s ease;
+    }
+
+    .panel:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+    }
+
+    .panel-note {
+        max-width: 560px;
+        margin: 0;
+        color: var(--muted);
+        font-size: .95rem;
+        line-height: 1.6;
+    }
+
+    .panel-note strong { display: block; margin-bottom: .2rem; color: var(--ink); }
+
+    /* ---------- Buttons ---------- */
+    .btn-select,
+    .btn-remove {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
+        min-height: 48px;
+        padding: .7rem 1.3rem;
+        border-radius: 12px;
+        font-weight: 750;
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .btn-select {
+        border: 0;
+        color: white;
+        background: linear-gradient(135deg, var(--ink), var(--blue));
+        box-shadow: 0 8px 18px rgba(47,107,255,.24);
+    }
+
+    .btn-select:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(47,107,255,.32);
+    }
+
+    .btn-select i { display: inline-block; transition: transform .25s var(--ease); }
+    .btn-select:hover i { transform: translateX(5px); }
+
+    .btn-remove {
+        border: 1px solid rgba(30,30,28,.25);
+        color: var(--ink);
+        background: rgba(255,255,255,.9);
+    }
+
+    .btn-remove:hover {
+        color: #b3261e;
+        border-color: #b3261e;
+        background: rgba(179,38,30,.06);
+        transform: translateY(-2px);
+    }
+
+    .btn-select:active,
+    .btn-remove:active { transform: scale(.97); }
+
+    /* ---------- Template picker ---------- */
+    .template-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+        gap: 1.1rem;
+    }
+
+    .template-option {
+        position: relative;
+        display: block;
+        cursor: pointer;
+        animation: rise-in .55s var(--ease) both;
+        animation-delay: calc(min(var(--i, 0), 10) * 60ms + .1s);
+    }
+
+    .template-option input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+    }
+
+    .template-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 210px;
+        padding: 1.35rem;
+        overflow: hidden;
+        isolation: isolate;
+        border: 2px solid rgba(30, 30, 28, .10);
+        border-radius: 20px;
+        background: rgba(255,255,255,.9);
+        box-shadow: 0 8px 22px rgba(30, 30, 28, .06);
+        transition: transform .25s var(--ease), border-color .25s ease,
+                    box-shadow .25s ease, background .25s ease;
+    }
+
+    .template-card::before {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        content: "";
+        background: linear-gradient(110deg, transparent 30%,
+                    rgba(47,107,255,.10) 50%, transparent 70%);
+        transform: translateX(-120%);
+        transition: transform .8s var(--ease);
+    }
+
+    .template-card::after {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        height: 5px;
+        content: "";
+        background: linear-gradient(90deg, var(--ink), var(--blue));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .45s var(--ease);
+    }
+
+    .template-option:hover .template-card {
+        transform: translateY(-5px);
+        border-color: rgba(47,107,255,.45);
+        box-shadow: var(--shadow);
+    }
+
+    .template-option:hover .template-card::before { transform: translateX(120%); }
+    .template-option:active .template-card { transform: scale(.98); }
+
+    .template-option input:checked + .template-card {
+        border-color: var(--blue);
+        background: linear-gradient(145deg, #fff, rgba(47,107,255,.08));
+        box-shadow: 0 12px 30px rgba(47,107,255,.18);
+        transform: translateY(-3px);
+    }
+
+    .template-option input:checked + .template-card::after { transform: scaleX(1); }
+
+    .template-option input:focus-visible + .template-card {
+        outline: 3px solid rgba(47,107,255,.35);
+        outline-offset: 3px;
+    }
+
+    .card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: .75rem;
+    }
+
+    .template-option:hover .shift-icon { transform: rotate(-8deg) scale(1.06); }
+
+    .template-option input:checked + .template-card .shift-icon {
+        color: var(--white);
+        background: linear-gradient(135deg, var(--ink), var(--blue));
+        animation: icon-pulse 1.8s ease-out infinite;
+    }
+
+    .template-card .shift-icon { width: 46px; height: 46px; font-size: 1.2rem; }
+
+    .check-mark {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        color: transparent;
+        font-size: .85rem;
+        transition: all .2s ease;
+    }
+
+    .check-mark i {
+        transform: scale(0);
+        transition: transform .35s var(--ease) .05s;
+    }
+
+    .template-option input:checked + .template-card .check-mark {
+        border-color: var(--blue);
+        color: white;
+        background: var(--blue);
+        animation: pop-in .45s var(--ease) both;
+    }
+
+    .template-option input:checked + .template-card .check-mark i { transform: scale(1); }
+
+    .template-card h3 {
+        margin: 1.1rem 0 1rem;
+        font-size: 1.1rem;
+        font-weight: 800;
+        word-break: break-word;
+    }
+
+    .template-card .time-row { margin-top: auto; }
+
+    .template-option:hover .time-row strong {
+        color: var(--blue);
+        background: rgba(47,107,255,.12);
+    }
+
+    .submit-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1.5rem;
+        animation: rise-in .6s .25s var(--ease) both;
+    }
+
+    /* ---------- Empty ---------- */
+    .empty-state {
+        padding: 3rem 1rem;
+        border: 1px dashed rgba(30,30,28,.22);
+        border-radius: 20px;
+        color: var(--muted);
+        background: rgba(255,255,255,.65);
+        text-align: center;
+        animation: rise-in .6s .2s var(--ease) both;
+    }
+
+    .empty-state[hidden] { display: none; }
+
+    .empty-state i {
+        display: block;
+        margin-bottom: .8rem;
+        color: var(--blue);
+        font-size: 2rem;
+    }
+
+    .empty-state h3 {
+        margin: 0 0 .3rem;
+        color: var(--ink);
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .empty-state p { margin: 0; }
+
+    /* ---------- Animations ---------- */
+    @keyframes page-in { from { opacity: 0; } to { opacity: 1; } }
+
+    @keyframes rise-in {
+        from { opacity: 0; transform: translateY(18px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-14px); }
+    }
+
+    @keyframes gradient-drift {
+        from { background-position: 0 0, 0% 50%; }
+        to { background-position: 0 0, 100% 50%; }
+    }
+
+    @keyframes pop-in {
+        0% { transform: scale(.4); }
+        60% { transform: scale(1.25); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes icon-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(47,107,255,.45); }
+        70% { box-shadow: 0 0 0 14px rgba(47,107,255,0); }
+        100% { box-shadow: 0 0 0 0 rgba(47,107,255,0); }
+    }
+
+    @keyframes dot-bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: .5; }
+        40% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    @keyframes beat {
+        0%, 100% { transform: scale(1); }
+        15% { transform: scale(1.12); }
+        30% { transform: scale(1); }
+        45% { transform: scale(1.08); }
+    }
+
+    @keyframes ring-out {
+        0% { transform: scale(.85); opacity: .9; }
+        100% { transform: scale(1.35); opacity: 0; }
+    }
+
+    @keyframes ecg-draw {
+        0% { stroke-dashoffset: 340; }
+        70%, 100% { stroke-dashoffset: 0; }
+    }
+
+    @keyframes shimmer { to { transform: translateX(100%); } }
+
+    @keyframes progress-slide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(260%); }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-6px); }
+        40% { transform: translateX(6px); }
+        60% { transform: translateX(-4px); }
+        80% { transform: translateX(4px); }
+    }
+
+    @keyframes nudge {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(4px); }
+    }
+
+    @keyframes bump {
+        0% { transform: scale(1); }
+        40% { transform: scale(1.35); color: var(--blue); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes swap-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+        .filter-body { grid-template-columns: 1fr; gap: 1.1rem; }
+        .filter-divider { flex-direction: row; }
+        .filter-divider::before,
+        .filter-divider::after { flex: 1; width: auto; height: 1px; }
+    }
+
+    @media (max-width: 760px) {
+        .section-heading { align-items: flex-start; flex-direction: column; }
+        .panel { flex-direction: column; align-items: stretch; }
+        .submit-row { justify-content: stretch; }
+        .submit-row .btn-select { width: 100%; }
+        .range-arrow { display: none; }
+        .btn-apply { width: 100%; }
+    }
+
+    @media (max-width: 520px) {
+        .shifts-page { width: min(100% - 1.25rem, 1120px); }
+        .hero { border-radius: 20px; }
+        .seg-btn { font-size: .82rem; padding: .5rem .3rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            scroll-behavior: auto !important;
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: .01ms !important;
+        }
+        .sk::after,
+        .filter-progress::before,
+        .loader-dots span {
+            animation-duration: 1.4s !important;
+            animation-iteration-count: infinite !important;
+        }
+    }
+</style>
+
+<!-- Page loader -->
+<div id="pageLoader" aria-live="polite" aria-label="Loading shifts">
+    <div class="loader-logo"><i class="bi bi-heart-pulse-fill"></i></div>
+    <div class="loader-title">MediSlot</div>
+    <svg class="ecg" viewBox="0 0 220 44" aria-hidden="true">
+        <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+    </svg>
+</div>
+
+<main class="shifts-page container">
+  <section class="hero">
+    <span class="eyebrow">
+      <i class="bi bi-calendar2-check"></i>
+      Schedule
+    </span>
+    <h1>My shifts</h1>
+    <p>Showing shifts from {{ start_date }} through {{ end_date }}.</p>
+  </section>
+
+  {% if has_shifts %}
+    <div class="section-heading">
+      <div>
+        <h2>Upcoming schedule</h2>
+        <p>Today's shift is shown first. Pick a date or a range to see others.</p>
+      </div>
+      <span class="count-badge"><span class="bump" id="shiftCount">{{ shifts|length }}</span> shifts</span>
+    </div>
+
+    <!-- Date filter -->
+    <section class="filter-panel" id="filterPanel" aria-label="Filter shifts by date">
+      <div class="filter-progress" aria-hidden="true"></div>
+
+      <div class="filter-head">
+        <span class="fh-icon"><i class="bi bi-funnel"></i></span>
+        <div>
+          <h3>Find your shifts</h3>
+          <p>Use a quick option, or choose your own dates.</p>
+        </div>
+      </div>
+
+      <div class="filter-body">
+        <!-- Quick select -->
+        <div class="filter-group">
+          <p class="group-label"><i class="bi bi-lightning-charge"></i> Quick select</p>
+          <div class="segmented" id="segmented" role="group" aria-label="Quick date options">
+            <span class="seg-thumb" id="segThumb" aria-hidden="true"></span>
+            <button type="button" class="seg-btn" data-quick="today">Today</button>
+            <button type="button" class="seg-btn" data-quick="week">Next 7 days</button>
+            <button type="button" class="seg-btn" data-quick="all">All shifts</button>
+          </div>
+        </div>
+
+        <div class="filter-divider" aria-hidden="true">or</div>
+
+        <!-- Custom range -->
+        <div class="filter-group range-group" id="rangeGroup">
+          <p class="group-label"><i class="bi bi-calendar-range"></i> Custom dates</p>
+          <div class="range-row">
+            <div class="date-field">
+              <label for="fromDate">From</label>
+              <input type="date" id="fromDate" min="{{ start_date }}" max="{{ end_date }}">
+            </div>
+
+            <span class="range-arrow" aria-hidden="true"><i class="bi bi-arrow-right"></i></span>
+
+            <div class="date-field">
+              <label for="toDate">To (optional)</label>
+              <input type="date" id="toDate" min="{{ start_date }}" max="{{ end_date }}">
+            </div>
+
+            <button type="button" class="btn-apply" id="applyBtn">
+              <i class="bi bi-search"></i> Show shifts
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <p class="filter-error" id="filterError" role="alert">
+        <i class="bi bi-exclamation-circle"></i>
+        <span id="filterErrorText"></span>
+      </p>
+    </section>
+
+    <div class="result-line">
+      <span class="showing"><i class="bi bi-calendar-check"></i> <span id="rangeLabel">Today</span></span>
+      <span><strong id="resultCount">{{ shifts|length }}</strong> <span id="resultNoun">shifts</span> found</span>
+      <button type="button" class="btn-reset" id="resetBtn" hidden>
+        <i class="bi bi-arrow-counterclockwise"></i> Back to today
+      </button>
+    </div>
+
+    <div class="grid-wrap is-loading" id="gridWrap">
+
+      <!-- Skeleton placeholders shown while loading -->
+      <div class="skeleton-grid" aria-hidden="true">
+        {% for n in range(3) %}
+          <div class="skeleton-card">
+            <div class="sk-head">
+              <div class="sk sk-chip"></div>
+              <div class="sk sk-icon"></div>
+            </div>
+            <div class="sk sk-title"></div>
+            <div class="sk sk-time"></div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="grid-status" role="status" aria-live="polite">
+        <div class="loader-dots"><span></span><span></span><span></span></div>
+        Loading shifts…
+      </div>
+
+      <section class="shift-grid" aria-label="Upcoming shifts" id="shiftGrid">
+        {% for shift in shifts %}
+          <article class="shift-card" data-date="{{ shift.date }}" style="--i: {{ loop.index0 }}">
+            <div class="shift-head">
+              <span class="day-chip">{{ shift.day }}</span>
+              <span class="shift-icon"><i class="bi bi-clock-history"></i></span>
+            </div>
+            <h3 class="shift-date">{{ shift.date }}</h3>
+            <div class="time-row">
+              <i class="bi bi-clock"></i>
+              <strong>{{ shift.start_time }}</strong>
+              <span>to</span>
+              <strong>{{ shift.end_time }}</strong>
+            </div>
+          </article>
+        {% endfor %}
+      </section>
+
+      <div class="empty-state" id="noShifts" hidden>
+        <i class="bi bi-calendar-x"></i>
+        <h3>No shifts for this period</h3>
+        <p>Try another date, widen the range, or choose “All shifts”.</p>
+      </div>
+
+    </div>
+
+    <section class="panel">
+      <p class="panel-note">
+        <strong>Want a different template?</strong>
+        To choose a different template, remove your current selection first.
+      </p>
+      <form
+        method="post"
+        action="{{ url_for('doctor_shifts.delete_template_selection') }}"
+        onsubmit="return confirm('Remove your current shift template?');"
+        class="m-0"
+      >
+        <button type="submit" class="btn-remove">
+          <i class="bi bi-trash3"></i> Remove selected template
+        </button>
+      </form>
+    </section>
+
+    <script>
+      (function () {
+        var fromEl    = document.getElementById("fromDate");
+        var toEl      = document.getElementById("toDate");
+        var applyBtn  = document.getElementById("applyBtn");
+        var resetBtn  = document.getElementById("resetBtn");
+        var errEl     = document.getElementById("filterError");
+        var errText   = document.getElementById("filterErrorText");
+        var panel     = document.getElementById("filterPanel");
+        var rangeGrp  = document.getElementById("rangeGroup");
+        var seg       = document.getElementById("segmented");
+        var thumb     = document.getElementById("segThumb");
+        var wrap      = document.getElementById("gridWrap");
+        var cards     = Array.prototype.slice.call(document.querySelectorAll("#shiftGrid .shift-card"));
+        var emptyEl   = document.getElementById("noShifts");
+        var countEl   = document.getElementById("shiftCount");
+        var resultEl  = document.getElementById("resultCount");
+        var nounEl    = document.getElementById("resultNoun");
+        var labelEl   = document.getElementById("rangeLabel");
+        var quickBtns = Array.prototype.slice.call(document.querySelectorAll("[data-quick]"));
+        var timer = null;
+        var mode = "today";
+
+        function pad(n) { return String(n).padStart(2, "0"); }
+
+        /* local date -> YYYY-MM-DD (toISOString would shift the day in IST) */
+        function fmt(d) {
+          return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+        }
+
+        function addDays(d, n) {
+          return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+        }
+
+        function pretty(iso) {
+          var p = iso.split("-");
+          return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString("en-IN", {
+            day: "numeric", month: "short", year: "numeric"
+          });
+        }
+
+        /* slide the dark thumb under the active quick option */
+        function positionThumb() {
+          var active = seg.querySelector(".seg-btn.active");
+          if (!active) { thumb.style.opacity = "0"; return; }
+          thumb.style.width = active.offsetWidth + "px";
+          thumb.style.transform = "translateX(" + active.offsetLeft + "px)";
+          thumb.style.opacity = "1";
+        }
+
+        function setActive(name) {
+          mode = name || "custom";
+          quickBtns.forEach(function (b) {
+            var on = b.getAttribute("data-quick") === name;
+            b.classList.toggle("active", on);
+            b.setAttribute("aria-pressed", on ? "true" : "false");
+          });
+          resetBtn.hidden = (mode === "today");
+          positionThumb();
+        }
+
+        function bump(el) {
+          el.classList.remove("go");
+          void el.offsetWidth;      /* restart the animation */
+          el.classList.add("go");
+        }
+
+        function showError(msg, fields) {
+          errText.textContent = msg;
+          errEl.classList.add("show");
+          (fields || []).forEach(function (f) { f.classList.add("has-error"); });
+          rangeGrp.classList.remove("shake");
+          void rangeGrp.offsetWidth;
+          rangeGrp.classList.add("shake");
+        }
+
+        function clearError() {
+          errEl.classList.remove("show");
+          fromEl.classList.remove("has-error");
+          toEl.classList.remove("has-error");
+        }
+
+        /* from/to are YYYY-MM-DD; null means all shifts */
+        function render(from, to, label) {
+          var shown = 0;
+          var today = fmt(new Date());
+
+          cards.forEach(function (card) {
+            var d = (card.getAttribute("data-date") || "").slice(0, 10);
+            var ok = !from || (d >= from && d <= to);
+
+            card.hidden = !ok;
+            card.classList.toggle("is-today", d === today);
+
+            if (ok) {
+              card.style.setProperty("--i", shown);   /* stagger by visible position */
+              shown++;
+            }
+          });
+
+          emptyEl.hidden = shown !== 0;
+          countEl.textContent = shown;
+          resultEl.textContent = shown;
+          nounEl.textContent = shown === 1 ? "shift" : "shifts";
+          labelEl.textContent = label;
+
+          bump(countEl);
+          labelEl.parentNode.classList.remove("swap");
+          void labelEl.parentNode.offsetWidth;
+          labelEl.parentNode.classList.add("swap");
+        }
+
+        function setLoading(on) {
+          wrap.classList.toggle("is-loading", on);
+          panel.classList.toggle("is-loading", on);
+          applyBtn.disabled = on;
+        }
+
+        /* shows the skeleton briefly, then renders */
+        function run(from, to, label, delay) {
+          clearTimeout(timer);
+          setLoading(true);
+          timer = setTimeout(function () {
+            render(from, to, label);
+            setLoading(false);
+          }, delay === undefined ? 800 : delay);
+        }
+
+        function applyInputs() {
+          var from = fromEl.value;
+          var to   = toEl.value;
+
+          clearError();
+
+          if (!from && !to) {
+            showError("Pick a start date, or use one of the quick options.", [fromEl]);
+            return;
+          }
+
+          /* only one date -> single day */
+          if (!from) from = to;
+          if (!to)   to = from;
+
+          if (to < from) {
+            showError("The end date can't be before the start date.", [fromEl, toEl]);
+            return;
+          }
+
+          setActive(null);
+          run(from, to, from === to ? pretty(from) : pretty(from) + " – " + pretty(to));
+        }
+
+        function quick(name) {
+          var today = new Date();
+          clearError();
+          setActive(name);
+
+          if (name === "today") {
+            fromEl.value = fmt(today);
+            toEl.value = "";
+            run(fmt(today), fmt(today), "Today");
+          } else if (name === "week") {
+            fromEl.value = fmt(today);
+            toEl.value = fmt(addDays(today, 6));
+            run(fmt(today), fmt(addDays(today, 6)), "Next 7 days");
+          } else {
+            fromEl.value = "";
+            toEl.value = "";
+            run(null, null, "All shifts");
+          }
+        }
+
+        applyBtn.addEventListener("click", applyInputs);
+        resetBtn.addEventListener("click", function () { quick("today"); });
+
+        quickBtns.forEach(function (b) {
+          b.addEventListener("click", function () { quick(b.getAttribute("data-quick")); });
+        });
+
+        [fromEl, toEl].forEach(function (el) {
+          el.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") applyInputs();
+          });
+          el.addEventListener("input", clearError);
+        });
+
+        window.addEventListener("resize", positionThumb);
+        window.addEventListener("load", positionThumb);
+
+        /* Default view: today only (skeleton shows first, then the card) */
+        var t = fmt(new Date());
+        fromEl.value = t;
+        setActive("today");
+        render(t, t, "Today");
+        clearTimeout(timer);
+        timer = setTimeout(function () { setLoading(false); }, 1200);
+      })();
+    </script>
+  {% else %}
+    <div class="section-heading">
+      <div>
+        <h2>Select a shift template</h2>
+        <p>Choose one template to continue.</p>
+      </div>
+      {% if templates %}
+        <span class="count-badge">{{ templates|length }} available</span>
+      {% endif %}
+    </div>
+
+    {% if templates %}
+      <form method="post" action="{{ url_for('doctor_shifts.select_template') }}"
+            id="templateForm">
+        <div class="template-grid" role="radiogroup" aria-label="Available templates">
+          {% for template in templates %}
+            <label class="template-option" style="--i: {{ loop.index0 }}">
+              <input type="radio"
+                     name="template_id"
+                     value="{{ template.template_id }}"
+                     required>
+              <div class="template-card">
+                <div class="card-top">
+                  <div class="shift-icon"><i class="bi bi-clock-history"></i></div>
+                  <div class="check-mark" aria-hidden="true">
+                    <i class="bi bi-check-lg"></i>
+                  </div>
+                </div>
+                <h3>{{ template.name }}</h3>
+                <div class="time-row">
+                  <i class="bi bi-clock"></i>
+                  <strong>{{ template.working_start_time }}</strong>
+                  <span>to</span>
+                  <strong>{{ template.working_end_time }}</strong>
+                </div>
+              </div>
+            </label>
+          {% endfor %}
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-select" id="continueButton">
+            Select template <i class="bi bi-arrow-right"></i>
+          </button>
+        </div>
+      </form>
+
+      <script>
+        const form = document.getElementById("templateForm");
+        const button = document.getElementById("continueButton");
+        if (form && button) {
+          form.addEventListener("submit", () => {
+            button.disabled = true;
+            button.innerHTML =
+              '<span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>' +
+              "Saving selection…";
+          });
+        }
+      </script>
+    {% else %}
+      <div class="empty-state">
+        <i class="bi bi-calendar-x"></i>
+        <p>No active shift templates are currently available.</p>
+      </div>
+    {% endif %}
+  {% endif %}
+</main>
+
+<script>
+  /* Page loader: hide once the page has loaded (safety timeout included) */
+  (function () {
+    var loader = document.getElementById("pageLoader");
+    if (!loader) return;
+    function hideLoader() { loader.classList.add("hide"); }
+    window.addEventListener("load", function () { setTimeout(hideLoader, 700); });
+    setTimeout(hideLoader, 5000);
+  })();
+</script>
+{% endblock %}

@@ -65,40 +65,31 @@ CREATE TABLE IF NOT EXISTS doctor (
     INDEX idx_doctor_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE  IF NOT EXISTS doctor_shift (
+CREATE TABLE IF NOT EXISTS doctor_shift (
     doctor_shift_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     doctor_id       VARCHAR(36) NOT NULL,
     template_id     INT NOT NULL,
-    shift_date      DATE NOT NULL,
-
+    day_of_week     TINYINT NOT NULL, -- Monday=1 through Friday=5
     start_time      TIME NOT NULL,
-    base_end_time   TIME NOT NULL,
-
-    
     end_time        TIME NOT NULL,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    day_of_week TINYINT
-        GENERATED ALWAYS AS (WEEKDAY(shift_date) + 1) STORED,
-
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_doctor_shift_per_day
-        UNIQUE (doctor_id, shift_date), 
+    CONSTRAINT uq_doctor_shift_weekday
+        UNIQUE (doctor_id, day_of_week),
 
     CONSTRAINT fk_doctor_shift_doctor
         FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id)
         ON DELETE CASCADE,
 
-    
     CONSTRAINT fk_doctor_shift_template
         FOREIGN KEY (template_id) REFERENCES slot_template(template_id)
         ON DELETE RESTRICT,
 
-    CONSTRAINT chk_doctor_shift_end
-        CHECK (end_time >= base_end_time),
-   
+    CONSTRAINT chk_doctor_shift_weekday
+        CHECK (day_of_week BETWEEN 1 AND 5),
 
-
-    INDEX idx_doctor_shift_date (doctor_id, shift_date)
+    CONSTRAINT chk_doctor_shift_time
+        CHECK (end_time > start_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS doctor_break (

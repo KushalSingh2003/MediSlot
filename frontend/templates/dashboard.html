@@ -16,6 +16,10 @@
     <link rel="stylesheet"
           href="{{ url_for('static', filename='css/style.css') }}">
 
+    <noscript>
+        <style>#pageLoader { display: none !important; }</style>
+    </noscript>
+
     <style>
         /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
            (variable names kept so the rest of the file stays the same) */
@@ -69,6 +73,66 @@
             z-index: 0;
             pointer-events: none;
             animation: orbTwo 18s ease-in-out infinite;
+        }
+
+        /* ---------- Page loader (NEW) ---------- */
+        #pageLoader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 22px;
+            background: #1E1E1C;
+            transition: opacity .6s ease, visibility .6s ease;
+        }
+        #pageLoader.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .loader-logo {
+            position: relative;
+            width: 84px;
+            height: 84px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+            color: #fff;
+            font-size: 2.2rem;
+            box-shadow: 0 10px 30px rgba(47, 107, 255, .55);
+            animation: heartBeat 1.4s ease-in-out infinite;
+        }
+        .loader-logo::after {
+            content: "";
+            position: absolute;
+            inset: -12px;
+            border-radius: 32px;
+            border: 2px solid rgba(126, 163, 255, .55);
+            animation: ringOut 1.4s ease-out infinite;
+        }
+        .loader-title {
+            color: #D8CBB3;
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: .4px;
+        }
+        .ecg {
+            width: 220px;
+            height: 44px;
+        }
+        .ecg path {
+            fill: none;
+            stroke: #2F6BFF;
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 340;
+            stroke-dashoffset: 340;
+            animation: ecgDraw 1.8s linear infinite;
         }
 
         .dashboard-wrapper {
@@ -668,6 +732,193 @@
             transform: translateX(4px);
         }
 
+        /* ---------- Filter bar (NEW) ---------- */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 14px;
+            padding: 16px;
+            margin-bottom: 18px;
+            background: var(--pink-bg);
+            border: 1px solid var(--pink-border);
+            border-radius: 14px;
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-field label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            color: var(--pink-muted);
+        }
+
+        .filter-field input[type="date"] {
+            padding: 9px 12px;
+            border: 1px solid var(--pink-border);
+            border-radius: 10px;
+            background: #FFFFFF;
+            color: var(--pink-text);
+            font-size: 0.92rem;
+            min-width: 165px;
+            transition: border-color .2s ease, box-shadow .2s ease;
+        }
+
+        .filter-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-apply,
+        .btn-soft {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: all .25s ease;
+        }
+
+        .btn-apply {
+            border: 1px solid #2F6BFF;
+            background: linear-gradient(135deg, #5A8BFF, #2F6BFF);
+            color: #FFFFFF;
+            box-shadow: 0 6px 14px rgba(47, 107, 255, .3);
+        }
+        .btn-apply:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 18px rgba(47, 107, 255, .4);
+        }
+
+        .btn-soft {
+            border: 1px solid var(--pink-border);
+            background: #FFFFFF;
+            color: var(--pink-deep);
+        }
+        .btn-soft:hover {
+            background: var(--pink-blush);
+            border-color: #7EA3FF;
+        }
+        .btn-soft.active {
+            background: #1E1E1C;
+            border-color: #1E1E1C;
+            color: #D8CBB3;
+        }
+
+        .filter-error {
+            display: none;
+            width: 100%;
+            margin: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #C62828;
+        }
+        .filter-error.show { display: block; }
+
+        .result-summary {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+            font-size: 0.9rem;
+            color: var(--pink-muted);
+        }
+
+        .result-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: #E6EEFF;
+            border: 1px solid #B8CCFF;
+            color: #1B4FD6;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .range-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: #1E1E1C;
+            color: #D8CBB3;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .range-pill i { color: #7EA3FF; }
+
+        /* ---------- Table loader (NEW) ---------- */
+        .table-wrap {
+            position: relative;
+            min-height: 150px;
+        }
+
+        .table-wrap .table-responsive {
+            transition: opacity .25s ease, filter .25s ease;
+        }
+        .table-wrap.is-loading .table-responsive {
+            opacity: .25;
+            filter: blur(2px);
+            pointer-events: none;
+        }
+
+        .table-loader {
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            background: rgba(252, 250, 246, .6);
+            border-radius: 12px;
+        }
+        .table-wrap.is-loading .table-loader { display: flex; }
+
+        .spinner-ring {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 4px solid #E9DFCB;
+            border-top-color: #2F6BFF;
+            animation: spin .8s linear infinite;
+        }
+
+        .loader-dots {
+            display: flex;
+            gap: 6px;
+        }
+        .loader-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2F6BFF;
+            animation: dotBounce 1s ease-in-out infinite;
+        }
+        .loader-dots span:nth-child(2) { animation-delay: .15s; }
+        .loader-dots span:nth-child(3) { animation-delay: .30s; }
+
+        .loader-text {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--pink-muted);
+        }
+
         /* Table */
         .table {
             --bs-table-bg: transparent;
@@ -687,7 +938,7 @@
             border: none !important;
             padding: 14px 16px;
             white-space: nowrap;
-            animation: fadeIn .9s 1.1s ease backwards;
+            animation: fadeIn .9s .4s ease backwards;
         }
 
         .table thead th:first-child {
@@ -698,17 +949,10 @@
             border-top-right-radius: 12px;
         }
 
-        .table tbody tr {
-            animation: rowIn .7s var(--ease) backwards;
+        /* row stagger is set from JS (inline animation-delay) so filtering feels quick */
+        .table tbody tr.row-reveal {
+            animation: rowIn .5s var(--ease) backwards;
         }
-        .table tbody tr:nth-child(1) { animation-delay: 1.2s; }
-        .table tbody tr:nth-child(2) { animation-delay: 1.3s; }
-        .table tbody tr:nth-child(3) { animation-delay: 1.4s; }
-        .table tbody tr:nth-child(4) { animation-delay: 1.5s; }
-        .table tbody tr:nth-child(5) { animation-delay: 1.6s; }
-        .table tbody tr:nth-child(6) { animation-delay: 1.7s; }
-        .table tbody tr:nth-child(7) { animation-delay: 1.8s; }
-        .table tbody tr:nth-child(8) { animation-delay: 1.9s; }
 
         .table tbody td {
             padding: 14px 16px;
@@ -731,6 +975,25 @@
             font-style: italic;
         }
 
+        .no-results td {
+            padding: 36px 16px !important;
+        }
+        .no-results .empty-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 1.5rem;
+        }
+        .no-results h6 {
+            color: var(--pink-deep);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .no-results p {
+            color: var(--pink-muted);
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
         /* Badges */
         .badge {
             padding: 6px 12px;
@@ -740,7 +1003,7 @@
             letter-spacing: 0.3px;
             border: 1px solid transparent;
             animation: badgePop .7s var(--ease) backwards;
-            animation-delay: 1.4s;
+            animation-delay: .3s;
         }
 
         .badge.bg-success {
@@ -876,6 +1139,11 @@
             .card-heading {
                 flex-wrap: wrap;
             }
+
+            .filter-field,
+            .filter-field input[type="date"] {
+                width: 100%;
+            }
         }
 
         /* ---------- Keyframes ---------- */
@@ -905,6 +1173,11 @@
         @keyframes textSweep   { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
         @keyframes nudgeRight  { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(4px); } }
         @keyframes dashPulse   { 0%, 100% { border-color: #D8CBB3; } 50% { border-color: #7EA3FF; } }
+        /* new */
+        @keyframes spin        { to { transform: rotate(360deg); } }
+        @keyframes dotBounce   { 0%, 80%, 100% { transform: translateY(0); opacity: .5; } 40% { transform: translateY(-8px); opacity: 1; } }
+        @keyframes ringOut     { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; } }
+        @keyframes ecgDraw     { 0% { stroke-dashoffset: 340; } 70%, 100% { stroke-dashoffset: 0; } }
 
         /* Respect reduced motion */
         @media (prefers-reduced-motion: reduce) {
@@ -914,11 +1187,23 @@
                 transition-duration: .01ms !important;
                 scroll-behavior: auto !important;
             }
+            .spinner-ring { animation-duration: 1.2s !important; animation-iteration-count: infinite !important; }
         }
     </style>
 </head>
 
 <body style="background: linear-gradient(180deg, #F6F1E7 0%, #FFFFFF 100%); color: #1E1E1C; margin: 0;">
+
+<!-- Page loader (NEW) -->
+<div id="pageLoader" aria-live="polite" aria-label="Loading dashboard">
+    <div class="loader-logo">
+        <i class="bi bi-heart-pulse-fill"></i>
+    </div>
+    <div class="loader-title">MediSlot</div>
+    <svg class="ecg" viewBox="0 0 220 44" aria-hidden="true">
+        <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+    </svg>
+</div>
 
 <div class="dashboard-wrapper">
 
@@ -943,12 +1228,10 @@
     <i class="bi bi-person"></i>
     <span>My Profile</span>
 </a>
-            <li class="nav-item">
-    <a class="nav-link"
-       href="{{ url_for('consultation_types.consultation_types') }}">
-        Consultation Types
-    </a>
-</li>
+<a href="{{ url_for('consultation_types.consultation_types') }}" class="nav-item">
+    <i class="bi bi-clipboard2-plus"></i>
+    <span>Consultation Types</span>
+</a>
 
             <a href="{{ url_for('blackouts.index') }}" class="nav-item">
     <i class="bi bi-calendar-x"></i>
@@ -959,10 +1242,12 @@
     <i class="bi bi-calendar-week"></i>
     <span>My Schedule</span>
 </a>
-<a href="{{ url_for('profile.select_template') }}" class="nav-item">
+<a href="{{ url_for('doctor_shifts.index') }}"
+   class="nav-item {% if request.endpoint == 'doctor_shifts.index' %}active{% endif %}">
     <i class="bi bi-clock-history"></i>
-    <span>Choose Working Shift</span>
+    <span>My Shifts</span>
 </a>
+
 
 
             <a href="{{ url_for('appointments.index') }}" class="nav-item">
@@ -1274,17 +1559,17 @@
             </div>
 
 
-            <!-- Recent Appointments -->
+            <!-- Appointments (filterable by date / date range) -->
             <div class="content-card recent-activity">
 
                 <div class="card-heading">
 
                     <div>
-                        <h5>Recent Appointments</h5>
-                        <p>Your latest appointment activity.</p>
+                        <h5>Appointments</h5>
+                        <p>Showing today by default. Pick a date or a range to see more.</p>
                     </div>
 
-                    <a href="#" class="view-all">
+                    <a href="#" class="view-all" id="showAllBtn">
                         View All
                         <i class="bi bi-arrow-right"></i>
                     </a>
@@ -1292,98 +1577,154 @@
                 </div>
 
 
-                <div class="table-responsive">
+                <!-- Filter bar -->
+                <div class="filter-bar">
 
-                    <table class="table align-middle">
+                    <div class="filter-field">
+                        <label for="fromDate">From</label>
+                        <input type="date" id="fromDate">
+                    </div>
 
-                        <thead>
-                            <tr>
-                                <th>Patient</th>
-                                <th>Appointment Date</th>
-                                <th>Time</th>
-                                <th>Consultation Type</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
+                    <div class="filter-field">
+                        <label for="toDate">To (optional)</label>
+                        <input type="date" id="toDate">
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="button" class="btn-apply" id="applyBtn">
+                            <i class="bi bi-funnel"></i> Apply
+                        </button>
+                        <button type="button" class="btn-soft" data-quick="today">Today</button>
+                        <button type="button" class="btn-soft" data-quick="tomorrow">Tomorrow</button>
+                        <button type="button" class="btn-soft" data-quick="week">Next 7 days</button>
+                    </div>
+
+                    <p class="filter-error" id="filterError">
+                        The end date can't be before the start date.
+                    </p>
+
+                </div>
 
 
-                        <tbody>
+                <div class="result-summary">
+                    <span class="range-pill"><i class="bi bi-calendar-range"></i> <span id="rangeLabel">Today</span></span>
+                    <span class="result-pill"><i class="bi bi-list-check"></i> <span id="resultCount">0</span> appointments</span>
+                </div>
 
-                            {% if appointments %}
 
-                                {% for appointment in appointments %}
+                <div class="table-wrap" id="tableWrap">
+
+                    <div class="table-loader" role="status" aria-live="polite">
+                        <div class="spinner-ring"></div>
+                        <div class="loader-dots"><span></span><span></span><span></span></div>
+                        <div class="loader-text">Loading appointments…</div>
+                    </div>
+
+                    <div class="table-responsive">
+
+                        <table class="table align-middle">
+
+                            <thead>
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Appointment Date</th>
+                                    <th>Time</th>
+                                    <th>Consultation Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+
+
+                            <tbody id="apptBody">
+
+                                {% if appointments %}
+
+                                    {% for appointment in appointments %}
+
+                                        <tr class="appt-row" data-date="{{ appointment.slot.date }}">
+
+                                            <td>
+                                                <strong style="color: #1E1E1C;">
+                                                    {{ appointment.patient.name }}
+                                                </strong>
+                                            </td>
+
+                                            <td>
+                                                {{ appointment.slot.date }}
+                                            </td>
+
+                                            <td>
+                                                {{ appointment.slot.startTime[:5] }}
+                                                -
+                                                {{ appointment.slot.endTime[:5] }}
+                                            </td>
+
+                                            <td>
+                                                {{ appointment.consultation.name }}
+                                            </td>
+
+                                            <td>
+
+                                                {% set status = appointment.status %}
+
+                                                {% if status == 'BOOKED' %}
+                                                    <span class="badge bg-success">
+                                                        Booked
+                                                    </span>
+
+                                                {% elif status == 'COMPLETED' %}
+                                                    <span class="badge bg-primary">
+                                                        Completed
+                                                    </span>
+
+                                                {% elif status == 'CANCELLED' %}
+                                                    <span class="badge bg-danger">
+                                                        Cancelled
+                                                    </span>
+
+                                                {% elif status == 'NO_SHOW' %}
+                                                    <span class="badge bg-warning text-dark">
+                                                        No Show
+                                                    </span>
+
+                                                {% else %}
+                                                    <span class="badge bg-secondary">
+                                                        {{ status }}
+                                                    </span>
+                                                {% endif %}
+
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                {% else %}
 
                                     <tr>
-
-                                        <td>
-                                            <strong style="color: #1E1E1C;">
-                                                {{ appointment.patient.name }}
-                                            </strong>
+                                        <td colspan="5" class="text-center empty-table">
+                                            No appointment records found.
                                         </td>
-
-                                        <td>
-                                            {{ appointment.slot.date }}
-                                        </td>
-
-                                        <td>
-                                            {{ appointment.slot.startTime[:5] }}
-                                            -
-                                            {{ appointment.slot.endTime[:5] }}
-                                        </td>
-
-                                        <td>
-                                            {{ appointment.consultation.name }}
-                                        </td>
-
-                                        <td>
-
-                                            {% set status = appointment.status %}
-
-                                            {% if status == 'BOOKED' %}
-                                                <span class="badge bg-success">
-                                                    Booked
-                                                </span>
-
-                                            {% elif status == 'COMPLETED' %}
-                                                <span class="badge bg-primary">
-                                                    Completed
-                                                </span>
-
-                                            {% elif status == 'CANCELLED' %}
-                                                <span class="badge bg-danger">
-                                                    Cancelled
-                                                </span>
-
-                                            {% elif status == 'NO_SHOW' %}
-                                                <span class="badge bg-warning text-dark">
-                                                    No Show
-                                                </span>
-
-                                            {% else %}
-                                                <span class="badge bg-secondary">
-                                                    {{ status }}
-                                                </span>
-                                            {% endif %}
-
-                                        </td>
-
                                     </tr>
 
-                                {% endfor %}
+                                {% endif %}
 
-                            {% else %}
-
-                                <tr>
-                                    <td colspan="5" class="text-center empty-table">
-                                        No appointment records found.
+                                <!-- Shown by JS when the chosen date(s) have no appointments -->
+                                <tr class="no-results" id="noResults" hidden>
+                                    <td colspan="5" class="text-center">
+                                        <div class="empty-icon">
+                                            <i class="bi bi-calendar2-x"></i>
+                                        </div>
+                                        <h6>No appointments for this period</h6>
+                                        <p>Try another date or widen the range.</p>
                                     </td>
                                 </tr>
 
-                            {% endif %}
+                            </tbody>
 
-                        </tbody>
+                        </table>
 
-                    </table>
+                    </div>
 
                 </div>
 
@@ -1398,12 +1739,175 @@
 
 
 <script>
+    /* Header date */
     document.getElementById("currentDate").textContent =
         new Date().toLocaleDateString("en-IN", {
             day: "numeric",
             month: "long",
             year: "numeric"
         });
+
+    /* Page loader: hide once everything has loaded (safety timeout included) */
+    (function () {
+        var loader = document.getElementById("pageLoader");
+        function hideLoader() { loader.classList.add("hide"); }
+        window.addEventListener("load", function () { setTimeout(hideLoader, 700); });
+        setTimeout(hideLoader, 5000);
+    })();
+
+    /* Appointment date / range filter */
+    (function () {
+        var fromEl   = document.getElementById("fromDate");
+        var toEl     = document.getElementById("toDate");
+        var applyBtn = document.getElementById("applyBtn");
+        var showAll  = document.getElementById("showAllBtn");
+        var errEl    = document.getElementById("filterError");
+        var wrap     = document.getElementById("tableWrap");
+        var rows     = Array.prototype.slice.call(document.querySelectorAll("#apptBody .appt-row"));
+        var noRes    = document.getElementById("noResults");
+        var countEl  = document.getElementById("resultCount");
+        var labelEl  = document.getElementById("rangeLabel");
+        var quickBtns = document.querySelectorAll("[data-quick]");
+        var timer = null;
+
+        function pad(n) { return String(n).padStart(2, "0"); }
+
+        /* local date -> YYYY-MM-DD (avoids the UTC shift that toISOString causes) */
+        function fmt(d) {
+            return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+        }
+
+        function addDays(d, n) {
+            var x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+            return x;
+        }
+
+        function pretty(iso) {
+            var p = iso.split("-");
+            return new Date(+p[0], +p[1] - 1, +p[2]).toLocaleDateString("en-IN", {
+                day: "numeric", month: "short", year: "numeric"
+            });
+        }
+
+        function setActiveQuick(name) {
+            quickBtns.forEach(function (b) {
+                b.classList.toggle("active", b.getAttribute("data-quick") === name);
+            });
+        }
+
+        /* from/to = YYYY-MM-DD strings; both null means "all dates" */
+        function render(from, to, label) {
+            var shown = 0;
+
+            rows.forEach(function (row) {
+                var d = (row.getAttribute("data-date") || "").slice(0, 10);
+                var ok = !from || (d >= from && d <= to);
+
+                row.hidden = !ok;
+                row.classList.remove("row-reveal");
+
+                if (ok) {
+                    row.style.animationDelay = Math.min(shown, 10) * 0.05 + "s";
+                    void row.offsetWidth;            /* restart the animation */
+                    row.classList.add("row-reveal");
+                    shown++;
+                }
+            });
+
+            noRes.hidden = !(rows.length > 0 && shown === 0);
+            countEl.textContent = shown;
+            labelEl.textContent = label;
+        }
+
+        /* shows the loader briefly, then renders */
+        function run(from, to, label, delay) {
+            clearTimeout(timer);
+            wrap.classList.add("is-loading");
+            timer = setTimeout(function () {
+                render(from, to, label);
+                wrap.classList.remove("is-loading");
+            }, delay === undefined ? 700 : delay);
+        }
+
+        function applyFromInputs() {
+            var from = fromEl.value;
+            var to   = toEl.value;
+
+            if (!from && !to) {
+                errEl.textContent = "Pick a date first.";
+                errEl.classList.add("show");
+                return;
+            }
+
+            /* only one date entered -> treat it as a single day */
+            if (!from) from = to;
+            if (!to)   to = from;
+
+            if (to < from) {
+                errEl.textContent = "The end date can't be before the start date.";
+                errEl.classList.add("show");
+                return;
+            }
+
+            errEl.classList.remove("show");
+            setActiveQuick(null);
+
+            var label = (from === to) ? pretty(from) : pretty(from) + " – " + pretty(to);
+            run(from, to, label);
+        }
+
+        function quick(name) {
+            var today = new Date();
+            var from, to, label;
+
+            if (name === "today") {
+                from = to = fmt(today);
+                label = "Today";
+            } else if (name === "tomorrow") {
+                from = to = fmt(addDays(today, 1));
+                label = "Tomorrow";
+            } else {
+                from = fmt(today);
+                to = fmt(addDays(today, 6));
+                label = "Next 7 days";
+            }
+
+            fromEl.value = from;
+            toEl.value = (from === to) ? "" : to;
+            errEl.classList.remove("show");
+            setActiveQuick(name);
+            run(from, to, label);
+        }
+
+        applyBtn.addEventListener("click", applyFromInputs);
+
+        quickBtns.forEach(function (b) {
+            b.addEventListener("click", function () { quick(b.getAttribute("data-quick")); });
+        });
+
+        [fromEl, toEl].forEach(function (el) {
+            el.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") applyFromInputs();
+            });
+        });
+
+        showAll.addEventListener("click", function (e) {
+            e.preventDefault();
+            fromEl.value = "";
+            toEl.value = "";
+            errEl.classList.remove("show");
+            setActiveQuick(null);
+            run(null, null, "All dates");
+        });
+
+        /* Default view: today only */
+        var t = fmt(new Date());
+        fromEl.value = t;
+        setActiveQuick("today");
+        wrap.classList.add("is-loading");
+        render(t, t, "Today");
+        setTimeout(function () { wrap.classList.remove("is-loading"); }, 900);
+    })();
 </script>
 
 
