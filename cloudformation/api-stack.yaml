@@ -1107,59 +1107,59 @@ Resources:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
   DoctorShiftsPostMethod:
-  Type: AWS::ApiGateway::Method
-  Properties:
-    RestApiId: !Ref MediSlotApi
-    ResourceId: !Ref DoctorShiftsResource
-    HttpMethod: POST
-    AuthorizationType: CUSTOM
-    AuthorizerId: !Ref LambdaAuthorizer
-    Integration:
-      Type: AWS_PROXY
-      IntegrationHttpMethod: POST
-      Uri:
-        Fn::Sub:
-          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-          - LambdaArn:
-              Fn::ImportValue:
-                Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorShiftsResource
+      HttpMethod: POST
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn:
+                Fn::ImportValue:
+                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
   DoctorShiftsGetMethod:
-  Type: AWS::ApiGateway::Method
-  Properties:
-    RestApiId: !Ref MediSlotApi
-    ResourceId: !Ref DoctorShiftsResource
-    HttpMethod: GET
-    AuthorizationType: CUSTOM
-    AuthorizerId: !Ref LambdaAuthorizer
-    RequestParameters:
-      method.request.querystring.from: true
-      method.request.querystring.to: true
-    Integration:
-      Type: AWS_PROXY
-      IntegrationHttpMethod: POST
-      Uri:
-        Fn::Sub:
-          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-          - LambdaArn:
-              Fn::ImportValue:
-                Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorShiftsResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      RequestParameters:
+        method.request.querystring.from: true
+        method.request.querystring.to: true
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn:
+                 Fn::ImportValue:
+                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
   DoctorShiftGetMethod:
-  Type: AWS::ApiGateway::Method
-  Properties:
-    RestApiId: !Ref MediSlotApi
-    ResourceId: !Ref DoctorShiftIdResource
-    HttpMethod: GET
-    AuthorizationType: CUSTOM
-    AuthorizerId: !Ref LambdaAuthorizer
-    Integration:
-      Type: AWS_PROXY
-      IntegrationHttpMethod: POST
-      Uri:
-        Fn::Sub:
-          - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
-          - LambdaArn:
-              Fn::ImportValue:
-                Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ResourceId: !Ref DoctorShiftIdResource
+      HttpMethod: GET
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref LambdaAuthorizer
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri:
+          Fn::Sub:
+            - 'arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaArn}/invocations'
+            - LambdaArn:
+                Fn::ImportValue:
+                  Fn::Sub: '${ProjectName}-${Env}-application-DoctorShiftsFunctionArn'
 
 
 
