@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS slot_template (
     working_end_time TIME NOT NULL DEFAULT '16:00:00',
     CONSTRAINT chk_template_times
        CHECK (working_end_time > working_start_time),
-    ADD CONSTRAINT uq_slot_template_name UNIQUE (name);
+    CONSTRAINT uq_slot_template_name UNIQUE (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 INSERT INTO slot_template (
     name,
@@ -82,7 +82,7 @@ CREATE TABLE  IF NOT EXISTS doctor_shift (
 
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_doctor_shift_per_day
-        UNIQUE (doctor_id, shift_date),
+        UNIQUE (doctor_id, shift_date), 
 
     CONSTRAINT fk_doctor_shift_doctor
         FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id)
