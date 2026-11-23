@@ -1193,7 +1193,6 @@ Resources:
     - DoctorConsultationTypesGetMethod
     - DoctorConsultationTypesPutMethod
     - DoctorConsultationTypesDeleteMethod
-    - DoctorAvailabilityPutMethod
     - DoctorBlackoutsPostMethod
     - DoctorBlackoutsGetMethod
     - DoctorBlackoutsDeleteMethod
