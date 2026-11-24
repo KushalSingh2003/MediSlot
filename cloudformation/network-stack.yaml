@@ -298,8 +298,6 @@ Resources:
       Targets:
       - Id: AppointmentBookedSnsTarget
         Arn: !Ref AppointmentEventsTopic
-        SnsParameters:
-          Subject: Appointment booked
         InputTransformer:
           InputPathsMap:
             appointmentId: $.detail.appointmentId
@@ -318,8 +316,6 @@ Resources:
       Targets:
       - Id: SlotSeatFreedSnsTarget
         Arn: !Ref AppointmentEventsTopic
-        SnsParameters:
-          Subject: Appointment slot seat freed
         InputTransformer:
           InputPathsMap:
             slotId: $.detail.slotId
@@ -339,8 +335,6 @@ Resources:
       Targets:
       - Id: AppointmentCancelledSnsTarget
         Arn: !Ref AppointmentEventsTopic
-        SnsParameters:
-          Subject: Appointment cancelled
         InputTransformer:
           InputPathsMap:
             appointmentId: $.detail.appointmentId
