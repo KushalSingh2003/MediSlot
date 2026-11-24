@@ -370,7 +370,8 @@ jobs:
             appointment-outcome \
             slot-template-admin \
             slot-materializer \
-            doctor-shift
+            doctor-shift \
+            patient-appointments
           do
             aws s3 cp \
               "$RUNNER_TEMP/${artifact}.zip" \
