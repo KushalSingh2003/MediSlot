@@ -1,4 +1,4 @@
-name: MediSlot Branch Deployment
+name: MediSlot Branch Deployment Management
 
 on:
   push:
@@ -186,6 +186,30 @@ jobs:
             --capabilities CAPABILITY_NAMED_IAM \
             --no-fail-on-empty-changeset \
             --region "$AWS_REGION"
+      - name: Verify Doctor Profile Role Export
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          EXPORT_NAME="medislot-${DEPLOY_ENV}-iam-DoctorProfileRoleArn"
+
+          aws cloudformation list-exports \
+            --region "$AWS_REGION" \
+            --query "Exports[?Name=='${EXPORT_NAME}'].Value" \
+            --output text
+
+          EXPORT_VALUE=$(aws cloudformation list-exports \
+            --region "$AWS_REGION" \
+            --query "Exports[?Name=='${EXPORT_NAME}'].Value" \
+            --output text)
+
+          if [[ -z "$EXPORT_VALUE" || "$EXPORT_VALUE" == "None" ]]; then
+            echo "Missing CloudFormation export: ${EXPORT_NAME}"
+            exit 1
+          fi
+
+          echo "Verified export: ${EXPORT_NAME}"
+          
   package-lambdas:
     name: Package and Upload Lambda Artifacts
     needs: deploy-iam
@@ -224,6 +248,7 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
+            doctor-discovery \
             db-migration \
             doctor-photo \
             doctor-consultation-types \
@@ -233,7 +258,8 @@ jobs:
             doctor-slot-cancellation \
             appointment-outcome \
             slot-template-admin \
-            slot-materializer
+            slot-materializer \
+            doctor-shift
           do
             test -f "lambda/${function}/app.py" || {
               echo "Missing lambda/${function}/app.py"
@@ -281,6 +307,7 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
+            doctor-discovery \
             doctor-photo \
             doctor-consultation-types \
             doctor-blackouts \
@@ -289,7 +316,8 @@ jobs:
             doctor-slot-cancellation \
             appointment-outcome \
             slot-template-admin \
-            slot-materializer
+            slot-materializer \
+            doctor-shift
           do
             (
               cd "lambda/${function}"
@@ -329,6 +357,7 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
+            doctor-discovery \
             db-migration \
             doctor-photo \
             doctor-consultation-types \
@@ -338,12 +367,77 @@ jobs:
             doctor-slot-cancellation \
             appointment-outcome \
             slot-template-admin \
-            slot-materializer
+            slot-materializer \
+            doctor-shift
           do
             aws s3 cp \
               "$RUNNER_TEMP/${artifact}.zip" \
               "s3://${LAMBDA_BUCKET}/${ARTIFACT_PREFIX}/${artifact}.zip"
           done
+  package-frontend:
+    name: Package and Upload Frontend
+    needs: package-lambdas
+    runs-on: ubuntu-latest
+    environment: ${{ vars.DEPLOY_ENV }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Install ZIP Utility
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Validate Frontend Files
+        run: |
+          set -euo pipefail
+
+          test -f frontend/app.py
+          test -f frontend/config.py
+          test -f frontend/requirements.txt
+          test -d frontend/routes
+          test -d frontend/services
+          test -d frontend/templates
+          test -d frontend/static
+
+      - name: Package Frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd frontend
+
+          zip -qr "$RUNNER_TEMP/frontend.zip" . \
+            -x ".env" \
+               ".env.*" \
+               "__pycache__/*" \
+               "**/__pycache__/*" \
+               "flask_session/*" \
+               "instance/*" \
+               "venv/*" \
+               ".venv/*" \
+               ".git/*"
+
+      - name: Upload Frontend to S3
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          : "${LAMBDA_BUCKET:?LAMBDA_BUCKET is not set}"
+          : "${ARTIFACT_PREFIX:?ARTIFACT_PREFIX is not set}"
+
+          aws s3 cp \
+            "$RUNNER_TEMP/frontend.zip" \
+            "s3://${LAMBDA_BUCKET}/${ARTIFACT_PREFIX}/frontend.zip" \
+            --sse AES256 \
+            --region "$AWS_REGION"
+
+          echo "Frontend uploaded successfully."
 
           
 
@@ -351,7 +445,7 @@ jobs:
   # APPLICATION STACK
   # ==========================================================
   deploy-application:
-    needs: package-lambdas
+    needs: package-frontend
     runs-on: ubuntu-latest
     environment: ${{ vars.DEPLOY_ENV }}
 
@@ -383,6 +477,7 @@ jobs:
             authorizer \
             get-doctor-profile \
             get-patient-profile \
+            doctor-discovery \
             db-migration \
             doctor-photo \
             doctor-consultation-types \
@@ -392,7 +487,8 @@ jobs:
             doctor-slot-cancellation \
             appointment-outcome \
             slot-template-admin \
-            slot-materializer
+            slot-materializer \
+            doctor-shift
           do
             echo "Checking ${artifact}.zip"
             aws s3api head-object \
@@ -401,6 +497,11 @@ jobs:
               --region "$AWS_REGION"
           done
 
+          echo "Checking frontend.zip"
+          aws s3api head-object \
+            --bucket "$LAMBDA_BUCKET" \
+            --key "${ARTIFACT_PREFIX}/frontend.zip" \
+            --region "$AWS_REGION"
       - name: Deploy Application Stack
         shell: bash
         run: |
@@ -420,54 +521,84 @@ jobs:
   # RUN DATABASE MIGRATION
   # ==========================================================
 
+  # run-db-migration:
+  #   name: Run Database Migration
+  #   needs: deploy-application
+  #   runs-on: ubuntu-latest
+  #   environment: ${{ vars.DEPLOY_ENV }}
+
+  #   steps:
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+  #         aws-region: ${{ vars.AWS_REGION }}
+
+  #     - name: Execute Database Migration
+  #       shell: bash
+  #       env:
+  #         DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
+  #       run: |
+  #         set -euo pipefail
+
+  #         FUNCTION_NAME="medislot-${DEPLOY_ENV}-db-migration"
+
+  #         echo "Running database migration: ${FUNCTION_NAME}"
+
+  #         aws lambda invoke \
+  #           --function-name "$FUNCTION_NAME" \
+  #           --payload '{}' \
+  #           --cli-binary-format raw-in-base64-out \
+  #           --log-type Tail \
+  #           response.json \
+  #           > invoke-metadata.json
+
+  #         cat response.json
+
+  #         if grep -q '"FunctionError"' invoke-metadata.json; then
+  #           echo "Database migration Lambda execution failed."
+  #           cat invoke-metadata.json
+  #           exit 1
+  #         fi
+
+  #         echo "Database migration Lambda invocation completed."
+
+
+  # ==========================================================
+  # APPLY IDEMPOTENT DATABASE SCHEMA / MILESTONE 4 MIGRATIONS
+  # ==========================================================
   run-db-migration:
-    name: Run Database Migration
     needs: deploy-application
     runs-on: ubuntu-latest
     environment: ${{ vars.DEPLOY_ENV }}
-
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Execute Database Migration
+      - name: Apply database schema and additive migrations
         shell: bash
-        env:
-          DEPLOY_ENV: ${{ vars.DEPLOY_ENV }}
         run: |
           set -euo pipefail
-
-          FUNCTION_NAME="medislot-${DEPLOY_ENV}-db-migration"
-
-          echo "Running database migration: ${FUNCTION_NAME}"
-
           aws lambda invoke \
-            --function-name "$FUNCTION_NAME" \
+            --function-name "medislot-${DEPLOY_ENV}-db-migration" \
             --payload '{}' \
             --cli-binary-format raw-in-base64-out \
             --log-type Tail \
-            response.json \
-            > invoke-metadata.json
-
-          cat response.json
-
-          if grep -q '"FunctionError"' invoke-metadata.json; then
-            echo "Database migration Lambda execution failed."
-            cat invoke-metadata.json
+            "$RUNNER_TEMP/db-migration-response.json" \
+            > "$RUNNER_TEMP/db-migration-metadata.json"
+          cat "$RUNNER_TEMP/db-migration-response.json"
+          if grep -q 'FunctionError' "$RUNNER_TEMP/db-migration-metadata.json"; then
+            cat "$RUNNER_TEMP/db-migration-metadata.json"
             exit 1
           fi
-
-          echo "Database migration Lambda invocation completed."
-
 
   # ==========================================================
   # API STACK
   # ==========================================================
   deploy-api:
-    needs: deploy-application
+    needs: run-db-migration
     runs-on: ubuntu-latest
     environment: ${{ vars.DEPLOY_ENV }}
 
@@ -542,3 +673,4 @@ jobs:
           done
 
           echo "All MediSlot stacks deployed successfully."
+

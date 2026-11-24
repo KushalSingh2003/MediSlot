@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MediSlot | Consultation Types</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- ================= INLINE STYLES ================= -->
+    <style>
+
+        /* ---------- Design tokens ---------- */
+        :root {
+            --ms-ink: #1E1E1C;
+            --ms-ink-soft: rgba(30, 30, 28, 0.68);
+            --ms-teal: #2F6BFF;
+            --ms-teal-deep: #1E1E1C;
+            --ms-aqua: #D8CBB3;
+            --ms-mist: rgba(216, 203, 179, 0.35);
+            --ms-line: rgba(30, 30, 28, 0.12);
+            --ms-amber: #D8CBB3;
+            --ms-surface: #ffffff;
+            --ms-radius-lg: 22px;
+            --ms-radius-md: 14px;
+            --ms-shadow-sm: 0 2px 10px rgba(30, 30, 28, 0.06);
+            --ms-shadow-md: 0 14px 34px rgba(47, 107, 255, 0.14);
+            --ms-shadow-lg: 0 26px 60px rgba(47, 107, 255, 0.22);
+            --ms-ease: cubic-bezier(.22, 1, .36, 1);
+        }
+
+        /* ---------- Base ---------- */
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            color: var(--ms-ink);
+            background:
+                radial-gradient(1200px 600px at 100% -10%, rgba(47, 107, 255, 0.16), transparent 60%),
+                radial-gradient(900px 500px at -10% 30%, rgba(47, 107, 255, 0.12), transparent 60%),
+                linear-gradient(180deg, #FFFFFF 0%, rgba(216, 203, 179, 0.35) 100%) !important;
+            background-attachment: fixed !important;
+            overflow-x: hidden;
+            position: relative;
+            animation: pageFade .9s var(--ms-ease) both;
+        }
+
+        body.bg-light { background-color: var(--ms-mist) !important; }
+
+        /* floating background orbs */
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(70px);
+            z-index: 0;
+            pointer-events: none;
+            opacity: .55;
+        }
+        body::before {
+            width: 380px; height: 380px;
+            top: 18%; left: -120px;
+            background: rgba(47, 107, 255, 0.35);
+            animation: orbOne 16s ease-in-out infinite;
+        }
+        body::after {
+            width: 440px; height: 440px;
+            bottom: -140px; right: -140px;
+            background: rgba(47, 107, 255, 0.30);
+            animation: orbTwo 19s ease-in-out infinite;
+        }
+
+        h2, h4, h5, .navbar-brand, .modal-title {
+            font-family: 'Outfit', 'Manrope', sans-serif;
+            letter-spacing: -0.01em;
+        }
+
+        .text-muted { color: var(--ms-ink-soft) !important; }
+
+        nav,
+        .container { position: relative; z-index: 1; }
+
+        ::selection { background: var(--ms-aqua); color: #1E1E1C; }
+
+        /* ---------- Navbar ---------- */
+        .navbar.bg-primary {
+            background: linear-gradient(110deg, var(--ms-teal-deep), var(--ms-teal) 55%, #2F6BFF) !important;
+            background-size: 200% 200%;
+            animation: navDrop .8s var(--ms-ease) both, gradientShift 12s ease-in-out infinite;
+            box-shadow: 0 10px 30px rgba(47, 107, 255, 0.28);
+            padding-top: .85rem;
+            padding-bottom: .85rem;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            backdrop-filter: blur(8px);
+        }
+
+        .navbar-brand {
+            font-size: 1.55rem;
+            font-weight: 700 !important;
+            position: relative;
+            transition: transform .4s var(--ms-ease), text-shadow .4s ease;
+        }
+        .navbar-brand::before {
+            content: "";
+            display: inline-block;
+            width: 12px; height: 12px;
+            margin-right: 10px;
+            border-radius: 50%;
+            background: var(--ms-amber);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, .7);
+            animation: pulseDot 2.2s infinite;
+            vertical-align: middle;
+        }
+        .navbar-brand:hover {
+            transform: translateY(-2px) scale(1.04);
+            text-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+        }
+
+        .navbar .nav-link {
+            position: relative;
+            font-weight: 600;
+            color: rgba(255, 255, 255, .85) !important;
+            padding: .5rem 1rem !important;
+            margin-left: .15rem;
+            border-radius: 999px;
+            transition: color .3s ease, background-color .3s ease, transform .3s var(--ms-ease);
+            animation: fadeDown .7s var(--ms-ease) both;
+        }
+        .navbar .nav-item:nth-child(1) .nav-link { animation-delay: .15s; }
+        .navbar .nav-item:nth-child(2) .nav-link { animation-delay: .25s; }
+        .navbar .nav-item:nth-child(3) .nav-link { animation-delay: .35s; }
+        .navbar .nav-item:nth-child(4) .nav-link { animation-delay: .45s; }
+
+        .navbar .nav-link::after {
+            content: "";
+            position: absolute;
+            left: 50%; bottom: 4px;
+            width: 0; height: 2px;
+            background: var(--ms-amber);
+            border-radius: 2px;
+            transform: translateX(-50%);
+            transition: width .4s var(--ms-ease);
+        }
+        .navbar .nav-link:hover {
+            color: #fff !important;
+            background: rgba(255, 255, 255, .12);
+            transform: translateY(-2px);
+        }
+        .navbar .nav-link:hover::after,
+        .navbar .nav-link.active::after { width: 55%; }
+        .navbar .nav-link.active {
+            color: #fff !important;
+            background: rgba(255, 255, 255, .18);
+        }
+
+        .navbar-toggler {
+            border: 0;
+            background: rgba(255, 255, 255, .15);
+            transition: transform .3s var(--ms-ease), background .3s;
+        }
+        .navbar-toggler:hover { transform: rotate(8deg) scale(1.08); background: rgba(255, 255, 255, .25); }
+        .navbar-toggler:focus { box-shadow: 0 0 0 3px rgba(255, 255, 255, .35); }
+
+        /* ---------- Page hero ---------- */
+        .page-hero {
+            position: relative;
+            overflow: hidden;
+            padding: 2.6rem 2.4rem;
+            border-radius: var(--ms-radius-lg);
+            color: #fff;
+            background:
+                radial-gradient(600px 240px at 90% 0%, rgba(47, 107, 255, .55), transparent 70%),
+                linear-gradient(120deg, var(--ms-teal-deep), var(--ms-teal) 60%, #2F6BFF);
+            background-size: 100% 100%, 200% 200%;
+            box-shadow: var(--ms-shadow-lg);
+            animation: heroIn 1s var(--ms-ease) both, gradientShift 14s ease-in-out infinite;
+        }
+        .page-hero::before,
+        .page-hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .18);
+            pointer-events: none;
+        }
+        .page-hero::before {
+            width: 240px; height: 240px;
+            right: -60px; top: -80px;
+            animation: spinSlow 24s linear infinite;
+            border-style: dashed;
+        }
+        .page-hero::after {
+            width: 140px; height: 140px;
+            right: 90px; bottom: -70px;
+            background: rgba(255, 255, 255, .07);
+            animation: floatY 6s ease-in-out infinite;
+        }
+        .page-hero h2 {
+            position: relative;
+            z-index: 1;
+            font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+            font-weight: 700 !important;
+            margin-bottom: .6rem;
+            animation: slideUp .9s .25s var(--ms-ease) both;
+        }
+        .page-hero p {
+            position: relative;
+            z-index: 1;
+            max-width: 560px;
+            margin: 0;
+            color: rgba(255, 255, 255, .88) !important;
+            font-size: 1.05rem;
+            line-height: 1.65;
+            animation: slideUp .9s .4s var(--ms-ease) both;
+        }
+
+        /* ---------- Section heading ---------- */
+        .section-head {
+            position: relative;
+            padding-left: 1.1rem;
+            animation: slideRight .8s .2s var(--ms-ease) both;
+        }
+        .section-head::before {
+            content: "";
+            position: absolute;
+            left: 0; top: .2rem; bottom: .2rem;
+            width: 5px;
+            border-radius: 6px;
+            background: linear-gradient(180deg, var(--ms-aqua), var(--ms-teal));
+            transform-origin: top;
+            animation: growY .9s .35s var(--ms-ease) both;
+        }
+        .section-head h4 { color: var(--ms-ink); font-weight: 700 !important; }
+
+        /* ---------- Alerts ---------- */
+        .alert {
+            border: 0;
+            border-radius: var(--ms-radius-md);
+            box-shadow: var(--ms-shadow-sm);
+            border-left: 5px solid currentColor;
+            animation: alertIn .7s var(--ms-ease) both;
+        }
+        .alert-warning { background: #fff6e3; color: #8a5a00; }
+        .alert-danger  { background: #fdecee; color: #a3182e; }
+        .alert-success { background: #e4f8f0; color: #0b6b4a; }
+        .alert-info    { background: #e4f4fb; color: #0b5f86; }
+        .alert .btn-close { transition: transform .35s var(--ms-ease); }
+        .alert .btn-close:hover { transform: rotate(90deg) scale(1.15); }
+
+        /* ---------- Cards ---------- */
+        .card {
+            position: relative;
+            border-radius: var(--ms-radius-lg) !important;
+            background: var(--ms-surface);
+            overflow: hidden;
+            transition: transform .5s var(--ms-ease), box-shadow .5s var(--ms-ease);
+        }
+
+        /* ---------- Badges ---------- */
+        .badge {
+            font-family: 'Manrope', sans-serif;
+            font-weight: 700;
+            letter-spacing: .01em;
+            padding: .5em .95em;
+            border-radius: 999px;
+        }
+        .badge.bg-info {
+            background: linear-gradient(120deg, rgba(216, 203, 179, 0.35), #D8CBB3) !important;
+            color: var(--ms-teal-deep) !important;
+        }
+        .badge.bg-success {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(120deg, #2F6BFF, #1E1E1C) !important;
+            animation: badgePop .7s .5s var(--ms-ease) both;
+        }
+        .badge.bg-success::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .7), transparent);
+            animation: shimmer 3.4s ease-in-out infinite;
+        }
+        .badge.bg-secondary {
+            background: #D8CBB3 !important;
+            color: var(--ms-ink) !important;
+        }
+
+        /* ---------- Buttons ---------- */
+        .btn {
+            position: relative;
+            overflow: hidden;
+            font-weight: 700;
+            border-radius: 12px;
+            transition: transform .35s var(--ms-ease), box-shadow .35s var(--ms-ease),
+                        color .3s ease, background-color .3s ease, border-color .3s ease;
+        }
+        .btn::before {
+            content: "";
+            position: absolute;
+            top: 0; left: -120%;
+            width: 80%; height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .45), transparent);
+            transform: skewX(-20deg);
+            transition: left .7s var(--ms-ease);
+            pointer-events: none;
+        }
+        .btn:hover::before { left: 140%; }
+        .btn:active { transform: scale(.94) !important; }
+
+        .btn-outline-primary {
+            --bs-btn-color: var(--ms-teal);
+            --bs-btn-border-color: var(--ms-teal);
+            --bs-btn-hover-bg: var(--ms-teal);
+            --bs-btn-hover-border-color: var(--ms-teal);
+            --bs-btn-hover-color: #fff;
+            --bs-btn-active-bg: var(--ms-teal-deep);
+            --bs-btn-active-border-color: var(--ms-teal-deep);
+            border-width: 2px;
+        }
+        .btn-outline-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 22px rgba(47, 107, 255, .3);
+        }
+
+        .btn-outline-danger { border-width: 2px; }
+        .btn-outline-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 22px rgba(220, 53, 69, .3);
+        }
+
+        .btn-primary {
+            background: linear-gradient(120deg, var(--ms-teal-deep), var(--ms-teal) 55%, var(--ms-aqua));
+            background-size: 200% 100%;
+            border: 0;
+            box-shadow: 0 8px 20px rgba(47, 107, 255, .28);
+            transition: background-position .6s var(--ms-ease), transform .35s var(--ms-ease), box-shadow .35s var(--ms-ease);
+        }
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-position: 100% 0;
+            background-color: transparent;
+            transform: translateY(-3px);
+            box-shadow: 0 14px 28px rgba(47, 107, 255, .38);
+        }
+        .btn-primary:disabled {
+            background: #D8CBB3;
+            box-shadow: none;
+            color: var(--ms-ink-soft);
+        }
+
+        .btn-secondary {
+            background: #fbe6ee;
+            color: var(--ms-ink-soft);
+            border: 0;
+        }
+        .btn-secondary:hover {
+            background: rgba(30, 30, 28, 0.12);
+            color: var(--ms-ink);
+            transform: translateY(-2px);
+        }
+
+        .add-type-btn { animation: softPulse 2.8s ease-in-out 1.4s infinite; }
+        .add-type-btn:hover,
+        .add-type-btn:disabled { animation: none; }
+
+        .btn:focus-visible,
+        .nav-link:focus-visible,
+        .form-control:focus-visible {
+            outline: 3px solid rgba(47, 107, 255, .55);
+            outline-offset: 2px;
+        }
+
+        /* ---------- Table card ---------- */
+        .table-card {
+            animation: cardIn .9s .2s var(--ms-ease) both;
+            border: 1px solid var(--ms-line) !important;
+            box-shadow: var(--ms-shadow-md) !important;
+        }
+        .table-card:hover { transform: none; }
+        .table-card .card-body { padding: 1rem 1.25rem; }
+
+        .table {
+            --bs-table-hover-bg: rgba(47, 107, 255, .09);
+            border-collapse: separate;
+            border-spacing: 0 8px;
+            margin-bottom: 0;
+        }
+        .table thead.table-light th {
+            background: transparent !important;
+            border: 0;
+            color: var(--ms-ink-soft);
+            font-size: .82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            padding: .5rem 1rem;
+        }
+        .table tbody tr {
+            background: #fff;
+            box-shadow: 0 1px 0 var(--ms-line);
+            transition: transform .4s var(--ms-ease), box-shadow .4s var(--ms-ease), background-color .3s;
+            animation: rowIn .7s var(--ms-ease) both;
+            animation-delay: calc(var(--i, 0) * 90ms + 450ms);
+        }
+        .table tbody tr:hover {
+            transform: translateX(6px) scale(1.005);
+            box-shadow: 0 10px 24px rgba(47, 107, 255, .14);
+            background: rgba(216, 203, 179, 0.35);
+        }
+        .table tbody td {
+            border: 0;
+            padding: 1rem;
+            vertical-align: middle;
+            background: transparent;
+            box-shadow: none;
+        }
+        .table tbody td:first-child {
+            border-radius: 14px 0 0 14px;
+            border-left: 4px solid var(--ms-aqua);
+            color: var(--ms-ink);
+        }
+        .table tbody td:last-child { border-radius: 0 14px 14px 0; white-space: nowrap; }
+        .table tbody td form { margin-left: .35rem; }
+
+        /* ---------- Empty state ---------- */
+        .empty-card h5 { font-weight: 700 !important; animation: floatY 4s ease-in-out infinite; }
+        .empty-card {
+            border: 2px dashed rgba(47, 107, 255, 0.55) !important;
+            background: linear-gradient(135deg, #fff, rgba(216, 203, 179, 0.35));
+            animation: cardIn .9s .2s var(--ms-ease) both;
+        }
+        .empty-card:hover { transform: translateY(-4px); }
+
+        /* ---------- Modals ---------- */
+        .modal-backdrop.show { opacity: 1; background: rgba(30, 30, 28, .55); backdrop-filter: blur(6px); }
+
+        .modal.fade .modal-dialog {
+            transform: translateY(40px) scale(.9) rotateX(8deg);
+            opacity: 0;
+            transition: transform .55s var(--ms-ease), opacity .4s ease;
+        }
+        .modal.show .modal-dialog { transform: none; opacity: 1; }
+
+        .modal-content {
+            border: 0;
+            border-radius: 26px;
+            overflow: hidden;
+            box-shadow: 0 40px 90px rgba(30, 30, 28, .38);
+        }
+        .modal-header {
+            position: relative;
+            border: 0;
+            padding: 1.4rem 1.6rem;
+            color: #fff;
+            background: linear-gradient(120deg, var(--ms-teal-deep), var(--ms-teal) 60%, #2F6BFF);
+            background-size: 200% 200%;
+            animation: gradientShift 10s ease-in-out infinite;
+        }
+        .modal-header::after {
+            content: "";
+            position: absolute;
+            width: 130px; height: 130px;
+            right: -30px; top: -60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .12);
+            animation: floatY 5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        .modal-header .btn-close {
+            filter: invert(1) grayscale(1) brightness(2);
+            opacity: .9;
+            z-index: 1;
+            transition: transform .4s var(--ms-ease);
+        }
+        .modal-header .btn-close:hover { transform: rotate(180deg) scale(1.15); opacity: 1; }
+
+        .modal-body { padding: 1.7rem 1.6rem 1.2rem; background: #FFFFFF; }
+        .modal.show .modal-body .mb-3,
+        .modal.show .modal-body .form-check { animation: slideUp .6s var(--ms-ease) both; }
+        .modal.show .modal-body .mb-3:nth-child(1) { animation-delay: .12s; }
+        .modal.show .modal-body .mb-3:nth-child(2) { animation-delay: .20s; }
+        .modal.show .modal-body .mb-3:nth-child(3) { animation-delay: .28s; }
+        .modal.show .modal-body .mb-3:nth-child(4) { animation-delay: .36s; }
+        .modal.show .modal-body .form-check        { animation-delay: .44s; }
+
+        .modal-footer { border: 0; padding: 1rem 1.6rem 1.5rem; background: #FFFFFF; }
+
+        .form-label {
+            font-weight: 700;
+            font-size: .88rem;
+            color: var(--ms-ink);
+            margin-bottom: .4rem;
+        }
+        .form-control,
+        .form-select {
+            border: 2px solid var(--ms-line);
+            border-radius: 12px;
+            padding: .7rem .95rem;
+            font-weight: 500;
+            background-color: #fff;
+            transition: border-color .3s ease, box-shadow .3s ease, transform .3s var(--ms-ease);
+        }
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--ms-aqua);
+            box-shadow: 0 0 0 .28rem rgba(47, 107, 255, .2);
+            transform: translateY(-2px);
+        }
+        .form-control[readonly] {
+            background: var(--ms-mist);
+            color: var(--ms-ink-soft);
+            border-style: dashed;
+        }
+        .modal-body small { display: block; margin-top: .4rem; font-weight: 500; }
+
+        /* name of the consultation being edited */
+        .type-display {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #E6EEFF, #F6F1E7);
+            border: 2px solid rgba(47, 107, 255, .25);
+        }
+        .type-display .type-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px; height: 44px;
+            flex-shrink: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+        }
+        .type-display .type-name { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.15rem; line-height: 1.2; }
+        .type-display .type-meta { font-size: .85rem; font-weight: 600; color: var(--ms-ink-soft); }
+
+        .form-check-input {
+            width: 1.35em;
+            height: 1.35em;
+            border: 2px solid #2F6BFF;
+            cursor: pointer;
+            transition: transform .3s var(--ms-ease), background-color .3s, border-color .3s, box-shadow .3s;
+        }
+        .form-check-input:hover { transform: scale(1.15); }
+        .form-check-input:checked {
+            background-color: var(--ms-teal);
+            border-color: var(--ms-teal);
+            animation: checkPop .45s var(--ms-ease);
+        }
+        .form-check-input:focus { box-shadow: 0 0 0 .28rem rgba(47, 107, 255, .25); }
+        .form-check-label { font-weight: 700; cursor: pointer; margin-left: .25rem; }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 767.98px) {
+            .page-hero { padding: 2rem 1.4rem; }
+            .navbar .nav-link { margin: .15rem 0; }
+            .table tbody tr:hover { transform: none; }
+        }
+
+        /* ---------- Keyframes ---------- */
+        @keyframes pageFade   { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes navDrop    { from { transform: translateY(-100%); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes fadeDown   { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+        @keyframes heroIn     { from { opacity: 0; transform: translateY(30px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes slideUp    { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+        @keyframes slideRight { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
+        @keyframes cardIn     { from { opacity: 0; transform: translateY(46px) scale(.94); } to { opacity: 1; transform: none; } }
+        @keyframes rowIn      { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+        @keyframes alertIn    { from { opacity: 0; transform: translateY(-18px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes badgePop   { 0% { opacity: 0; transform: scale(.4); } 70% { transform: scale(1.12); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes checkPop   { 0% { transform: scale(.7); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+        @keyframes growY      { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+        @keyframes shimmer    { 0%, 55% { left: -100%; } 100% { left: 160%; } }
+        @keyframes gradientShift { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+        @keyframes floatY     { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes spinSlow   { to { transform: rotate(360deg); } }
+        @keyframes orbOne     { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(90px, -70px); } }
+        @keyframes orbTwo     { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-80px, 60px); } }
+        @keyframes pulseDot   {
+            0%   { box-shadow: 0 0 0 0 rgba(255, 255, 255, .7); }
+            70%  { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+        @keyframes softPulse  {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(47, 107, 255, .35); }
+            50%      { box-shadow: 0 0 0 9px rgba(47, 107, 255, 0); }
+        }
+
+        /* ---------- Respect reduced motion ---------- */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                animation-delay: 0s !important;
+                transition-duration: .01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+    </style>
+</head>
+
+<body class="bg-light">
+    <!-- ===== Page loader (paste-anywhere block) ===== -->
+<style>
+  #msLoader {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #1E1E1C;
+    opacity: 1; visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #msLoader.ms-hide { opacity: 0; visibility: hidden; }
+
+  .ms-logo {
+    position: relative; display: grid; place-items: center;
+    width: 78px; height: 78px; border-radius: 22px;
+    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+    box-shadow: 0 10px 30px rgba(47,107,255,.55);
+    animation: ms-beat 1.4s ease-in-out infinite;
+  }
+  .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
+  .ms-logo::after {
+    content: ""; position: absolute; inset: -12px;
+    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
+    animation: ms-ring 1.4s ease-out infinite;
+  }
+  .ms-title {
+    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
+    letter-spacing: .3px;
+  }
+  .ms-ecg { width: 210px; height: 42px; }
+  .ms-ecg path {
+    fill: none; stroke: #2F6BFF; stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 340; stroke-dashoffset: 340;
+    animation: ms-ecg 1.8s linear infinite;
+  }
+
+  @keyframes ms-beat {
+    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
+    30% { transform: scale(1); }     45% { transform: scale(1.08); }
+  }
+  @keyframes ms-ring {
+    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
+  }
+  @keyframes ms-ecg {
+    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
+  }
+</style>
+
+<noscript><style>#msLoader { display: none !important; }</style></noscript>
+
+<div id="msLoader" aria-live="polite" aria-label="Loading">
+  <div class="ms-logo">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </div>
+  <div class="ms-title">MediSlot</div>
+  <svg class="ms-ecg" viewBox="0 0 220 44" aria-hidden="true">
+    <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    var loader = document.getElementById("msLoader");
+    if (!loader) return;
+    var MIN_VISIBLE = 600;                 // ms, so it never just flashes
+    var startedAt = Date.now();
+
+    function hide() {
+      var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
+      setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
+    }
+    function show() {
+      startedAt = Date.now();
+      loader.classList.remove("ms-hide");
+    }
+
+    // hide when the page finishes loading (safety timeout included)
+    window.addEventListener("load", hide);
+    setTimeout(hide, 6000);
+
+    // back/forward cache can restore the page with the loader stuck on
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) loader.classList.add("ms-hide");
+    });
+
+    // show it again when leaving for another page
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[href]");
+      if (!a || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (a.target === "_blank" || a.hasAttribute("download")) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;
+      show();
+    });
+    document.addEventListener("submit", function (e) {
+      if (!e.defaultPrevented) show();   // respects a cancelled confirm()
+    });
+  })();
+</script>
+<!-- ===== /Page loader ===== -->
+
+<!-- ================= NAVIGATION ================= -->
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+
+        <a class="navbar-brand fw-bold"
+           href="{{ url_for('dashboard.index') }}">
+            MediSlot
+        </a>
+
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('dashboard.index') }}">
+                        Dashboard
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('profile.index') }}">
+                        Profile
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link active"
+                       href="{{ url_for('consultation_types.consultation_types') }}">
+                        Consultation Types
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('auth.logout') }}">
+                        Logout
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<!-- ================= MAIN CONTENT ================= -->
+
+<div class="container py-5">
+
+    <div class="mb-4 page-hero">
+        <h2 class="fw-bold">Consultation Types</h2>
+
+        <p class="text-muted">
+            Choose the consultation services you want to offer to patients.
+            Configure your fees and patient capacity.
+        </p>
+    </div>
+
+
+    <!-- ================= FLASH MESSAGES ================= -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+
+            <div class="alert alert-{{ 'danger' if category == 'error' else category }}
+                        alert-dismissible fade show"
+                 role="alert">
+
+                {{ message }}
+
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="alert"></button>
+            </div>
+
+        {% endfor %}
+    {% endwith %}
+
+
+    <!-- ================= MY CONSULTATION TYPES ================= -->
+
+    {% set assigned_ids = doctor_types | map(attribute='consultationTypeId') | list %}
+    {% set remaining = master_types | rejectattr('consultationTypeId', 'in', assigned_ids) | list %}
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+
+        <div class="section-head">
+            <h4 class="fw-semibold mb-1">
+                My Consultation Types
+            </h4>
+
+            <p class="text-muted mb-0">
+                Add a consultation type from the list and manage the ones you offer.
+            </p>
+        </div>
+
+        <button type="button"
+                class="btn btn-primary add-type-btn"
+                data-bs-toggle="modal"
+                data-bs-target="#addConsultationModal"
+                {% if not remaining %}disabled title="All consultation types are already added"{% endif %}>
+            + Add Consultation
+        </button>
+
+    </div>
+
+
+    {% if doctor_types %}
+
+        <div class="card shadow-sm border-0 table-card">
+
+            <div class="card-body">
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover align-middle mb-0">
+
+                        <thead class="table-light">
+
+                            <tr>
+                                <th>Consultation</th>
+                                <th>Duration</th>
+                                <th>Fee</th>
+                                <th>Capacity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for item in doctor_types %}
+
+                                <tr style="--i: {{ loop.index0 }};">
+
+                                    <td class="fw-semibold">
+                                        {{ item.name }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.durationMin }} min
+                                    </td>
+
+                                    <td>
+                                        ₹{{ item.fee }}
+                                    </td>
+
+                                    <td>
+                                        {{ item.capacity }}
+                                    </td>
+
+                                    <td>
+
+                                        {% if item.active %}
+
+                                            <span class="badge bg-success">
+                                                Active
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-secondary">
+                                                Inactive
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-primary edit-btn"
+
+                                                data-id="{{ item.consultationTypeId }}"
+                                                data-name="{{ item.name }}"
+                                                data-duration="{{ item.durationMin }}"
+                                                data-fee="{{ item.fee }}"
+                                                data-capacity="{{ item.capacity }}"
+                                                data-active="{{ 'true' if item.active else 'false' }}"
+
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editConsultationModal">
+
+                                            Edit
+
+                                        </button>
+
+
+                                        <form method="POST"
+                                              action="{{ url_for('consultation_types.remove_consultation_type', type_id=item.consultationTypeId) }}"
+                                              class="d-inline"
+                                              onsubmit="return confirm('Are you sure you want to remove this consultation type?');">
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger">
+                                                Remove
+                                            </button>
+
+                                        </form>
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <div class="card shadow-sm border-0 empty-card">
+
+            <div class="card-body text-center py-5">
+
+                <h5 class="fw-semibold">
+                    No Consultation Types Selected
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Click "+ Add Consultation" and pick a consultation type
+                    to start offering appointments.
+                </p>
+
+            </div>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- ================= ADD CONSULTATION MODAL ================= -->
+
+<div class="modal fade" id="addConsultationModal" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form id="addConsultationForm"
+                  method="POST"
+                  action="{{ url_for('consultation_types.add_consultation_type') }}">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title fw-semibold">
+                        Add Consultation Type
+                    </h5>
+
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+
+                        <label class="form-label" for="consultationTypeId">
+                            Consultation Type
+                        </label>
+
+                        <select class="form-select"
+                                id="consultationTypeId"
+                                name="consultationTypeId"
+                                required>
+
+                            <option value="">
+                                Select consultation
+                            </option>
+
+                            {% for item in master_types %}
+
+                                {% set already = item.consultationTypeId in assigned_ids %}
+
+                                <option value="{{ item.consultationTypeId }}"
+                                        data-name="{{ item.name }}"
+                                        {% if already %}disabled{% endif %}>
+
+                                    {{ item.name }}
+                                    ({{ item.durationMin|float|int }} min){% if already %} — already added{% endif %}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label" for="fee">
+                            Consultation Fee (₹)
+                        </label>
+
+                        <input type="number"
+                               class="form-control"
+                               id="fee"
+                               name="fee"
+                               min="0"
+                               max="99999999.99"
+                               step="0.01"
+                               placeholder="Enter consultation fee"
+                               required>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label" for="capacity">
+                            Patient Capacity
+                        </label>
+
+                        <input type="number"
+                               class="form-control"
+                               id="capacity"
+                               name="capacity"
+                               min="1"
+                               max="10"
+                               value="1"
+                               required>
+
+                        <small class="text-muted" id="capacityHelp">
+                            Select a consultation type to configure capacity.
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Add Consultation
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= EDIT CONSULTATION MODAL ================= -->
+
+<div class="modal fade" id="editConsultationModal" tabindex="-1">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form id="editConsultationForm"
+                  method="POST"
+                  action="{{ url_for('consultation_types.update_consultation_type') }}">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title fw-semibold">
+                        Edit Consultation Type
+                        <span id="editTitleName"></span>
+                    </h5>
+
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal"></button>
+
+                </div>
+
+
+                <div class="modal-body">
+
+                    <input type="hidden"
+                           id="editConsultationTypeId"
+                           name="consultationTypeId">
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Consultation Type
+                        </label>
+
+                        <div class="type-display">
+                            <span class="type-icon" id="editIcon">C</span>
+                            <div>
+                                <div class="type-name" id="editName">—</div>
+                                <div class="type-meta" id="editMeta"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label" for="editFee">
+                            Consultation Fee (₹)
+                        </label>
+
+                        <input type="number"
+                               class="form-control"
+                               id="editFee"
+                               name="fee"
+                               min="0"
+                               max="99999999.99"
+                               step="0.01"
+                               required>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label" for="editCapacity">
+                            Patient Capacity
+                        </label>
+
+                        <input type="number"
+                               class="form-control"
+                               id="editCapacity"
+                               name="capacity"
+                               min="1"
+                               max="10"
+                               required>
+
+                        <small class="text-muted"
+                               id="editCapacityHelp">
+                        </small>
+
+                    </div>
+
+
+                    <div class="form-check">
+
+                        <input type="checkbox"
+                               class="form-check-input"
+                               id="editActive"
+                               name="active"
+                               value="true">
+
+                        <label class="form-check-label"
+                               for="editActive">
+
+                            Active
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Cancel
+
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+<script>
+(function () {
+
+    /* Health Camp Session allows 2-10 patients; every other type is 1 patient. */
+    function isCamp(name) { return /health\s*camp/i.test(name || ''); }
+
+    function applyCapacityRules(input, help, name, keepValue) {
+        if (isCamp(name)) {
+            input.min = 2;
+            input.max = 10;
+            input.readOnly = false;
+            var v = parseInt(input.value, 10);
+            input.value = (keepValue && v >= 2 && v <= 10) ? v : 2;
+            help.textContent = 'Health Camp Session supports 2–10 patients per slot.';
+        } else {
+            input.min = 1;
+            input.max = 1;
+            input.value = 1;
+            input.readOnly = true;
+            help.textContent = 'This consultation type supports 1 patient per slot.';
+        }
+    }
+
+    /* ---------- Add modal ---------- */
+    var addModal  = document.getElementById('addConsultationModal');
+    var addSelect = document.getElementById('consultationTypeId');
+    var addCap    = document.getElementById('capacity');
+    var addHelp   = document.getElementById('capacityHelp');
+
+    addSelect.addEventListener('change', function () {
+        var opt = addSelect.options[addSelect.selectedIndex];
+        if (!opt || !opt.value) {
+            addCap.readOnly = false; addCap.min = 1; addCap.max = 10; addCap.value = 1;
+            addHelp.textContent = 'Select a consultation type to configure capacity.';
+            return;
+        }
+        applyCapacityRules(addCap, addHelp, opt.dataset.name, false);
+    });
+
+    addModal.addEventListener('show.bs.modal', function () {
+        document.getElementById('addConsultationForm').reset();
+        addCap.readOnly = false; addCap.min = 1; addCap.max = 10; addCap.value = 1;
+        addHelp.textContent = 'Select a consultation type to configure capacity.';
+    });
+
+    /* ---------- Edit modal ---------- */
+    var editModal = document.getElementById('editConsultationModal');
+
+    editModal.addEventListener('show.bs.modal', function (event) {
+        var btn = event.relatedTarget;
+        if (!btn) return;
+
+        var name = btn.getAttribute('data-name') || '';
+        var dur  = parseFloat(btn.getAttribute('data-duration'));
+
+        document.getElementById('editConsultationTypeId').value = btn.getAttribute('data-id') || '';
+        document.getElementById('editName').textContent  = name;
+        document.getElementById('editTitleName').textContent = name ? '— ' + name : '';
+        document.getElementById('editIcon').textContent  = name ? name.charAt(0).toUpperCase() : 'C';
+        document.getElementById('editMeta').textContent  = isNaN(dur) ? '' : 'Duration: ' + Math.round(dur) + ' minutes';
+        document.getElementById('editFee').value         = btn.getAttribute('data-fee') || '';
+        document.getElementById('editCapacity').value    = btn.getAttribute('data-capacity') || 1;
+        document.getElementById('editActive').checked    = btn.getAttribute('data-active') === 'true';
+
+        applyCapacityRules(
+            document.getElementById('editCapacity'),
+            document.getElementById('editCapacityHelp'),
+            name,
+            true
+        );
+    });
+
+})();
+</script>
+
+</body>
+</html>

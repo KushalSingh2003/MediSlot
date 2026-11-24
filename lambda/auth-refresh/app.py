@@ -209,7 +209,7 @@ def lambda_handler(event, context):
                 cursor.execute(
                     """
                     SELECT doctor_id
-                    FROM doctors
+                    FROM doctor
                     WHERE doctor_id = %s
                     """,
                     (user_id,)

@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSlot | Doctor Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+        /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
+           (variable names kept so the rest of the file stays the same) */
+        :root {
+            --pink-primary: #D8CBB3;
+            --pink-blush: #EFE7D8;
+            --pink-rose: #2F6BFF;
+            --pink-deep: #1E1E1C;
+            --pink-bg: #F6F1E7;
+            --pink-border: #D8CBB3;
+            --pink-text: #1E1E1C;
+            --pink-muted: #6b6455;
+            --blue-light: #7EA3FF;
+            --blue-deep: #1B4FD6;
+            --ease: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* ---------- Keyframes ---------- */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(46px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-18px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes floatA {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50%      { transform: translate(40px, 30px) scale(1.08); }
+        }
+
+        @keyframes floatB {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50%      { transform: translate(-45px, -35px) scale(1.1); }
+        }
+
+        @keyframes pulseRing {
+            0%   { box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.45); }
+            70%  { box-shadow: 0 0 0 16px rgba(47, 107, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(47, 107, 255, 0); }
+        }
+
+        @keyframes shimmer {
+            0%   { background-position: 0% 0; }
+            100% { background-position: 300% 0; }
+        }
+
+        @keyframes growLine {
+            from { transform: scaleX(0); }
+            to   { transform: scaleX(1); }
+        }
+
+        /* new animations */
+        @keyframes gridDrift   { from { background-position: 0 0; } to { background-position: 60px 60px; } }
+        @keyframes spinSlow    { to { transform: rotate(360deg); } }
+        @keyframes textSweep   { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
+        @keyframes iconFloat   { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-5px) rotate(-6deg); } }
+        @keyframes barGlow     { 0%, 100% { box-shadow: 0 0 0 rgba(47, 107, 255, 0); } 50% { box-shadow: 0 0 12px rgba(47, 107, 255, 0.7); } }
+        @keyframes letterBreath { 0%, 100% { letter-spacing: 1px; } 50% { letter-spacing: 2.4px; } }
+        @keyframes focusRing   { 0%, 100% { box-shadow: 0 0 0 0.25rem rgba(47, 107, 255, 0.22); } 50% { box-shadow: 0 0 0 0.45rem rgba(47, 107, 255, 0.08); } }
+        @keyframes softPulse {
+            0%, 100% { box-shadow: 0 10px 24px rgba(47, 107, 255, 0.35), 0 0 0 0 rgba(47, 107, 255, 0.4); }
+            50%      { box-shadow: 0 10px 24px rgba(47, 107, 255, 0.35), 0 0 0 10px rgba(47, 107, 255, 0); }
+        }
+        @keyframes btnShine    { 0%, 55% { left: -120%; } 100% { left: 160%; } }
+        @keyframes alertNudge  { 0%, 90%, 100% { transform: translateX(0); } 93% { transform: translateX(-5px); } 96% { transform: translateX(5px); } }
+        @keyframes slideDown   { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+        @keyframes shake       { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+        @keyframes dashPulse   { 0%, 100% { border-color: #D8CBB3; } 50% { border-color: #7EA3FF; } }
+
+        /* ---------- Page ---------- */
+        html {
+            background: linear-gradient(160deg, #F6F1E7 0%, #EFE7D8 45%, #D8CBB3 100%) fixed;
+        }
+
+        /* drifting dot grid */
+        html::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(30, 30, 28, 0.08) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            animation: gridDrift 30s linear infinite;
+        }
+
+        body {
+            background: transparent !important;
+            color: var(--pink-text);
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(70px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body::before {
+            width: 420px;
+            height: 420px;
+            top: -120px;
+            left: -120px;
+            background: rgba(47, 107, 255, 0.30);
+            animation: floatA 14s ease-in-out infinite;
+        }
+
+        body::after {
+            width: 460px;
+            height: 460px;
+            bottom: -160px;
+            right: -140px;
+            background: rgba(30, 30, 28, 0.18);
+            animation: floatB 17s ease-in-out infinite;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ---------- Card ---------- */
+        .card {
+            background: rgba(252, 250, 246, 0.94) !important;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--pink-border) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 20px 50px rgba(30, 30, 28, 0.18) !important;
+            padding: 40px 44px !important;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.5s var(--ease), border-color 0.4s ease;
+            animation: cardIn 0.9s var(--ease) backwards;
+        }
+
+        .card:hover {
+            box-shadow: 0 26px 60px rgba(47, 107, 255, 0.22) !important;
+            border-color: var(--blue-light) !important;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #D8CBB3, #2F6BFF, #1E1E1C, #2F6BFF, #D8CBB3);
+            background-size: 300% 100%;
+            animation: shimmer 4s linear infinite;
+        }
+
+        /* rotating dashed ring in the corner */
+        .card::after {
+            content: "";
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            right: -110px;
+            top: -110px;
+            border-radius: 50%;
+            border: 2px dashed rgba(47, 107, 255, 0.35);
+            pointer-events: none;
+            animation: spinSlow 24s linear infinite;
+        }
+
+        /* ---------- Header ---------- */
+        .card .text-center.mb-4 {
+            margin-bottom: 32px !important;
+            padding-bottom: 24px;
+            border-bottom: 1px dashed var(--pink-border);
+            animation: fadeUp 0.7s ease 0.15s backwards;
+        }
+
+        .card h2.text-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 2rem;
+            background: linear-gradient(100deg, #1E1E1C 0%, #1E1E1C 38%, #2F6BFF 50%, #1E1E1C 62%, #1E1E1C 100%);
+            background-size: 250% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent !important;
+            margin-bottom: 4px;
+            letter-spacing: 0.4px;
+            animation: textSweep 6s 1.2s ease-in-out infinite;
+        }
+
+        .card h2.text-primary::before {
+            content: "\271A";
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+            -webkit-text-fill-color: #FFFFFF;
+            color: #FFFFFF;
+            font-size: 1.2rem;
+            animation: pulseRing 2.4s infinite, iconFloat 4s ease-in-out infinite;
+        }
+
+        .card .text-muted {
+            color: var(--pink-muted) !important;
+            font-size: 0.95rem;
+            margin-bottom: 0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+            animation: letterBreath 5s 1.5s ease-in-out infinite;
+        }
+
+        /* ---------- Alerts ---------- */
+        .alert {
+            border-radius: 14px;
+            border: 1px solid var(--pink-border);
+            font-weight: 500;
+            animation: slideIn 0.5s ease backwards, alertNudge 4s 2s ease-in-out infinite;
+        }
+
+        .alert-success { background: #e4f8ee; color: #1a8f5c; border-color: #b6ead0; }
+        .alert-danger  { background: #FFEBEE; color: #C62828; border-color: #FFCDD2; }
+        .alert-warning { background: #FFF3E0; color: #E65100; border-color: #FFE0B2; }
+        .alert-info    { background: #E6EEFF; color: #1B4FD6; border-color: #B8CCFF; }
+
+        /* ---------- Form staggered entrance ---------- */
+        form > * {
+            animation: fadeUp 0.6s ease backwards;
+        }
+
+        form > *:nth-child(1)  { animation-delay: 0.25s; }
+        form > *:nth-child(2)  { animation-delay: 0.30s; }
+        form > *:nth-child(3)  { animation-delay: 0.35s; }
+        form > *:nth-child(4)  { animation-delay: 0.40s; }
+        form > *:nth-child(5)  { animation-delay: 0.45s; }
+        form > *:nth-child(6)  { animation-delay: 0.50s; }
+        form > *:nth-child(7)  { animation-delay: 0.55s; }
+        form > *:nth-child(8)  { animation-delay: 0.60s; }
+        form > *:nth-child(9)  { animation-delay: 0.65s; }
+        form > *:nth-child(10) { animation-delay: 0.70s; }
+        form > *:nth-child(11) { animation-delay: 0.75s; }
+        form > *:nth-child(12) { animation-delay: 0.80s; }
+        form > *:nth-child(13) { animation-delay: 0.85s; }
+        form > *:nth-child(14) { animation-delay: 0.90s; }
+        form > *:nth-child(15) { animation-delay: 0.95s; }
+        form > *:nth-child(16) { animation-delay: 1.00s; }
+        form > *:nth-child(17) { animation-delay: 1.05s; }
+        form > *:nth-child(18) { animation-delay: 1.10s; }
+        form > *:nth-child(19) { animation-delay: 1.15s; }
+
+        /* fields inside each top-level row slide in one after another */
+        form > .row > [class*="col-"] {
+            animation: slideIn 0.6s var(--ease) backwards;
+        }
+        form > .row > [class*="col-"]:nth-child(1) { animation-delay: 0.50s; }
+        form > .row > [class*="col-"]:nth-child(2) { animation-delay: 0.58s; }
+        form > .row > [class*="col-"]:nth-child(3) { animation-delay: 0.66s; }
+        form > .row > [class*="col-"]:nth-child(4) { animation-delay: 0.74s; }
+        form > .row > [class*="col-"]:nth-child(5) { animation-delay: 0.82s; }
+        form > .row > [class*="col-"]:nth-child(6) { animation-delay: 0.90s; }
+        form > .row > [class*="col-"]:nth-child(7) { animation-delay: 0.98s; }
+
+        /* ---------- Section headings & dividers ---------- */
+        form h5 {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--pink-deep);
+            margin-bottom: 20px !important;
+        }
+
+        form h5::before {
+            content: "";
+            width: 6px;
+            height: 24px;
+            border-radius: 6px;
+            background: linear-gradient(180deg, #7EA3FF, #1B4FD6);
+            flex-shrink: 0;
+            animation: barGlow 3s 1.5s ease-in-out infinite;
+        }
+
+        form hr {
+            border: none;
+            height: 1px;
+            opacity: 1;
+            margin: 30px 0;
+            background: linear-gradient(90deg, rgba(216, 203, 179, 0), #2F6BFF, rgba(216, 203, 179, 0));
+            transform-origin: center;
+            animation-name: growLine;
+        }
+
+        /* ---------- Fields ---------- */
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--pink-deep);
+            margin-bottom: 8px;
+            transition: color 0.3s ease, transform 0.3s var(--ease);
+        }
+
+        .mb-3:focus-within > .form-label {
+            color: var(--blue-deep);
+            transform: translateX(4px);
+        }
+
+        .form-control,
+        .form-select {
+            border: 1.5px solid var(--pink-border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            background-color: #FFFFFF;
+            color: var(--pink-text);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background-color 0.25s ease;
+        }
+
+        .form-select {
+            padding-right: 2.5rem;
+            cursor: pointer;
+        }
+
+        .form-control:hover,
+        .form-select:hover {
+            border-color: var(--blue-light);
+            background-color: var(--pink-bg);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--pink-rose);
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 0.25rem rgba(47, 107, 255, 0.22);
+            transform: translateY(-2px);
+            outline: none;
+            animation: focusRing 1.8s ease-in-out infinite;
+        }
+
+        .form-control::placeholder {
+            color: #a89d86;
+        }
+
+        /* "Other" specialization box slides open */
+        #otherSpecialisationContainer:not([hidden]) {
+            animation: slideDown 0.5s var(--ease) backwards;
+        }
+
+        /* hint + validation messages */
+        .form-text {
+            color: var(--pink-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 6px 10px;
+            margin-top: 8px;
+            border-left: 3px solid var(--pink-border);
+            border-radius: 0 8px 8px 0;
+            background: var(--pink-bg);
+            transition: border-color 0.3s ease, transform 0.3s var(--ease);
+        }
+
+        .mb-3:focus-within > .form-text {
+            border-left-color: var(--pink-rose);
+            transform: translateX(4px);
+        }
+
+        .form-control.is-invalid {
+            animation: shake 0.45s ease;
+        }
+
+        .invalid-feedback.d-block {
+            animation: slideDown 0.4s var(--ease) backwards;
+        }
+
+        /* ---------- Qualification rows (also applies to dynamically added rows) ---------- */
+        #qualifications {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .qualification-row {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 130px 48px;
+            gap: 12px;
+            align-items: center;
+            margin: 0 !important;
+            padding: 14px;
+            background: var(--pink-bg);
+            border: 1px solid var(--pink-border);
+            border-left: 4px solid var(--pink-rose);
+            border-radius: 16px;
+            animation: slideIn 0.45s var(--ease) backwards;
+            transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.3s var(--ease);
+        }
+
+        .qualification-row:hover {
+            border-color: var(--blue-light);
+            box-shadow: 0 8px 20px rgba(47, 107, 255, 0.16);
+            transform: translateX(4px);
+        }
+
+        .qualification-row > [class*="col-"] {
+            width: 100% !important;
+            max-width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* ---------- Buttons ---------- */
+        .btn {
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+        }
+
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(120deg, #7EA3FF 0%, #2F6BFF 50%, #7EA3FF 100%) !important;
+            background-size: 200% 100% !important;
+            border: none !important;
+            color: #FFFFFF !important;
+            padding: 14px 24px;
+            font-size: 1.02rem;
+            letter-spacing: 0.4px;
+            box-shadow: 0 10px 24px rgba(47, 107, 255, 0.35);
+            animation: softPulse 2.8s 2.2s ease-in-out infinite;
+        }
+
+        /* shine sweep on the main button */
+        .btn-primary::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            transform: skewX(-20deg);
+            animation: btnShine 3.6s 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-position: 100% 0 !important;
+            transform: translateY(-3px);
+            box-shadow: 0 16px 32px rgba(47, 107, 255, 0.45);
+            animation: none;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0) scale(0.97);
+        }
+
+        .btn-outline-primary {
+            color: var(--pink-rose) !important;
+            background: #FFFFFF !important;
+            border: 1.5px solid var(--pink-primary) !important;
+            border-radius: 999px;
+            padding: 8px 20px;
+        }
+
+        .btn-outline-primary:hover {
+            background: linear-gradient(135deg, #5A8BFF, #1B4FD6) !important;
+            color: #FFFFFF !important;
+            border-color: transparent !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(47, 107, 255, 0.32);
+        }
+
+        .btn-outline-primary:active {
+            transform: scale(0.95);
+        }
+
+        .btn-outline-danger {
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            line-height: 1;
+            color: #1E1E1C !important;
+            background: #FFFFFF !important;
+            border: 1.5px solid var(--pink-border) !important;
+            border-radius: 12px;
+        }
+
+        .btn-outline-danger:hover {
+            background: #FFEBEE !important;
+            border-color: #EF9A9A !important;
+            color: #C62828 !important;
+            transform: rotate(90deg) scale(1.08);
+        }
+
+        /* ---------- Footer link ---------- */
+        .card > p.text-center {
+            color: var(--pink-muted);
+            padding-top: 20px;
+            border-top: 1px dashed var(--pink-border);
+            margin-bottom: 0;
+            animation: fadeUp 0.6s ease 1.25s backwards;
+        }
+
+        .card a {
+            color: var(--blue-deep);
+            font-weight: 700;
+            text-decoration: none;
+            background-image: linear-gradient(var(--pink-rose), var(--pink-rose));
+            background-size: 0 2px;
+            background-position: 0 100%;
+            background-repeat: no-repeat;
+            transition: background-size 0.3s ease, color 0.2s ease;
+        }
+
+        .card a:hover {
+            background-size: 100% 2px;
+            color: var(--pink-rose);
+        }
+
+        /* ---------- Scrollbar ---------- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: var(--pink-primary); border-radius: 8px; }
+        ::-webkit-scrollbar-track { background: var(--pink-bg); }
+        ::selection { background: #2F6BFF; color: #fff; }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 767.98px) {
+            .card {
+                padding: 28px 20px !important;
+                border-radius: 20px !important;
+            }
+
+            .container {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+
+            .qualification-row {
+                grid-template-columns: minmax(0, 1fr) 48px;
+            }
+
+            .qualification-row > [class*="col-"]:nth-child(1),
+            .qualification-row > [class*="col-"]:nth-child(2) {
+                grid-column: 1 / -1 !important;
+            }
+
+            .qualification-row > [class*="col-"]:nth-child(3) {
+                grid-column: 1 / 2 !important;
+            }
+
+            .qualification-row > [class*="col-"]:nth-child(4) {
+                grid-column: 2 / 3 !important;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .card h2.text-primary {
+                font-size: 1.6rem;
+            }
+        }
+
+        /* ---------- Accessibility: reduced motion ---------- */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light" style="background: transparent; color: #1E1E1C; margin: 0;">
+    <!-- ===== Page loader (paste-anywhere block) ===== -->
+<style>
+  #msLoader {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #1E1E1C;
+    opacity: 1; visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #msLoader.ms-hide { opacity: 0; visibility: hidden; }
+
+  .ms-logo {
+    position: relative; display: grid; place-items: center;
+    width: 78px; height: 78px; border-radius: 22px;
+    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+    box-shadow: 0 10px 30px rgba(47,107,255,.55);
+    animation: ms-beat 1.4s ease-in-out infinite;
+  }
+  .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
+  .ms-logo::after {
+    content: ""; position: absolute; inset: -12px;
+    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
+    animation: ms-ring 1.4s ease-out infinite;
+  }
+  .ms-title {
+    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
+    letter-spacing: .3px;
+  }
+  .ms-ecg { width: 210px; height: 42px; }
+  .ms-ecg path {
+    fill: none; stroke: #2F6BFF; stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 340; stroke-dashoffset: 340;
+    animation: ms-ecg 1.8s linear infinite;
+  }
+
+  @keyframes ms-beat {
+    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
+    30% { transform: scale(1); }     45% { transform: scale(1.08); }
+  }
+  @keyframes ms-ring {
+    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
+  }
+  @keyframes ms-ecg {
+    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
+  }
+</style>
+
+<noscript><style>#msLoader { display: none !important; }</style></noscript>
+
+<div id="msLoader" aria-live="polite" aria-label="Loading">
+  <div class="ms-logo">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </div>
+  <div class="ms-title">MediSlot</div>
+  <svg class="ms-ecg" viewBox="0 0 220 44" aria-hidden="true">
+    <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    var loader = document.getElementById("msLoader");
+    if (!loader) return;
+    var MIN_VISIBLE = 600;                 // ms, so it never just flashes
+    var startedAt = Date.now();
+
+    function hide() {
+      var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
+      setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
+    }
+    function show() {
+      startedAt = Date.now();
+      loader.classList.remove("ms-hide");
+    }
+
+    // hide when the page finishes loading (safety timeout included)
+    window.addEventListener("load", hide);
+    setTimeout(hide, 6000);
+
+    // back/forward cache can restore the page with the loader stuck on
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) loader.classList.add("ms-hide");
+    });
+
+    // show it again when leaving for another page
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[href]");
+      if (!a || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (a.target === "_blank" || a.hasAttribute("download")) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;
+      show();
+    });
+    document.addEventListener("submit", function (e) {
+      if (!e.defaultPrevented) show();   // respects a cancelled confirm()
+    });
+  })();
+</script>
+<!-- ===== /Page loader ===== -->
+
+<div class="container py-5">
+    <div class="card shadow border-0 mx-auto p-4" style="max-width: 850px;">
+
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">MediSlot</h2>
+            <p class="text-muted">Doctor Registration</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.register') }}">
+
+            <h5 class="mb-3">Personal Information</h5>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">First Name *</label>
+                    <input name="firstName" class="form-control" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Last Name *</label>
+                    <input name="lastName" class="form-control" required>
+                </div>
+                
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Password *</label>
+                    <input type="password" name="password" class="form-control"
+                           minlength="8" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Phone *</label>
+                    <input name="phone" class="form-control" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Years of Experience *</label>
+                    <input type="number" name="yearsExperience"
+                           class="form-control" min="0" required>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label for="specialisation" class="form-label">Specialization *</label>
+                    <select id="specialisation" name="specialisation"
+                            class="form-select" required>
+                        <option value="" selected disabled>Select a specialization</option>
+                        <option value="General Practice">General Practice</option>
+                        <option value="Cardiology">Cardiology</option>
+                        <option value="Dermatology">Dermatology</option>
+                        <option value="Endocrinology">Endocrinology</option>
+                        <option value="Family Medicine">Family Medicine</option>
+                        <option value="Gastroenterology">Gastroenterology</option>
+                        <option value="General Surgery">General Surgery</option>
+                        <option value="Gynecology and Obstetrics">Gynecology and Obstetrics</option>
+                        <option value="Neurology">Neurology</option>
+                        <option value="Oncology">Oncology</option>
+                        <option value="Ophthalmology">Ophthalmology</option>
+                        <option value="Orthopedics">Orthopedics</option>
+                        <option value="Otolaryngology (ENT)">Otolaryngology (ENT)</option>
+                        <option value="Pediatrics">Pediatrics</option>
+                        <option value="Psychiatry">Psychiatry</option>
+                        <option value="Pulmonology">Pulmonology</option>
+                        <option value="Radiology">Radiology</option>
+                        <option value="Urology">Urology</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <div id="otherSpecialisationContainer" class="mt-3" hidden>
+                        <label for="otherSpecialisation" class="form-label">
+                            Enter your specialization *
+                        </label>
+                        <input id="otherSpecialisation" type="text"
+                               class="form-control"
+                               placeholder="Your specialization"
+                               maxlength="100">
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <h5 class="mb-3">Medical Licence</h5>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="licenceNumber" class="form-label">Licence Number *</label>
+                    <input
+    type="text"
+    id="licenceNumber"
+    name="licenceNumber"
+    class="form-control"
+    minlength="3"
+    maxlength="30"
+    pattern="[A-Za-z0-9/ -]{3,30}"
+    title="Enter 3-30 letters, numbers, spaces, / or -."
+    aria-describedby="licenceNumberFormat licenceNumberError"
+    required
+>
+                    <div id="licenceNumberFormat" class="form-text">
+                        Format: 3-30 letters, numbers, spaces, "/" or "-".
+                    </div>
+                    <div id="licenceNumberError" class="invalid-feedback">
+                        Invalid medical registration number. Use 3-30 letters,
+                        numbers, spaces, "/" or "-".
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Licence Authority *</label>
+                    <input name="licenceAuthority" class="form-control" required>
+                </div>
+            </div>
+
+            <hr>
+
+            <h5 class="mb-3">Qualifications</h5>
+
+            <div id="qualifications">
+                <div class="row qualification-row mb-3">
+                    <div class="col-md-4">
+                        <input name="degree[]" class="form-control"
+                               placeholder="Degree">
+                    </div>
+                    <div class="col-md-4">
+                        <input name="institution[]" class="form-control"
+                               placeholder="Institution">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="number" name="year[]" class="form-control"
+                               placeholder="Year">
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-danger"
+                                onclick="this.closest('.qualification-row').remove()">
+                            ×
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn btn-outline-primary btn-sm mb-3"
+                    onclick="addQualification()">
+                + Add Qualification
+            </button>
+
+            <hr>
+
+            <h5 class="mb-3">Address</h5>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <input name="addressLine1" class="form-control"
+                           placeholder="Address Line 1">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <input name="addressLine2" class="form-control"
+                           placeholder="Address Line 2">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <input name="city" class="form-control" placeholder="City">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <input name="postalCode" class="form-control"
+                           placeholder="Postal Code">
+                </div>
+            </div>
+
+            <hr>
+
+            <h5 class="mb-3">Languages</h5>
+
+            <div class="mb-3">
+                <input name="languagesSpoken" class="form-control"
+                       placeholder="English, Hindi, Telugu">
+            </div>
+
+            <hr>
+
+            <h5 class="mb-3">Hospital Information</h5>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <input name="hospitalName" class="form-control"
+                           placeholder="Hospital Name">
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <input name="department" class="form-control"
+                           placeholder="Department">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-3">
+                Register as Doctor
+            </button>
+
+        </form>
+
+        <p class="text-center mt-3">
+            Already registered?
+            <a href="{{ url_for('auth.login') }}">Login</a>
+        </p>
+
+    </div>
+</div>
+
+<script>
+const licenceNumberInput = document.getElementById("licenceNumber");
+const licenceNumberError = document.getElementById("licenceNumberError");
+const specialisationSelect = document.getElementById("specialisation");
+const otherSpecialisationContainer = document.getElementById("otherSpecialisationContainer");
+const otherSpecialisationInput = document.getElementById("otherSpecialisation");
+
+function toggleOtherSpecialisation() {
+    const isOther = specialisationSelect.value === "Other";
+
+    otherSpecialisationContainer.hidden = !isOther;
+    otherSpecialisationInput.required = isOther;
+
+    if (isOther) {
+        specialisationSelect.removeAttribute("name");
+        otherSpecialisationInput.name = "specialisation";
+    } else {
+        specialisationSelect.name = "specialisation";
+        otherSpecialisationInput.removeAttribute("name");
+        otherSpecialisationInput.value = "";
+    }
+}
+
+specialisationSelect.addEventListener("change", toggleOtherSpecialisation);
+toggleOtherSpecialisation();
+
+function showLicenceNumberFormatError() {
+    const hasValue = licenceNumberInput.value.length > 0;
+    const hasInvalidFormat = hasValue && !licenceNumberInput.checkValidity();
+
+    licenceNumberInput.classList.toggle("is-invalid", hasInvalidFormat);
+    licenceNumberError.classList.toggle("d-block", hasInvalidFormat);
+}
+
+licenceNumberInput.addEventListener("input", showLicenceNumberFormatError);
+licenceNumberInput.addEventListener("blur", showLicenceNumberFormatError);
+
+function addQualification() {
+    const container = document.getElementById("qualifications");
+
+    const row = document.createElement("div");
+    row.className = "row qualification-row mb-3";
+
+    row.innerHTML = `
+        <div class="col-md-4">
+            <input name="degree[]" class="form-control" placeholder="Degree">
+        </div>
+        <div class="col-md-4">
+            <input name="institution[]" class="form-control"
+                   placeholder="Institution">
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="year[]" class="form-control"
+                   placeholder="Year">
+        </div>
+        <div class="col-md-1">
+            <button type="button" class="btn btn-outline-danger"
+                    onclick="this.closest('.qualification-row').remove()">
+                ×
+            </button>
+        </div>
+    `;
+
+    container.appendChild(row);
+}
+</script>
+
+</body>
+</html>

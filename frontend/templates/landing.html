@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to MediSlot{% endblock %}
+
+{% block styles %}
+<style>
+    :root {
+        --theme-charcoal: #1E1E1C;
+        --theme-beige: #D8CBB3;
+        --theme-blue: #2F6BFF;
+        --theme-muted: rgba(30, 30, 28, 0.68);
+        --theme-blue-soft: rgba(47, 107, 255, 0.14);
+        --theme-beige-soft: rgba(216, 203, 179, 0.35);
+    }
+
+    .welcome-page {
+        position: relative;
+        isolation: isolate;
+        align-items: center;
+        min-height: calc(100vh - 6rem);
+        overflow: hidden;
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+
+    .welcome-page::before,
+    .welcome-page::after {
+        position: absolute;
+        z-index: -1;
+        content: "";
+        border-radius: 50%;
+        pointer-events: none;
+        filter: blur(8px);
+    }
+
+    .welcome-page::before {
+        top: 4%;
+        left: -9rem;
+        width: 23rem;
+        height: 23rem;
+        background: radial-gradient(circle, var(--theme-blue-soft), transparent 70%);
+        animation: driftLeft 13s ease-in-out infinite;
+    }
+
+    .welcome-page::after {
+        right: -8rem;
+        bottom: 1%;
+        width: 25rem;
+        height: 25rem;
+        background: radial-gradient(circle, var(--theme-beige-soft), transparent 70%);
+        animation: driftRight 16s ease-in-out infinite;
+    }
+
+    .welcome-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .welcome-title {
+        color: var(--theme-charcoal);
+        animation: titleReveal 0.8s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .welcome-subtitle {
+        color: var(--theme-muted) !important;
+        animation: subtitleReveal 0.8s 0.12s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .portal-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100%;
+        overflow: hidden;
+        border: 1px solid rgba(30, 30, 28, 0.12) !important;
+        border-radius: 1.5rem !important;
+        background: rgba(255, 255, 255, 0.94);
+        box-shadow: 0 12px 30px rgba(30, 30, 28, 0.08) !important;
+        transform-origin: center;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+        animation: cardReveal 0.8s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .portal-card::before {
+        position: absolute;
+        z-index: 0;
+        inset: 0 0 auto;
+        height: 5px;
+        content: "";
+        background: linear-gradient(
+            90deg,
+            var(--theme-charcoal),
+            var(--theme-blue),
+            var(--theme-beige),
+            var(--theme-blue)
+        );
+        background-size: 250% 100%;
+        animation: accentFlow 6s linear infinite;
+    }
+
+    .portal-card::after {
+        position: absolute;
+        z-index: 0;
+        right: -5rem;
+        bottom: -7rem;
+        width: 15rem;
+        height: 15rem;
+        content: "";
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--theme-blue-soft), transparent 70%);
+        transition: transform 0.6s ease;
+        pointer-events: none;
+    }
+
+    .portal-options > .col-md-6:nth-child(1) .portal-card {
+        animation-delay: 0.18s;
+    }
+
+    .portal-options > .col-md-6:nth-child(2) .portal-card {
+        animation-delay: 0.34s;
+    }
+
+    .portal-card > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .portal-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 24px 48px rgba(47, 107, 255, 0.18) !important;
+    }
+
+    .portal-card:hover::after {
+        transform: scale(1.35);
+    }
+
+    .portal-icon {
+        display: inline-block;
+        font-size: 3.6rem;
+        filter: drop-shadow(0 8px 12px rgba(47, 107, 255, 0.18));
+        animation: iconFloat 3.2s ease-in-out infinite;
+    }
+
+    .portal-card h3 {
+        color: var(--theme-charcoal);
+        font-weight: 700;
+    }
+
+    .portal-description {
+        color: var(--theme-muted) !important;
+        line-height: 1.65;
+    }
+
+    .portal-card .btn-primary {
+        border: 0;
+        background: linear-gradient(110deg, var(--theme-charcoal), var(--theme-blue)) !important;
+        background-size: 200% 100% !important;
+        box-shadow: 0 8px 20px rgba(47, 107, 255, 0.22);
+        transition: background-position 0.45s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .portal-card .btn-primary:hover,
+    .portal-card .btn-primary:focus-visible {
+        background-position: 100% 0 !important;
+        transform: translateY(-3px);
+        box-shadow: 0 14px 28px rgba(47, 107, 255, 0.3);
+    }
+
+    .portal-register {
+        color: var(--theme-blue);
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.2s ease, letter-spacing 0.2s ease;
+    }
+
+    .portal-register:hover,
+    .portal-register:focus-visible {
+        color: var(--theme-charcoal);
+        letter-spacing: 0.02em;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+    }
+
+    .welcome-page a:focus-visible {
+        outline: 3px solid var(--theme-blue);
+        outline-offset: 4px;
+    }
+
+    @keyframes titleReveal {
+        from {
+            opacity: 0;
+            transform: translateY(-18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes subtitleReveal {
+        from {
+            opacity: 0;
+            transform: translateY(14px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes cardReveal {
+        from {
+            opacity: 0;
+            transform: translateY(32px) scale(0.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes iconFloat {
+        0%, 100% {
+            transform: translateY(0) rotate(0);
+        }
+
+        50% {
+            transform: translateY(-9px) rotate(3deg);
+        }
+    }
+
+    @keyframes accentFlow {
+        from {
+            background-position: 0 0;
+        }
+
+        to {
+            background-position: 250% 0;
+        }
+    }
+
+    @keyframes driftLeft {
+        0%, 100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(45px, 30px);
+        }
+    }
+
+    @keyframes driftRight {
+        0%, 100% {
+            transform: translate(0, 0);
+        }
+
+        50% {
+            transform: translate(-40px, -25px);
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .welcome-page {
+            min-height: auto;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        .portal-card {
+            padding: 1.5rem !important;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            animation-delay: 0s !important;
+            scroll-behavior: auto !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        .portal-card:hover,
+        .portal-card .btn-primary:hover {
+            transform: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ===== Page loader (paste-anywhere block) ===== -->
+<style>
+  #msLoader {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #1E1E1C;
+    opacity: 1; visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #msLoader.ms-hide { opacity: 0; visibility: hidden; }
+
+  .ms-logo {
+    position: relative; display: grid; place-items: center;
+    width: 78px; height: 78px; border-radius: 22px;
+    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+    box-shadow: 0 10px 30px rgba(47,107,255,.55);
+    animation: ms-beat 1.4s ease-in-out infinite;
+  }
+  .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
+  .ms-logo::after {
+    content: ""; position: absolute; inset: -12px;
+    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
+    animation: ms-ring 1.4s ease-out infinite;
+  }
+  .ms-title {
+    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
+    letter-spacing: .3px;
+  }
+  .ms-ecg { width: 210px; height: 42px; }
+  .ms-ecg path {
+    fill: none; stroke: #2F6BFF; stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 340; stroke-dashoffset: 340;
+    animation: ms-ecg 1.8s linear infinite;
+  }
+
+  @keyframes ms-beat {
+    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
+    30% { transform: scale(1); }     45% { transform: scale(1.08); }
+  }
+  @keyframes ms-ring {
+    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
+  }
+  @keyframes ms-ecg {
+    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
+  }
+</style>
+
+<noscript><style>#msLoader { display: none !important; }</style></noscript>
+
+<div id="msLoader" aria-live="polite" aria-label="Loading">
+  <div class="ms-logo">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </div>
+  <div class="ms-title">MediSlot</div>
+  <svg class="ms-ecg" viewBox="0 0 220 44" aria-hidden="true">
+    <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    var loader = document.getElementById("msLoader");
+    if (!loader) return;
+    var MIN_VISIBLE = 600;                 // ms, so it never just flashes
+    var startedAt = Date.now();
+
+    function hide() {
+      var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
+      setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
+    }
+    function show() {
+      startedAt = Date.now();
+      loader.classList.remove("ms-hide");
+    }
+
+    // hide when the page finishes loading (safety timeout included)
+    window.addEventListener("load", hide);
+    setTimeout(hide, 6000);
+
+    // back/forward cache can restore the page with the loader stuck on
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) loader.classList.add("ms-hide");
+    });
+
+    // show it again when leaving for another page
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[href]");
+      if (!a || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (a.target === "_blank" || a.hasAttribute("download")) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;
+      show();
+    });
+    document.addEventListener("submit", function (e) {
+      if (!e.defaultPrevented) show();   // respects a cancelled confirm()
+    });
+  })();
+</script>
+<!-- ===== /Page loader ===== -->
+<div class="welcome-page row justify-content-center text-center">
+    <div class="welcome-content col-lg-9">
+        <h1 class="welcome-title display-5 fw-bold">
+            Healthcare appointments, made simpler.
+        </h1>
+
+        <p class="welcome-subtitle lead mb-5">
+            Choose how you want to access MediSlot.
+        </p>
+
+        <div class="portal-options row g-4">
+            <div class="col-md-6">
+                <div class="portal-card card border-0 shadow-sm p-4 h-100">
+                    <div class="portal-icon display-4 mb-3">🩺</div>
+                    <h3>Doctor portal</h3>
+                    <p class="portal-description">
+                        Manage your professional profile, consultation types and availability.
+                    </p>
+                    <a class="btn btn-primary mt-auto"
+                       href="{{ url_for('auth.login') }}">
+                        Login as Doctor
+                    </a>
+                    <a class="portal-register mt-3"
+                       href="{{ url_for('auth.register') }}">
+                        Register as Doctor
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="portal-card card border-0 shadow-sm p-4 h-100">
+                    <div class="portal-icon display-4 mb-3">🧑‍⚕️</div>
+                    <h3>Patient portal</h3>
+                    <p class="portal-description">
+                        Manage your profile, discover doctors and browse available slots.
+                    </p>
+                    <a class="btn btn-primary mt-auto"
+                       href="{{ url_for('patient.login') }}">
+                        Login as Patient
+                    </a>
+                    <a class="portal-register mt-3"
+                       href="{{ url_for('patient.register') }}">
+                        Register as Patient
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

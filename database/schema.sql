@@ -1,50 +1,59 @@
--- Medi-slot schema (MySQL 8 / Amazon RDS)
--- Parent tables are created before the tables that reference them.
 
--- =========================================================
--- Lookup / reference tables
--- =========================================================
-
-CREATE TABLE specialisations (
+CREATE TABLE IF NOT EXISTS specialisations (
     specialisation_id  INT AUTO_INCREMENT PRIMARY KEY,
-    name               VARCHAR(255) NOT NULL
+    name               VARCHAR(255) NOT NULL,
+    INDEX idx_specialisations_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE language (
+CREATE TABLE IF NOT EXISTS language (
     language_id  INT AUTO_INCREMENT PRIMARY KEY,
     name         VARCHAR(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE hospitals (
+CREATE TABLE IF NOT EXISTS hospitals (
     hospital_id  INT AUTO_INCREMENT PRIMARY KEY,
-    name         VARCHAR(255) NOT NULL
+    name         VARCHAR(255) NOT NULL,
+    INDEX idx_hospitals_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE department (
+CREATE TABLE IF NOT EXISTS department (
     department_id  INT AUTO_INCREMENT PRIMARY KEY,
-    name           VARCHAR(255) NOT NULL
+    name           VARCHAR(255) NOT NULL,
+    INDEX idx_department_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE consultation_type (
+CREATE TABLE IF NOT EXISTS consultation_type (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     name          VARCHAR(255) NOT NULL,
     duration_min  DECIMAL(6,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE slot_template (
+CREATE TABLE IF NOT EXISTS slot_template (
     template_id  INT AUTO_INCREMENT PRIMARY KEY,
     name         VARCHAR(255) NOT NULL,
     is_active    BOOLEAN NOT NULL DEFAULT TRUE,
     working_start_time TIME NOT NULL DEFAULT '09:00:00',
-    working_end_time TIME NOT NULL DEFAULT '16:00:00'
+    working_end_time TIME NOT NULL DEFAULT '16:00:00',
+    CONSTRAINT chk_template_times
+       CHECK (working_end_time > working_start_time),
+    CONSTRAINT uq_slot_template_name UNIQUE (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+INSERT INTO slot_template (
+    name,
+    is_active,
+    working_start_time,
+    working_end_time
+)
+VALUES
+    ('Early Shift',   TRUE, '08:00:00', '16:00:00'),
+    ('Morning Shift', TRUE, '09:00:00', '17:00:00'),
+    ('Late Shift',    TRUE, '12:00:00', '20:00:00'),
+    ('Half-Day Shift', TRUE, '09:00:00', '13:00:00')
+ON DUPLICATE KEY UPDATE
+    template_id = LAST_INSERT_ID(template_id);
 
 
--- =========================================================
--- Doctor and doctor-related tables
--- =========================================================
-
-CREATE TABLE doctor (
+CREATE TABLE IF NOT EXISTS doctor (
     doctor_id         VARCHAR(36) PRIMARY KEY,
     email             VARCHAR(255) NOT NULL UNIQUE,
     password_hash     VARCHAR(255) NOT NULL,
@@ -52,10 +61,56 @@ CREATE TABLE doctor (
     phone             VARCHAR(30),
     years_experience  INT,
     photo_key         VARCHAR(512),
-    created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_doctor_name (name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_licence (
+CREATE TABLE IF NOT EXISTS doctor_shift (
+    doctor_shift_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id       VARCHAR(36) NOT NULL,
+    template_id     INT NOT NULL,
+    day_of_week     TINYINT NOT NULL, -- Monday=1 through Friday=5
+    start_time      TIME NOT NULL,
+    end_time        TIME NOT NULL,
+    created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_doctor_shift_weekday
+        UNIQUE (doctor_id, day_of_week),
+
+    CONSTRAINT fk_doctor_shift_doctor
+        FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_doctor_shift_template
+        FOREIGN KEY (template_id) REFERENCES slot_template(template_id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT chk_doctor_shift_weekday
+        CHECK (day_of_week BETWEEN 1 AND 5),
+
+    CONSTRAINT chk_doctor_shift_time
+        CHECK (end_time > start_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS doctor_break (
+    break_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
+    doctor_shift_id BIGINT NOT NULL,
+    starts_at      DATETIME NOT NULL,
+    ends_at        DATETIME NOT NULL,
+    created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_doctor_break_shift
+        FOREIGN KEY (doctor_shift_id)
+        REFERENCES doctor_shift(doctor_shift_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT chk_doctor_break_time
+        CHECK (ends_at > starts_at),
+
+    INDEX idx_doctor_break_shift_time (doctor_shift_id, starts_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS doctor_licence (
     doctor_id            VARCHAR(36) NOT NULL,
     licence_no           VARCHAR(100) NOT NULL UNIQUE,
     authority            VARCHAR(255),
@@ -64,25 +119,27 @@ CREATE TABLE doctor_licence (
     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_address (
+CREATE TABLE IF NOT EXISTS doctor_address (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     doctor_id       VARCHAR(36) NOT NULL,
     address_line_1  VARCHAR(255) NOT NULL,
     address_line_2  VARCHAR(255),
     city            VARCHAR(100) NOT NULL,
     postal_code     VARCHAR(20),
+    INDEX idx_doctor_address_city (city, doctor_id),
     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_specialisation (
+CREATE TABLE IF NOT EXISTS doctor_specialisation (
     doctor_id          VARCHAR(36) NOT NULL,
     specialisation_id  INT NOT NULL,
     PRIMARY KEY (doctor_id, specialisation_id),
+    INDEX idx_doctor_specialisation_lookup (specialisation_id, doctor_id),
     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE,
     FOREIGN KEY (specialisation_id) REFERENCES specialisations(specialisation_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_qualification (
+CREATE TABLE IF NOT EXISTS doctor_qualification (
     id           INT AUTO_INCREMENT PRIMARY KEY,
     doctor_id    VARCHAR(36) NOT NULL,
     degree       VARCHAR(255) NOT NULL,
@@ -91,14 +148,21 @@ CREATE TABLE doctor_qualification (
     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE blackout (
-    id             INT AUTO_INCREMENT PRIMARY KEY,
-    doctor_id      VARCHAR(36) NOT NULL,
-    blackout_date  DATE NOT NULL,
-    FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS blackout (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    doctor_id VARCHAR(36) NOT NULL,
+    blackout_date DATE NOT NULL,
+
+    CONSTRAINT fk_blackout_doctor
+        FOREIGN KEY (doctor_id)
+        REFERENCES doctor(doctor_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT unique_doctor_blackout
+        UNIQUE (doctor_id, blackout_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_language (
+CREATE TABLE IF NOT EXISTS doctor_language (
     doctor_id    VARCHAR(36) NOT NULL,
     language_id  INT NOT NULL,
     PRIMARY KEY (doctor_id, language_id),
@@ -106,17 +170,18 @@ CREATE TABLE doctor_language (
     FOREIGN KEY (language_id) REFERENCES language(language_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_hospital (
+CREATE TABLE IF NOT EXISTS doctor_hospital (
     doctor_id      VARCHAR(36) NOT NULL,
     hospital_id    INT NOT NULL,
     department_id  INT NOT NULL,
     PRIMARY KEY (doctor_id, hospital_id, department_id),
+    INDEX idx_doctor_hospital_lookup (hospital_id, doctor_id),
     FOREIGN KEY (doctor_id) REFERENCES doctor(doctor_id) ON DELETE CASCADE,
     FOREIGN KEY (hospital_id) REFERENCES hospitals(hospital_id),
     FOREIGN KEY (department_id) REFERENCES department(department_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE doctor_consultation_type (
+CREATE TABLE IF NOT EXISTS doctor_consultation_type (
     doctor_id             VARCHAR(36) NOT NULL,
     consultation_type_id  INT NOT NULL,
     fee                   DECIMAL(10,2) NOT NULL,
@@ -127,10 +192,8 @@ CREATE TABLE doctor_consultation_type (
     FOREIGN KEY (consultation_type_id) REFERENCES consultation_type(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =========================================================
--- Slot templates
--- =========================================================
-CREATE TABLE template_consultation_rule (
+
+CREATE TABLE IF NOT EXISTS template_consultation_rule (
     rule_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     template_id INT NOT NULL,
     day_of_week TINYINT NOT NULL,
@@ -163,24 +226,22 @@ CREATE TABLE template_consultation_rule (
     )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- =========================================================
--- Patients, slots, appointments, refunds
--- =========================================================
 
-CREATE TABLE patients (
+CREATE TABLE IF NOT EXISTS patients (
     patient_id     VARCHAR(36) PRIMARY KEY,
     name           VARCHAR(255) NOT NULL,
     phone          VARCHAR(30),
     email          VARCHAR(255) NOT NULL UNIQUE,
     password_hash  VARCHAR(255) NOT NULL,
     city           VARCHAR(100),
+    emergency_contact VARCHAR(30),
     date_of_birth  DATE,
     gender         VARCHAR(20),
     created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE appointment_slot (
+CREATE TABLE IF NOT EXISTS appointment_slot (
     slot_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     doctor_id VARCHAR(36) NOT NULL,
     consultation_type_id INT NOT NULL,
@@ -213,10 +274,10 @@ CREATE TABLE appointment_slot (
     UNIQUE (doctor_id, slot_date, start_time, end_time),
 
     INDEX idx_slot_availability
-        (doctor_id, slot_date, status)
+        (doctor_id, slot_date, status)  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE appointments (
+CREATE TABLE IF NOT EXISTS appointments (
     appointment_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     slot_id           BIGINT NOT NULL,
     patient_id        VARCHAR(36) NOT NULL,
@@ -228,7 +289,7 @@ CREATE TABLE appointments (
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE refund_ledger (
+CREATE TABLE IF NOT EXISTS refund_ledger (
     refund_id       BIGINT AUTO_INCREMENT PRIMARY KEY,
     appointment_id  BIGINT NOT NULL UNIQUE,
     patient_id      VARCHAR(36) NOT NULL,

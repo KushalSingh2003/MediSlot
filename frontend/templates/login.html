@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSlot | Doctor Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+
+    <style>
+        /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
+           (variable names kept so the rest of the file stays the same) */
+        :root {
+            --pink-50:  #F6F1E7;
+            --pink-100: #EFE7D8;
+            --pink-200: #D8CBB3;
+            --pink-300: #7EA3FF;
+            --pink-400: #5A8BFF;
+            --pink-500: #2F6BFF;
+            --pink-600: #1B4FD6;
+            --plum:     #1E1E1C;
+            --plum-soft:#6b6455;
+            --ease: cubic-bezier(.22, 1, .36, 1);
+        }
+
+        body {
+            position: relative;
+            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', Arial, sans-serif;
+            color: var(--plum);
+            background:
+                radial-gradient(circle at 10% 15%, rgba(216, 203, 179, .9) 0, transparent 40%),
+                radial-gradient(circle at 90% 85%, rgba(47, 107, 255, .20) 0, transparent 42%),
+                radial-gradient(circle at 85% 10%, rgba(216, 203, 179, .6) 0, transparent 32%),
+                #EFE7D8;
+            background-color: #EFE7D8 !important;
+            background-attachment: fixed;
+            animation: pageFade .9s ease backwards;
+        }
+
+        /* drifting dot grid + floating orbs */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background-image: radial-gradient(rgba(30, 30, 28, .09) 1.5px, transparent 1.5px);
+            background-size: 30px 30px;
+            animation: gridDrift 30s linear infinite;
+        }
+        body::after {
+            content: "";
+            position: fixed;
+            width: 420px; height: 420px;
+            left: -120px; bottom: -120px;
+            border-radius: 50%;
+            background: rgba(47, 107, 255, .28);
+            filter: blur(80px);
+            z-index: 0;
+            pointer-events: none;
+            animation: orbOne 16s ease-in-out infinite;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            width: 340px; height: 340px;
+            right: 4%; top: 6%;
+            border-radius: 50%;
+            background: rgba(30, 30, 28, .10);
+            filter: blur(70px);
+            pointer-events: none;
+            animation: orbTwo 19s ease-in-out infinite;
+        }
+
+        .card {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 26px;
+            background: rgba(252, 250, 246, 0.94);
+            border: 1px solid #ffffff !important;
+            box-shadow: 0 24px 60px rgba(30, 30, 28, 0.22) !important;
+            padding: 36px 34px !important;
+            animation: cardIn 1s .15s var(--ease) backwards, cardFloat 7s 1.2s ease-in-out infinite;
+        }
+
+        /* flowing top border */
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 5px;
+            background: linear-gradient(90deg, #D8CBB3, #2F6BFF, #1E1E1C, #2F6BFF, #D8CBB3);
+            background-size: 300% 100%;
+            animation: gradientSlide 4s linear infinite;
+        }
+
+        /* rotating dashed ring in the corner */
+        .card::after {
+            content: "";
+            position: absolute;
+            width: 200px; height: 200px;
+            right: -90px; top: -90px;
+            border-radius: 50%;
+            border: 2px dashed rgba(47, 107, 255, .35);
+            pointer-events: none;
+            animation: spinSlow 22s linear infinite;
+        }
+
+        .card > * { position: relative; z-index: 1; }
+
+        .card h2 {
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--pink-500) !important;
+            background: linear-gradient(100deg, #2F6BFF 0%, #2F6BFF 40%, #1E1E1C 50%, #2F6BFF 60%, #2F6BFF 100%);
+            background-size: 250% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textSweep 6s 1.4s ease-in-out infinite;
+        }
+
+        .card h2::before {
+            content: "\F6E0";
+            font-family: "bootstrap-icons";
+            display: block;
+            width: 62px;
+            height: 62px;
+            line-height: 62px;
+            margin: 0 auto 14px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, var(--pink-300), var(--pink-500));
+            color: #ffffff;
+            -webkit-text-fill-color: #ffffff;
+            font-size: 28px;
+            font-weight: 400;
+            box-shadow: 0 12px 24px rgba(47, 107, 255, 0.4);
+            animation: iconPop .9s .35s var(--ease) backwards, iconFloat 4s 1.3s ease-in-out infinite, ringPulse 2.8s 1.3s ease-in-out infinite;
+        }
+
+        .card .text-muted {
+            color: var(--plum-soft) !important;
+            font-weight: 500;
+            animation: slideUp .8s .55s var(--ease) backwards;
+        }
+
+        .card > .text-center {
+            animation: slideUp .8s .3s var(--ease) backwards;
+        }
+
+        .form-label {
+            color: var(--plum);
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .form-control {
+            padding: 12px 16px;
+            border: 1.5px solid var(--pink-200);
+            border-radius: 14px;
+            background: var(--pink-50);
+            color: var(--plum);
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .form-control::placeholder {
+            color: #a89d86;
+        }
+
+        .form-control:hover {
+            border-color: var(--pink-300);
+        }
+
+        .form-control:focus {
+            background: #ffffff;
+            border-color: var(--pink-500);
+            box-shadow: 0 0 0 4px rgba(47, 107, 255, 0.22);
+            color: var(--plum);
+            transform: translateY(-2px);
+            animation: focusRing 1.8s ease-in-out infinite;
+        }
+
+        /* staggered entrance for form pieces */
+        .card form .mb-3:nth-child(1) { animation: slideRight .8s .65s var(--ease) backwards; }
+        .card form .mb-3:nth-child(2) { animation: slideRight .8s .8s var(--ease) backwards; }
+
+        .btn-primary {
+            position: relative;
+            overflow: hidden;
+            padding: 13px;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 15px;
+            background: linear-gradient(135deg, var(--pink-400), var(--pink-500));
+            box-shadow: 0 12px 24px rgba(47, 107, 255, 0.35);
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: slideUp .8s .95s var(--ease) backwards, softPulse 2.8s 2s ease-in-out infinite;
+        }
+
+        /* shine sweep on button */
+        .btn-primary::after {
+            content: "";
+            position: absolute;
+            top: 0; left: -120%;
+            width: 60%; height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .5), transparent);
+            transform: skewX(-20deg);
+            animation: btnShine 3.6s 1.6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background: linear-gradient(135deg, var(--pink-500), var(--pink-600));
+            transform: translateY(-2px);
+            box-shadow: 0 16px 30px rgba(47, 107, 255, 0.45);
+            animation: none;
+        }
+
+        .btn-primary:active {
+            transform: scale(.96);
+        }
+
+        .btn-primary:focus-visible {
+            outline: 3px solid rgba(126, 163, 255, 0.6);
+            outline-offset: 2px;
+        }
+
+        .card p.text-center {
+            color: var(--plum-soft);
+            font-size: 14px;
+            animation: fadeIn .9s 1.15s ease backwards;
+        }
+
+        .card a {
+            position: relative;
+            color: var(--pink-600);
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* animated underline on links */
+        .card a::after {
+            content: "";
+            position: absolute;
+            left: 0; bottom: -2px;
+            width: 100%; height: 2px;
+            background: var(--pink-500);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .4s var(--ease);
+        }
+
+        .card a:hover {
+            color: var(--pink-500);
+            text-decoration: none;
+        }
+        .card a:hover::after { transform: scaleX(1); }
+
+        /* Flash messages */
+
+        .alert {
+            border: none;
+            border-left: 5px solid transparent;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: alertIn .7s .5s var(--ease) backwards, alertNudge 4s 2s ease-in-out infinite;
+        }
+
+        .alert-danger {
+            background: #ffe9ec;
+            color: #c0304a;
+            border-left-color: #f2647b;
+        }
+
+        .alert-warning {
+            background: #fff4e0;
+            color: #a06512;
+            border-left-color: #f5b041;
+        }
+
+        .alert-success {
+            background: #e4f8ee;
+            color: #1a8f5c;
+            border-left-color: #4fcf92;
+        }
+
+        .alert-info {
+            background: #e6eeff;
+            color: #1B4FD6;
+            border-left-color: #2F6BFF;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 28px 22px !important;
+                border-radius: 22px;
+            }
+        }
+
+        /* ---------- Keyframes ---------- */
+        @keyframes pageFade    { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn      { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes cardIn      { from { opacity: 0; transform: translateY(60px) scale(.92); } to { opacity: 1; transform: none; } }
+        @keyframes cardFloat   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        @keyframes slideUp     { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+        @keyframes slideRight  { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+        @keyframes alertIn     { from { opacity: 0; transform: translateY(-18px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes alertNudge  { 0%, 90%, 100% { transform: translateX(0); } 93% { transform: translateX(-5px); } 96% { transform: translateX(5px); } }
+        @keyframes iconPop     { 0% { opacity: 0; transform: scale(.3) rotate(-90deg); } 70% { transform: scale(1.15) rotate(8deg); } 100% { opacity: 1; transform: none; } }
+        @keyframes iconFloat   { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-6px) rotate(-4deg); } }
+        @keyframes ringPulse   {
+            0%, 100% { box-shadow: 0 12px 24px rgba(47, 107, 255, .4), 0 0 0 0 rgba(47, 107, 255, .45); }
+            50%      { box-shadow: 0 12px 24px rgba(47, 107, 255, .4), 0 0 0 14px rgba(47, 107, 255, 0); }
+        }
+        @keyframes textSweep   { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
+        @keyframes gradientSlide { from { background-position: 0% 0; } to { background-position: 300% 0; } }
+        @keyframes spinSlow    { to { transform: rotate(360deg); } }
+        @keyframes gridDrift   { from { background-position: 0 0; } to { background-position: 60px 60px; } }
+        @keyframes orbOne      { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(90px, -70px); } }
+        @keyframes orbTwo      { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-80px, 60px); } }
+        @keyframes focusRing   { 0%, 100% { box-shadow: 0 0 0 4px rgba(47, 107, 255, .22); } 50% { box-shadow: 0 0 0 8px rgba(47, 107, 255, .08); } }
+        @keyframes softPulse   {
+            0%, 100% { box-shadow: 0 12px 24px rgba(47, 107, 255, .35), 0 0 0 0 rgba(47, 107, 255, .4); }
+            50%      { box-shadow: 0 12px 24px rgba(47, 107, 255, .35), 0 0 0 10px rgba(47, 107, 255, 0); }
+        }
+        @keyframes btnShine    { 0%, 55% { left: -120%; } 100% { left: 160%; } }
+
+        /* Respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: .01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- ===== Page loader (paste-anywhere block) ===== -->
+<style>
+  #msLoader {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #1E1E1C;
+    opacity: 1; visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #msLoader.ms-hide { opacity: 0; visibility: hidden; }
+
+  .ms-logo {
+    position: relative; display: grid; place-items: center;
+    width: 78px; height: 78px; border-radius: 22px;
+    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+    box-shadow: 0 10px 30px rgba(47,107,255,.55);
+    animation: ms-beat 1.4s ease-in-out infinite;
+  }
+  .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
+  .ms-logo::after {
+    content: ""; position: absolute; inset: -12px;
+    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
+    animation: ms-ring 1.4s ease-out infinite;
+  }
+  .ms-title {
+    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
+    letter-spacing: .3px;
+  }
+  .ms-ecg { width: 210px; height: 42px; }
+  .ms-ecg path {
+    fill: none; stroke: #2F6BFF; stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 340; stroke-dashoffset: 340;
+    animation: ms-ecg 1.8s linear infinite;
+  }
+
+  @keyframes ms-beat {
+    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
+    30% { transform: scale(1); }     45% { transform: scale(1.08); }
+  }
+  @keyframes ms-ring {
+    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
+  }
+  @keyframes ms-ecg {
+    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
+  }
+</style>
+
+<noscript><style>#msLoader { display: none !important; }</style></noscript>
+
+<div id="msLoader" aria-live="polite" aria-label="Loading">
+  <div class="ms-logo">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </div>
+  <div class="ms-title">MediSlot</div>
+  <svg class="ms-ecg" viewBox="0 0 220 44" aria-hidden="true">
+    <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    var loader = document.getElementById("msLoader");
+    if (!loader) return;
+    var MIN_VISIBLE = 600;                 // ms, so it never just flashes
+    var startedAt = Date.now();
+
+    function hide() {
+      var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
+      setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
+    }
+    function show() {
+      startedAt = Date.now();
+      loader.classList.remove("ms-hide");
+    }
+
+    // hide when the page finishes loading (safety timeout included)
+    window.addEventListener("load", hide);
+    setTimeout(hide, 6000);
+
+    // back/forward cache can restore the page with the loader stuck on
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) loader.classList.add("ms-hide");
+    });
+
+    // show it again when leaving for another page
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[href]");
+      if (!a || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (a.target === "_blank" || a.hasAttribute("download")) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;
+      show();
+    });
+    document.addEventListener("submit", function (e) {
+      if (!e.defaultPrevented) show();   // respects a cancelled confirm()
+    });
+  })();
+</script>
+<!-- ===== /Page loader ===== -->
+
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+    <div class="card shadow border-0 p-4" style="width: 420px;">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">MediSlot</h2>
+            <p class="text-muted">Doctor Portal</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="mb-3">
+                <label class="form-label">Email address</label>
+                <input type="email" name="email" class="form-control"
+                       placeholder="doctor@example.com" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control"
+                       placeholder="Enter your password" required>
+            </div>
+
+            <button class="btn btn-primary w-100" type="submit">
+                Sign In
+            </button>
+        </form>
+
+        <p class="text-center mt-3 mb-0">
+            Don't have an account?
+            <a href="{{ url_for('auth.register') }}">Register</a>
+        </p>
+    </div>
+</div>
+
+</body>
+</html>

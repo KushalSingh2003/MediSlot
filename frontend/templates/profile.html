@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MediSlot | My Profile</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        :root {
+            --pink-primary: #D8CBB3;
+            --pink-blush: #D8CBB3;
+            --pink-rose: #2F6BFF;
+            --pink-deep: #1E1E1C;
+            --pink-bg: #D8CBB3;
+            --pink-border: #D8CBB3;
+            --pink-text: #1E1E1C;
+            --pink-muted: rgba(30, 30, 28, 0.65);
+            --pink-shadow: 0 6px 20px rgba(47, 107, 255, 0.08);
+            --pink-shadow-hover: 0 12px 28px rgba(47, 107, 255, 0.16);
+            --motion-ease: cubic-bezier(.22, 1, .36, 1);
+        }
+
+        html, body {
+            background: linear-gradient(180deg, #D8CBB3 0%, #FFFFFF 100%) !important;
+            color: var(--pink-text) !important;
+            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .dashboard-wrapper {
+            display: flex !important;
+            min-height: 100vh;
+            background: transparent !important;
+            animation: pageReveal 0.55s var(--motion-ease) both;
+        }
+
+        /* ---------- Sidebar ---------- */
+        .sidebar {
+            width: 260px !important;
+            flex-shrink: 0;
+            background: linear-gradient(180deg, #FFFFFF 0%, #D8CBB3 100%) !important;
+            border-right: 1px solid var(--pink-border) !important;
+            box-shadow: 4px 0 24px rgba(47, 107, 255, 0.18);
+            padding: 24px 16px !important;
+            display: flex !important;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            animation: sidebarReveal 0.6s var(--motion-ease) both;
+        }
+
+        .sidebar .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--pink-rose) !important;
+            padding: 6px 12px 22px;
+            letter-spacing: 0.3px;
+        }
+
+        .sidebar .brand i {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1E1E1C, #2F6BFF);
+            color: #FFFFFF !important;
+            font-size: 1.2rem;
+            box-shadow: 0 6px 14px rgba(47, 107, 255, 0.28);
+        }
+
+        .sidebar-label {
+            font-size: 0.7rem !important;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            color: var(--pink-muted) !important;
+            padding: 6px 14px;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .sidebar-nav .nav-item {
+            animation: navItemReveal 0.45s var(--motion-ease) both;
+        }
+
+        .sidebar-nav .nav-item:nth-child(1) { animation-delay: 0.08s; }
+        .sidebar-nav .nav-item:nth-child(2) { animation-delay: 0.14s; }
+        .sidebar-nav .nav-item:nth-child(3) { animation-delay: 0.20s; }
+        .sidebar-nav .nav-item:nth-child(4) { animation-delay: 0.26s; }
+        .sidebar-nav .nav-item:nth-child(5) { animation-delay: 0.32s; }
+        .sidebar-nav .nav-item:nth-child(6) { animation-delay: 0.38s; }
+
+        .sidebar a.nav-item,
+        .sidebar .logout-btn {
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px !important;
+            border-radius: 12px !important;
+            color: var(--pink-text) !important;
+            font-weight: 500;
+            font-size: 0.95rem;
+            text-decoration: none !important;
+            border: 1px solid transparent;
+            background: transparent;
+            transition: all 0.25s ease;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .nav-item i {
+            color: var(--pink-rose);
+            font-size: 1.1rem;
+            transition: transform 0.25s ease;
+        }
+
+        .sidebar a.nav-item:hover,
+        .sidebar .logout-btn:hover {
+            background: var(--pink-blush) !important;
+            border-color: var(--pink-border);
+            color: var(--pink-rose) !important;
+            transform: translateX(3px);
+        }
+
+        .sidebar a.nav-item:hover i,
+        .sidebar .logout-btn:hover i {
+            transform: scale(1.12);
+        }
+
+        .sidebar a.nav-item.active {
+            background: linear-gradient(135deg, #1E1E1C 0%, #2F6BFF 100%) !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 8px 18px rgba(47, 107, 255, 0.25);
+        }
+
+        .sidebar a.nav-item.active i {
+            color: #FFFFFF !important;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid var(--pink-border);
+        }
+
+        .sidebar .logout-btn {
+            cursor: pointer;
+        }
+
+        /* ---------- Main + topbar ---------- */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            background: transparent !important;
+        }
+
+        .topbar {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 32px !important;
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--pink-border) !important;
+            box-shadow: 0 4px 16px rgba(47, 107, 255, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            animation: topbarReveal 0.5s 0.1s var(--motion-ease) both;
+        }
+
+        .topbar h5 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--pink-deep) !important;
+        }
+
+        .topbar p {
+            margin: 2px 0 0;
+            color: var(--pink-muted) !important;
+            font-size: 0.9rem;
+        }
+
+        .profile-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1E1E1C, #2F6BFF) !important;
+            color: #FFFFFF !important;
+            font-size: 1.3rem;
+            box-shadow: 0 6px 14px rgba(47, 107, 255, 0.3);
+            border: 2px solid #FFFFFF;
+            animation: avatarFloat 3.2s 0.8s ease-in-out infinite;
+        }
+
+        .dashboard-content {
+            padding: 28px 32px 40px !important;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .page-heading {
+            margin-bottom: 24px;
+            animation: fadeRise 0.55s 0.12s var(--motion-ease) both;
+        }
+
+        .page-heading h2 {
+            font-weight: 700;
+            color: var(--pink-deep) !important;
+            margin-bottom: 2px;
+        }
+
+        .page-heading p {
+            margin: 0;
+            color: var(--pink-muted) !important;
+        }
+
+        /* ---------- Cards ---------- */
+        .content-card {
+            background: #FFFFFF !important;
+            border: 1px solid var(--pink-border) !important;
+            border-radius: 20px !important;
+            box-shadow: var(--pink-shadow);
+            padding: 26px !important;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+            animation: cardReveal 0.65s var(--motion-ease) both;
+        }
+
+        .content-card:hover {
+            box-shadow: var(--pink-shadow-hover);
+            transform: translateY(-3px);
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
+            animation-delay: 0.08s;
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(2) {
+            animation-delay: 0.16s;
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) {
+            animation-delay: 0.24s;
+        }
+
+        .card-heading {
+            display: flex !important;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px dashed var(--pink-border);
+        }
+
+        .card-heading h5 {
+            margin: 0;
+            font-weight: 700;
+            color: var(--pink-deep) !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-heading h5 i {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: var(--pink-blush);
+            color: var(--pink-rose);
+            font-size: 1rem;
+            margin-right: 10px !important;
+            animation: iconPop 0.55s 0.2s var(--motion-ease) both;
+        }
+
+        .card-heading p {
+            margin: 4px 0 0;
+            color: var(--pink-muted) !important;
+            font-size: 0.88rem;
+        }
+
+        /* ---------- Hero profile card ---------- */
+        .content-card:has(.profile-picture-section) {
+            position: relative;
+            overflow: hidden;
+            padding: 0 !important;
+            margin-bottom: 24px !important;
+            animation-delay: 0.06s;
+        }
+
+        .content-card:has(.profile-picture-section)::before {
+            content: "";
+            display: block;
+            height: 110px;
+            background:
+                radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0) 45%),
+                linear-gradient(120deg, #D8CBB3 0%, #2F6BFF 55%, #2F6BFF 120%);
+        }
+
+        .content-card:has(.profile-picture-section) > .d-flex {
+            padding: 0 28px 26px;
+            align-items: flex-end !important;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px !important;
+        }
+
+        .profile-picture-section {
+            display: flex;
+            align-items: flex-end;
+            gap: 22px;
+            flex: 1 1 420px;
+            min-width: 0;
+        }
+
+        .profile-picture-preview {
+            width: 124px;
+            height: 124px;
+            flex-shrink: 0;
+            margin-top: -62px;
+            border-radius: 50%;
+            padding: 5px;
+            background: linear-gradient(135deg, #FFFFFF, #D8CBB3);
+            box-shadow: 0 10px 26px rgba(47, 107, 255, 0.28);
+            position: relative;
+            animation: avatarReveal 0.75s 0.2s var(--motion-ease) both;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .profile-picture-preview:hover {
+            transform: scale(1.045) rotate(2deg);
+            box-shadow: 0 14px 32px rgba(47, 107, 255, 0.34);
+        }
+
+        .profile-picture-preview img,
+        #profilePreview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #FFFFFF;
+            background: var(--pink-blush);
+            display: block;
+        }
+
+        .profile-picture-controls {
+            padding-top: 14px;
+            min-width: 0;
+        }
+
+        .profile-picture-controls h4 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--pink-deep);
+            margin: 0 0 2px;
+        }
+
+        .profile-picture-controls p {
+            margin: 0 0 10px;
+            color: var(--pink-muted);
+            font-size: 0.85rem;
+        }
+
+        .profile-picture-controls p#photoUploadStatus {
+            margin: 10px 0 0;
+            min-height: 1.1em;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--pink-rose);
+        }
+
+        #choosePhotoBtn,
+        #uploadPhotoBtn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-right: 6px;
+        }
+
+        #choosePhotoBtn {
+            background: #FFFFFF;
+            color: var(--pink-rose);
+            border: 1.5px solid var(--pink-primary);
+        }
+
+        #choosePhotoBtn:hover {
+            background: var(--pink-blush);
+            border-color: var(--pink-rose);
+            transform: translateY(-1px);
+        }
+
+        #uploadPhotoBtn {
+            background: linear-gradient(135deg, #1E1E1C, #2F6BFF);
+            color: #FFFFFF;
+            border: 1.5px solid transparent;
+            box-shadow: 0 8px 16px rgba(47, 107, 255, 0.25);
+        }
+
+        #uploadPhotoBtn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(47, 107, 255, 0.35);
+        }
+
+        #uploadPhotoBtn:disabled {
+            background: var(--pink-blush);
+            color: #1E1E1C;
+            box-shadow: none;
+            cursor: not-allowed;
+            border-color: var(--pink-border);
+        }
+
+        /* Name / email block in hero */
+        .content-card:has(.profile-picture-section) > .d-flex > div:last-child {
+            padding: 16px 22px;
+            background: var(--pink-bg);
+            border: 1px solid var(--pink-border);
+            border-radius: 16px;
+            min-width: 240px;
+        }
+
+        .content-card:has(.profile-picture-section) > .d-flex > div:last-child h4 {
+            color: var(--pink-deep);
+            font-weight: 700;
+            font-size: 1.15rem;
+        }
+
+        .content-card:has(.profile-picture-section) .text-muted {
+            color: var(--pink-muted) !important;
+            word-break: break-word;
+        }
+
+        /* ---------- Form layout ---------- */
+        .dashboard-content > form[method="POST"] {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 24px;
+            align-items: start;
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card {
+            margin: 0 !important;
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
+            grid-column: 1 / -1;
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(2) .col-md-6,
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) .col-md-6 {
+            width: 100%;
+        }
+
+        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) {
+            background: linear-gradient(135deg, #FFFFFF 0%, #D8CBB3 100%) !important;
+        }
+
+        .dashboard-content > form[method="POST"] > .d-flex {
+            grid-column: 1 / -1;
+            margin: 0 !important;
+            padding: 18px 22px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--pink-border);
+            border-radius: 18px;
+            box-shadow: var(--pink-shadow);
+            position: sticky;
+            bottom: 16px;
+            z-index: 5;
+            backdrop-filter: blur(8px);
+        }
+
+        /* ---------- Form controls ---------- */
+        .form-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--pink-deep);
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border: 1.5px solid var(--pink-border);
+            border-radius: 12px;
+            padding: 11px 14px;
+            background: #FFFFFF;
+            color: var(--pink-text);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            animation: controlReveal 0.45s var(--motion-ease) both;
+        }
+
+        .form-control:hover {
+            border-color: var(--pink-primary);
+        }
+
+        .form-control:focus {
+            border-color: var(--pink-rose) !important;
+            box-shadow: 0 0 0 0.25rem rgba(47, 107, 255, 0.45) !important;
+            background: #FFFFFF;
+            outline: none;
+        }
+
+        .form-control[readonly] {
+            background: var(--pink-bg);
+            color: var(--pink-muted);
+            border-style: dashed;
+            cursor: not-allowed;
+        }
+
+        .form-control[readonly]:focus {
+            box-shadow: none !important;
+            border-color: var(--pink-border) !important;
+        }
+
+        .form-control::placeholder {
+            color: rgba(30, 30, 28, 0.55);
+        }
+
+        .content-card small.text-muted {
+            display: block;
+            margin-top: 6px;
+            color: var(--pink-muted) !important;
+            font-size: 0.78rem;
+        }
+
+        /* ---------- Buttons ---------- */
+        .btn {
+            border-radius: 12px;
+            padding: 10px 22px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #1E1E1C 0%, #2F6BFF 100%) !important;
+            background-size: 200% 100% !important;
+            border: none !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 8px 18px rgba(47, 107, 255, 0.28);
+            transition: background-position 0.4s ease, transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-position: 100% 0;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(47, 107, 255, 0.38);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline-secondary {
+            background: #FFFFFF !important;
+            color: var(--pink-rose) !important;
+            border: 1.5px solid var(--pink-primary) !important;
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--pink-blush) !important;
+            border-color: var(--pink-rose) !important;
+            color: var(--pink-deep) !important;
+            transform: translateY(-2px);
+        }
+
+        /* ---------- Badges ---------- */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 0.74rem;
+            letter-spacing: 0.3px;
+            border: 1px solid transparent;
+        }
+
+        .badge.bg-success {
+            background-color: #D8CBB3 !important;
+            color: #1E1E1C !important;
+            border-color: #D8CBB3;
+        }
+
+        /* ---------- Alerts ---------- */
+        .alert {
+            border-radius: 14px;
+            border: 1px solid var(--pink-border);
+            box-shadow: var(--pink-shadow);
+            padding: 14px 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            animation: fadeRise 0.5s var(--motion-ease) both;
+        }
+
+        .alert-success {
+            background: #D8CBB3;
+            color: #1E1E1C;
+            border-color: #D8CBB3;
+        }
+
+        .alert-danger {
+            background: #FFEBEE;
+            color: #C62828;
+            border-color: #FFCDD2;
+        }
+
+        .alert-warning {
+            background: #FFF3E0;
+            color: #E65100;
+            border-color: #FFE0B2;
+        }
+
+        .alert-info {
+            background: rgba(47, 107, 255, 0.12);
+            color: #1E1E1C;
+            border-color: #2F6BFF;
+        }
+
+        .btn-close:focus {
+            box-shadow: 0 0 0 0.2rem rgba(47, 107, 255, 0.5);
+        }
+
+        /* ---------- Misc ---------- */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--pink-primary);
+            border-radius: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--pink-bg);
+        }
+
+        a:focus-visible,
+        button:focus-visible {
+            outline: 2px solid var(--pink-rose);
+            outline-offset: 2px;
+        }
+
+        @keyframes pageReveal {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes sidebarReveal {
+            from { opacity: 0; transform: translateX(-14px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes navItemReveal {
+            from { opacity: 0; transform: translateX(-8px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes topbarReveal {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeRise {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes cardReveal {
+            from { opacity: 0; transform: translateY(22px) scale(0.99); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes avatarReveal {
+            from { opacity: 0; transform: scale(0.82) rotate(-8deg); }
+            to { opacity: 1; transform: scale(1) rotate(0); }
+        }
+
+        @keyframes avatarFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes iconPop {
+            from { opacity: 0; transform: scale(0.72); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes controlReveal {
+            from { opacity: 0.75; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 991.98px) {
+            .dashboard-wrapper {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100% !important;
+                height: auto;
+                position: relative;
+                padding: 16px !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--pink-border) !important;
+            }
+
+            .sidebar-nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .sidebar a.nav-item {
+                width: auto;
+                padding: 9px 12px !important;
+                font-size: 0.88rem;
+            }
+
+            .sidebar-bottom {
+                margin-top: 12px;
+            }
+
+            .sidebar .logout-btn {
+                width: auto;
+            }
+
+            .topbar {
+                position: relative;
+            }
+
+            .dashboard-content > form[method="POST"] {
+                grid-template-columns: minmax(0, 1fr);
+            }
+
+            .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
+                grid-column: auto;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .topbar,
+            .dashboard-content {
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+
+            .content-card {
+                padding: 18px !important;
+            }
+
+            .content-card:has(.profile-picture-section) > .d-flex {
+                padding: 0 18px 20px;
+                justify-content: center;
+            }
+
+            .profile-picture-section {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-picture-controls {
+                padding-top: 0;
+            }
+
+            #choosePhotoBtn,
+            #uploadPhotoBtn {
+                margin: 4px;
+            }
+
+            .content-card:has(.profile-picture-section) > .d-flex > div:last-child {
+                width: 100%;
+                text-align: center;
+            }
+
+            .dashboard-content > form[method="POST"] > .d-flex {
+                position: static;
+                flex-direction: column-reverse;
+            }
+
+            .dashboard-content > form[method="POST"] > .d-flex .btn {
+                width: 100%;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                animation-delay: 0s !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+
+            .content-card:hover,
+            .profile-picture-preview:hover,
+            .sidebar a.nav-item:hover,
+            .sidebar .logout-btn:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+
+<body style="background: linear-gradient(180deg, #D8CBB3 0%, #FFFFFF 100%); color: #1E1E1C; margin: 0;">
+    <!-- ===== Page loader (paste-anywhere block) ===== -->
+<style>
+  #msLoader {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #1E1E1C;
+    opacity: 1; visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #msLoader.ms-hide { opacity: 0; visibility: hidden; }
+
+  .ms-logo {
+    position: relative; display: grid; place-items: center;
+    width: 78px; height: 78px; border-radius: 22px;
+    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+    box-shadow: 0 10px 30px rgba(47,107,255,.55);
+    animation: ms-beat 1.4s ease-in-out infinite;
+  }
+  .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
+  .ms-logo::after {
+    content: ""; position: absolute; inset: -12px;
+    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
+    animation: ms-ring 1.4s ease-out infinite;
+  }
+  .ms-title {
+    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
+    letter-spacing: .3px;
+  }
+  .ms-ecg { width: 210px; height: 42px; }
+  .ms-ecg path {
+    fill: none; stroke: #2F6BFF; stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 340; stroke-dashoffset: 340;
+    animation: ms-ecg 1.8s linear infinite;
+  }
+
+  @keyframes ms-beat {
+    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
+    30% { transform: scale(1); }     45% { transform: scale(1.08); }
+  }
+  @keyframes ms-ring {
+    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
+  }
+  @keyframes ms-ecg {
+    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
+  }
+</style>
+
+<noscript><style>#msLoader { display: none !important; }</style></noscript>
+
+<div id="msLoader" aria-live="polite" aria-label="Loading">
+  <div class="ms-logo">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </div>
+  <div class="ms-title">MediSlot</div>
+  <svg class="ms-ecg" viewBox="0 0 220 44" aria-hidden="true">
+    <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    var loader = document.getElementById("msLoader");
+    if (!loader) return;
+    var MIN_VISIBLE = 600;                 // ms, so it never just flashes
+    var startedAt = Date.now();
+
+    function hide() {
+      var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
+      setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
+    }
+    function show() {
+      startedAt = Date.now();
+      loader.classList.remove("ms-hide");
+    }
+
+    // hide when the page finishes loading (safety timeout included)
+    window.addEventListener("load", hide);
+    setTimeout(hide, 6000);
+
+    // back/forward cache can restore the page with the loader stuck on
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) loader.classList.add("ms-hide");
+    });
+
+    // show it again when leaving for another page
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[href]");
+      if (!a || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (a.target === "_blank" || a.hasAttribute("download")) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;
+      show();
+    });
+    document.addEventListener("submit", function (e) {
+      if (!e.defaultPrevented) show();   // respects a cancelled confirm()
+    });
+  })();
+</script>
+<!-- ===== /Page loader ===== -->
+
+<div class="dashboard-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <i class="bi bi-heart-pulse-fill"></i>
+            <span>MediSlot</span>
+        </div>
+
+        <div class="sidebar-label">MAIN MENU</div>
+
+        <nav class="sidebar-nav">
+
+            <a href="{{ url_for('dashboard.index') }}" class="nav-item">
+                <i class="bi bi-grid"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="{{ url_for('profile.index') }}" class="nav-item active">
+                <i class="bi bi-person"></i>
+                <span>My Profile</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <i class="bi bi-clipboard2-pulse"></i>
+                <span>Consultation Types</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <i class="bi bi-calendar-x"></i>
+                <span>Blackout Dates</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <i class="bi bi-calendar-week"></i>
+                <span>My Schedule</span>
+            </a>
+
+            <a href="#" class="nav-item">
+                <i class="bi bi-calendar-check"></i>
+                <span>Appointments</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <form action="{{ url_for('auth.logout') }}" method="POST">
+                <button type="submit" class="nav-item logout-btn">
+                    <i class="bi bi-box-arrow-left"></i>
+                    <span>Logout</span>
+                </button>
+            </form>
+        </div>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <header class="topbar">
+
+            <div>
+                <h5 style="color: #1E1E1C; font-weight: 700;">My Profile</h5>
+                <p style="color: rgba(30, 30, 28, 0.65);">Manage your professional information.</p>
+            </div>
+
+            <div class="topbar-right">
+                <div class="profile-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+            </div>
+
+        </header>
+
+
+        <section class="dashboard-content">
+
+            <div class="page-heading">
+                <div>
+                    <h2 style="color: #1E1E1C; font-weight: 700;">Doctor Profile</h2>
+                    <p style="color: rgba(30, 30, 28, 0.65);">Manage your registered information.</p>
+                </div>
+            </div>
+
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show"
+                             role="alert">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+
+            <!-- Profile Header -->
+            <div class="content-card mb-4">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="profile-picture-section">
+    <div class="profile-picture-preview">
+        <img
+    id="profilePreview"
+    src="{{ profile.photoUrl or url_for('static', filename='images/default-profile.png') }}"
+    alt="Profile Picture"
+>
+    </div>
+
+    <div class="profile-picture-controls">
+        <h4>Profile Picture</h4>
+        <p>Upload a JPG, PNG, or WebP image.</p>
+
+        <input
+            type="file"
+            id="photoInput"
+            accept="image/jpeg,image/png,image/webp"
+            hidden
+        >
+
+        <button type="button" id="choosePhotoBtn">
+            Change Picture
+        </button>
+
+        <button type="button" id="uploadPhotoBtn" disabled>
+            Upload Picture
+        </button>
+
+        <p id="photoUploadStatus"></p>
+    </div>
+</div>
+
+                    <div>
+                        <h4 class="mb-1">
+                            {{ profile.get('fullName', 'Doctor') }}
+                        </h4>
+
+                        <p class="text-muted mb-1">
+                            {{ profile.get('email', 'N/A') }}
+                        </p>
+
+                        <span class="badge bg-success">
+                            Registered Doctor
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Editable Profile Form -->
+            <form method="POST"
+                  action="{{ url_for('profile.index') }}">
+
+                <!-- Personal Information -->
+                <div class="content-card mb-4">
+
+                    <div class="card-heading">
+                        <div>
+                            <h5>
+                                <i class="bi bi-person me-2"></i>
+                                Personal Information
+                            </h5>
+
+                            <p>Update your basic contact information.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Full Name
+                            </label>
+
+                            <input type="text"
+                                   name="fullName"
+                                   class="form-control"
+                                   value="{{ profile.get('fullName', '') }}"
+                                   maxlength="255"
+                                   required>
+                        </div>
+
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Email Address
+                            </label>
+
+                            <input type="email"
+                                   class="form-control"
+                                   value="{{ profile.get('email', '') }}"
+                                   readonly>
+
+                            <small class="text-muted">
+                                Email cannot currently be changed.
+                            </small>
+                        </div>
+
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Phone Number
+                            </label>
+
+                            <input type="tel"
+                                   name="phone"
+                                   class="form-control"
+                                   value="{{ profile.get('phone', '') }}"
+                                   required>
+                        </div>
+
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Doctor ID
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ profile.get('doctorId', '') }}"
+                                   readonly>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Professional Information -->
+                <div class="content-card mb-4">
+
+                    <div class="card-heading">
+                        <div>
+                            <h5>
+                                <i class="bi bi-briefcase me-2"></i>
+                                Professional Information
+                            </h5>
+
+                            <p>Update your professional experience.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Years of Experience
+                            </label>
+
+                            <input type="number"
+                                   name="yearsExperience"
+                                   class="form-control"
+                                   value="{{ profile.get('yearsExperience', 0) }}"
+                                   min="0"
+                                   max="80"
+                                   step="1"
+                                   required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label" for="languagesSpoken">
+                                Languages Spoken
+                            </label>
+
+                            <input type="text"
+                                   id="languagesSpoken"
+                                   name="languagesSpoken"
+                                   class="form-control"
+                                   value="{{ profile.get('languagesSpoken', [])|join(', ') }}"
+                                   placeholder="English, Hindi, Telugu">
+
+                            <small class="text-muted">
+                                Separate languages with commas.
+                            </small>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Profile Photo
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ 'Uploaded' if profile.get('photoKey') else 'Not uploaded' }}"
+                                   readonly>
+
+                            <small class="text-muted">
+                                Photo management will be implemented separately.
+                            </small>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Account Information -->
+                <div class="content-card mb-4">
+
+                    <div class="card-heading">
+                        <div>
+                            <h5>
+                                <i class="bi bi-shield-check me-2"></i>
+                                Account Information
+                            </h5>
+
+                            <p>Your MediSlot account details.</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Account Created
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="{{ profile.get('createdAt', 'N/A') }}"
+                                   readonly>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Account Status
+                            </label>
+
+                            <input type="text"
+                                   class="form-control"
+                                   value="Registered"
+                                   readonly>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-end gap-3 mb-4">
+
+                    <a href="{{ url_for('dashboard.index') }}"
+                       class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-2"></i>
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+<script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+
+</body>
+</html>
