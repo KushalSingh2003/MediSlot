@@ -1229,3 +1229,8 @@ Outputs:
     Value: !GetAtt DoctorShiftsFunction.Arn
     Export:
       Name: !Sub '${AWS::StackName}-DoctorShiftsFunctionArn'
+  PatientAppointmentsFunctionArn:
+    Description: ARN of the patient appointments Lambda function
+    Value: !GetAtt PatientAppointmentsFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-PatientAppointmentsFunctionArn'
