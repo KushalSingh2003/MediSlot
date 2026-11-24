@@ -1,0 +1,1 @@
+print("Patient appointments initialized.")

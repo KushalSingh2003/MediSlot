@@ -259,7 +259,8 @@ jobs:
             appointment-outcome \
             slot-template-admin \
             slot-materializer \
-            doctor-shift
+            doctor-shift \
+            patient-appointments
           do
             test -f "lambda/${function}/app.py" || {
               echo "Missing lambda/${function}/app.py"
@@ -317,7 +318,8 @@ jobs:
             appointment-outcome \
             slot-template-admin \
             slot-materializer \
-            doctor-shift
+            doctor-shift \
+            patient-appointments
           do
             (
               cd "lambda/${function}"
@@ -488,7 +490,8 @@ jobs:
             appointment-outcome \
             slot-template-admin \
             slot-materializer \
-            doctor-shift
+            doctor-shift \
+            patinet-appointments
           do
             echo "Checking ${artifact}.zip"
             aws s3api head-object \

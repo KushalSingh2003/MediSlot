@@ -142,6 +142,26 @@ Resources:
       RestApiId: !Ref MediSlotApi
       ParentId: !Ref DoctorIdResource
       PathPart: slots
+    PatientAppointmentsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref PatientMeResource
+      PathPart: appointments
+
+  PatientAppointmentIdResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref PatientAppointmentsResource
+      PathPart: '{appointmentId}'
+
+  PatientRefundsResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref MediSlotApi
+      ParentId: !Ref PatientMeResource
+      PathPart: refunds
   # --------------------------------------------------
   # LAMBDA PERMISSIONS
   # --------------------------------------------------
@@ -938,6 +958,17 @@ Resources:
           - LambdaArn:
               Fn::ImportValue:
                 Fn::Sub: '${ProjectName}-${Env}-application-AppointmentOutcomeFunctionArn'
+  PatientAppointmentsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: '${ProjectName}-${Env}-application-PatientAppointmentsFunctionArn'
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub
+        - 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/*/patients/me/*'
+        - ApiId: !Ref MediSlotApi
 
   # ==================================================
   # NEW: SLOT TEMPLATES, SHIFTS AND BREAKS
@@ -1229,6 +1260,11 @@ Resources:
     - DoctorShiftsGetMethod
     - DoctorShiftGetMethod
     - DoctorShiftsDeleteMethod
+    - PatientAppointmentsPostMethod
+    - PatientAppointmentsGetMethod
+    - PatientAppointmentGetMethod
+    - PatientAppointmentDeleteMethod
+    - PatientRefundsGetMethod
     
     Properties:
       RestApiId: !Ref MediSlotApi

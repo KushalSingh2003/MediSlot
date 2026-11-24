@@ -14,6 +14,11 @@ Parameters:
     AllowedValues: [ 'true', 'false' ]
     Default: 'true'
     Description: Interface endpoints cost roughly 7 USD per month each
+  NotificationEmail:
+    Type: String
+    Default: kushalsingh99807@gmail.com
+    Description: Fixed team inbox for booking and cancellation event notifications
+  
 
 # it is like a cost control switch, but the interface endpoints are required for Lambda to reach SSM, EventBridge, Step Functions and SNS from private subnets
 Conditions:
@@ -253,6 +258,121 @@ Resources:
       SubnetIds: [ !Ref PrivateSubnetA, !Ref PrivateSubnetB ]
       SecurityGroupIds: [ !Ref EndpointSg ]
       PrivateDnsEnabled: true
+    RefundPolicyParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/${Env}/refunds/policy'
+      Type: String
+      Tier: Standard
+      Description: Refund percentages and cancellation thresholds
+      Value: >-
+        {"patient_cancellation":{"full_refund_above_hours":48,"refund_75_at_or_above_hours":24,"refund_50_at_or_above_hours":6,"refund_percentages":{"above_48_hours":100,"from_24_to_48_hours":75,"from_6_to_under_24_hours":50,"under_6_hours":0}},"doctor_cancellation_refund_percent":100,"no_show_refund_percent":0}
+
+  MediSlotAppointmentEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub '${ProjectName}-${Env}-appointment-events'
+
+  AppointmentEventsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-${Env}-appointment-events'
+
+  AppointmentEventsEmailSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref AppointmentEventsTopic
+      Protocol: email
+      Endpoint: !Ref NotificationEmail
+
+  AppointmentBookedRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub '${ProjectName}-${Env}-appointment-booked'
+      EventBusName: !Ref MediSlotAppointmentEventBus
+      EventPattern:
+        source:
+        - medislot.appointments
+        detail-type:
+        - AppointmentBooked
+      Targets:
+      - Id: AppointmentBookedSnsTarget
+        Arn: !Ref AppointmentEventsTopic
+        SnsParameters:
+          Subject: Appointment booked
+        InputTransformer:
+          InputPathsMap:
+            appointmentId: $.detail.appointmentId
+            patientId: $.detail.patientId
+          InputTemplate: '"Appointment <appointmentId> booked for patient <patientId>."'
+  SlotSeatFreedRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub '${ProjectName}-${Env}-slot-seat-freed'
+      EventBusName: !Ref MediSlotAppointmentEventBus
+      EventPattern:
+        source:
+        - medislot.appointments
+        detail-type:
+        - SlotSeatFreed
+      Targets:
+      - Id: SlotSeatFreedSnsTarget
+        Arn: !Ref AppointmentEventsTopic
+        SnsParameters:
+          Subject: Appointment slot seat freed
+        InputTransformer:
+          InputPathsMap:
+            slotId: $.detail.slotId
+            appointmentId: $.detail.appointmentId
+          InputTemplate: '"A seat is available again for slot <slotId> after appointment <appointmentId> was cancelled."'
+
+  AppointmentCancelledRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub '${ProjectName}-${Env}-appointment-cancelled'
+      EventBusName: !Ref MediSlotAppointmentEventBus
+      EventPattern:
+        source:
+        - medislot.appointments
+        detail-type:
+        - AppointmentCancelled
+      Targets:
+      - Id: AppointmentCancelledSnsTarget
+        Arn: !Ref AppointmentEventsTopic
+        SnsParameters:
+          Subject: Appointment cancelled
+        InputTransformer:
+          InputPathsMap:
+            appointmentId: $.detail.appointmentId
+            refundAmount: $.detail.refundAmount
+          InputTemplate: '"Appointment <appointmentId> cancelled. Refund recorded: <refundAmount>."'
+
+  AppointmentEventsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+      - !Ref AppointmentEventsTopic
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: AllowBookedRuleToPublish
+          Effect: Allow
+          Principal:
+            Service: events.amazonaws.com
+          Action: sns:Publish
+          Resource: !Ref AppointmentEventsTopic
+          Condition:
+            ArnEquals:
+              aws:SourceArn: !GetAtt AppointmentBookedRule.Arn
+        - Sid: AllowCancelledRuleToPublish
+          Effect: Allow
+          Principal:
+            Service: events.amazonaws.com
+          Action: sns:Publish
+          Resource: !Ref AppointmentEventsTopic
+          Condition:
+            ArnEquals:
+              aws:SourceArn: !GetAtt AppointmentCancelledRule.Arn
 
 Outputs:
   VpcId:
@@ -274,3 +394,12 @@ Outputs:
   RdsSgId:
     Value: !GetAtt RdsSg.GroupId
     Export: { Name: !Sub '${AWS::StackName}-RdsSgId' }
+  AppointmentEventBusName:
+    Value: !Ref MediSlotAppointmentEventBus
+    Export:
+      Name: !Sub '${ProjectName}-${Env}-AppointmentEventBusName'
+
+  AppointmentEventBusArn:
+    Value: !GetAtt MediSlotAppointmentEventBus.Arn
+    Export:
+      Name: !Sub '${ProjectName}-${Env}-AppointmentEventBusArn'

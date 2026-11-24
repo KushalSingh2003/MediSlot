@@ -254,6 +254,7 @@ Resources:
           - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
         SecurityGroupIds:
         - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+  
   # ==========================================================================
   # Refresh Lambda (no VPC)
   # ==========================================================================
@@ -937,6 +938,50 @@ Resources:
 
             Resource:
             - !Sub 'arn:${AWS::Partition}:s3:::${ArtifactBucket}/${ArtifactPrefix}/frontend.zip'
+  PatientAppointmentsLogGroup:
+    Type: AWS::Logs::LogGroup
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+        - id: W84
+          reason: Customer-managed KMS keys are not permitted in this project.
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-${Env}-patient-appointments'
+      RetentionInDays: !Ref LogRetentionDays
+
+  PatientAppointmentsFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub '${ProjectName}-${Env}-patient-appointments'
+      Description: Handle patient appointment booking, listing, cancellation, and refunds
+      Runtime: python3.12
+      Architectures: [ x86_64 ]
+      Handler: app.lambda_handler
+      Role:
+        Fn::ImportValue: !Sub '${ProjectName}-${Env}-iam-PatientAppointmentsRoleArn'
+      Code:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Sub '${ArtifactPrefix}/patient-appointments.zip'
+      Layers:
+      - !Ref AuthDependenciesLayer
+      MemorySize: 512
+      Timeout: 25
+      TracingConfig:
+        Mode: Active
+      LoggingConfig:
+        LogFormat: JSON
+        LogGroup: !Ref PatientAppointmentsLogGroup
+      Environment:
+        Variables:
+          ENV: !Ref Env
+          SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+      VpcConfig:
+        SubnetIds: !Split
+          - ','
+          - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-PrivateSubnetIds'
+        SecurityGroupIds:
+        - Fn::ImportValue: !Sub '${ProjectName}-${Env}-network-LambdaSgId'
+  
     # ============================================================
     # MEDISLOT FRONTEND EC2
     # ============================================================
