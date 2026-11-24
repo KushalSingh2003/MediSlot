@@ -142,7 +142,7 @@ Resources:
       RestApiId: !Ref MediSlotApi
       ParentId: !Ref DoctorIdResource
       PathPart: slots
-    PatientAppointmentsResource:
+  PatientAppointmentsResource:
     Type: AWS::ApiGateway::Resource
     Properties:
       RestApiId: !Ref MediSlotApi
