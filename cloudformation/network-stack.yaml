@@ -258,7 +258,7 @@ Resources:
       SubnetIds: [ !Ref PrivateSubnetA, !Ref PrivateSubnetB ]
       SecurityGroupIds: [ !Ref EndpointSg ]
       PrivateDnsEnabled: true
-    RefundPolicyParameter:
+  RefundPolicyParameter:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub '/${ProjectName}/${Env}/refunds/policy'
