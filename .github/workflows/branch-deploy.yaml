@@ -491,7 +491,7 @@ jobs:
             slot-template-admin \
             slot-materializer \
             doctor-shift \
-            patinet-appointments
+            patient-appointments
           do
             echo "Checking ${artifact}.zip"
             aws s3api head-object \
