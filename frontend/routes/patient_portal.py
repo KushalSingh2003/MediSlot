@@ -136,6 +136,221 @@ def doctor_detail(doctor_id):
         flash("Doctor not found.", "danger")
         return redirect(url_for("patient.dashboard"))
     return render_template("patient_doctor.html", doctor=doctor, slots=slots, from_date=from_date, to_date=to_date)
+def _response_data(api_response):
+    try:
+        data = api_response.json()
+        return data if isinstance(data, dict) else {}
+    except ValueError:
+        return {}
+
+
+def _api_message(api_response, fallback):
+    return _response_data(api_response).get("message", fallback)
+
+
+@patient_bp.route("/appointments/book/<int:slot_id>", methods=["GET", "POST"])
+@patient_login_required
+def book_appointment(slot_id):
+    if request.method == "GET":
+        # Generate once for this booking attempt and put it in the form.
+        return render_template(
+            "patient_booking_confirm.html",
+            slot_id=slot_id,
+            idempotency_key=str(uuid.uuid4()),
+        )
+
+    raw_key = request.form.get("idempotency_key", "").strip()
+    try:
+        idempotency_key = str(uuid.UUID(raw_key))
+    except (ValueError, TypeError, AttributeError):
+        flash("Invalid booking attempt. Please try again.", "danger")
+        return redirect(
+            url_for("patient.book_appointment", slot_id=slot_id)
+        )
+
+    try:
+        api_response = APIClient.request(
+            "POST",
+            "/patients/me/appointments",
+            json={"slot_id": slot_id},
+            headers={"Idempotency-Key": idempotency_key},
+        )
+    except requests.RequestException:
+        current_app.logger.exception("Booking request could not be confirmed")
+        flash(
+            "We couldn't confirm the booking. Retry this same form to check it.",
+            "warning",
+        )
+        # Preserve the key: the API may already have completed the booking.
+        return render_template(
+            "patient_booking_confirm.html",
+            slot_id=slot_id,
+            idempotency_key=idempotency_key,
+        )
+
+    data = _response_data(api_response)
+
+    if api_response.status_code in (200, 201):
+        appointment = data.get("appointment", data)
+        appointment_id = appointment.get("appointment_id")
+
+        flash("Appointment booked successfully.", "success")
+        if appointment_id:
+            return redirect(
+                url_for(
+                    "patient.appointment_detail",
+                    appointment_id=appointment_id,
+                )
+            )
+        return redirect(url_for("patient.appointments"))
+
+    flash(
+        _api_message(api_response, "Unable to book this slot."),
+        "danger",
+    )
+    # Keep the same key if the patient retries this same attempt.
+    return render_template(
+        "patient_booking_confirm.html",
+        slot_id=slot_id,
+        idempotency_key=idempotency_key,
+    )
+
+
+@patient_bp.route("/appointments")
+@patient_login_required
+def appointments():
+    try:
+        api_response = APIClient.request(
+            "GET",
+            "/patients/me/appointments",
+        )
+    except requests.RequestException:
+        current_app.logger.exception("Could not load patient appointments")
+        flash("Unable to connect to MediSlot.", "danger")
+        return render_template(
+            "patient_appointments.html",
+            appointments=[],
+        )
+
+    data = _response_data(api_response)
+    if api_response.status_code != 200:
+        flash(
+            _api_message(api_response, "Unable to load appointments."),
+            "danger",
+        )
+        items = []
+    else:
+        items = data.get("appointments", [])
+
+    return render_template(
+        "patient_appointments.html",
+        appointments=items,
+    )
+
+
+@patient_bp.route("/appointments/<int:appointment_id>")
+@patient_login_required
+def appointment_detail(appointment_id):
+    try:
+        api_response = APIClient.request(
+            "GET",
+            f"/patients/me/appointments/{appointment_id}",
+        )
+    except requests.RequestException:
+        current_app.logger.exception("Could not load appointment details")
+        flash("Unable to connect to MediSlot.", "danger")
+        return redirect(url_for("patient.appointments"))
+
+    data = _response_data(api_response)
+    if api_response.status_code != 200:
+        flash(
+            _api_message(api_response, "Appointment not found."),
+            "danger",
+        )
+        return redirect(url_for("patient.appointments"))
+
+    return render_template(
+        "patient_appointment_detail.html",
+        appointment=data.get("appointment", data),
+    )
+
+
+@patient_bp.route(
+    "/appointments/<int:appointment_id>/cancel",
+    methods=["POST"],
+)
+@patient_login_required
+def cancel_appointment(appointment_id):
+    try:
+        api_response = APIClient.request(
+            "DELETE",
+            f"/patients/me/appointments/{appointment_id}",
+        )
+    except requests.RequestException:
+        current_app.logger.exception("Could not confirm appointment cancellation")
+        flash(
+            "We couldn't confirm the cancellation. Check the appointment status "
+            "before trying again.",
+            "warning",
+        )
+        return redirect(
+            url_for(
+                "patient.appointment_detail",
+                appointment_id=appointment_id,
+            )
+        )
+
+    data = _response_data(api_response)
+    if api_response.status_code == 200:
+        amount = data.get("refund_amount")
+        if amount is not None:
+            flash(
+                f"Appointment cancelled. Calculated refund: {amount}.",
+                "success",
+            )
+        else:
+            flash("Appointment cancelled successfully.", "success")
+    else:
+        flash(
+            _api_message(api_response, "Unable to cancel appointment."),
+            "danger",
+        )
+
+    return redirect(
+        url_for(
+            "patient.appointment_detail",
+            appointment_id=appointment_id,
+        )
+    )
+
+
+@patient_bp.route("/refunds")
+@patient_login_required
+def refunds():
+    try:
+        api_response = APIClient.request(
+            "GET",
+            "/patients/me/refunds",
+        )
+    except requests.RequestException:
+        current_app.logger.exception("Could not load patient refunds")
+        flash("Unable to connect to MediSlot.", "danger")
+        return render_template("patient_refunds.html", refunds=[])
+
+    data = _response_data(api_response)
+    if api_response.status_code != 200:
+        flash(
+            _api_message(api_response, "Unable to load refund history."),
+            "danger",
+        )
+        items = []
+    else:
+        items = data.get("refunds", [])
+
+    return render_template(
+        "patient_refunds.html",
+        refunds=items,
+    )
 
 
 @patient_bp.route("/logout", methods=["POST"])

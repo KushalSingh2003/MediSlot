@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+{% block title %}Appointment Details | MediSlot{% endblock %}
+{% block content %}
+<!-- ===== Page loader (paste-anywhere block) ===== -->
+<style>
+  #msLoader {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 2147483647;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #1E1E1C;
+    margin: 0; padding: 0;
+    opacity: 1; visibility: visible;
+    transition: opacity .6s ease, visibility .6s ease;
+  }
+  #msLoader.ms-hide { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .ms-logo {
+    position: relative; display: grid; place-items: center;
+    width: 78px; height: 78px; border-radius: 22px;
+    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+    box-shadow: 0 10px 30px rgba(47,107,255,.55);
+    animation: ms-beat 1.4s ease-in-out infinite;
+  }
+  .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
+  .ms-logo::after {
+    content: ""; position: absolute; inset: -12px;
+    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
+    animation: ms-ring 1.4s ease-out infinite;
+  }
+  .ms-title {
+    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
+    letter-spacing: .3px;
+  }
+  .ms-ecg { width: 210px; height: 42px; }
+  .ms-ecg path {
+    fill: none; stroke: #2F6BFF; stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 340; stroke-dashoffset: 340;
+    animation: ms-ecg 1.8s linear infinite;
+  }
+
+  @keyframes ms-beat {
+    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
+    30% { transform: scale(1); }     45% { transform: scale(1.08); }
+  }
+  @keyframes ms-ring {
+    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
+  }
+  @keyframes ms-ecg {
+    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
+  }
+</style>
+
+<noscript><style>#msLoader { display: none !important; }</style></noscript>
+
+<div id="msLoader" aria-live="polite" aria-label="Loading">
+  <div class="ms-logo">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </div>
+  <div class="ms-title">MediSlot</div>
+  <svg class="ms-ecg" viewBox="0 0 220 44" aria-hidden="true">
+    <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    var loader = document.getElementById("msLoader");
+    if (!loader) return;
+
+    // Attach directly to <body> so no parent container can trap the fixed overlay.
+    document.body.appendChild(loader);
+
+    var MIN_VISIBLE = 2200;               // ms the loader stays up at minimum
+    var startedAt = Date.now();
+
+    function hide() {
+      var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
+      setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
+    }
+    function show() {
+      startedAt = Date.now();
+      loader.classList.remove("ms-hide");
+    }
+
+    window.addEventListener("load", hide);
+    setTimeout(hide, 6000);   // safety net
+
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) loader.classList.add("ms-hide");
+    });
+
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[href]");
+      if (!a || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (a.target === "_blank" || a.hasAttribute("download")) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;
+      show();
+    });
+    document.addEventListener("submit", function (e) {
+      if (!e.defaultPrevented) show();   // a cancelled confirm() keeps the loader hidden
+    });
+  })();
+</script>
+<!-- ===== /Page loader ===== -->
+<style>
+    /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF */
+    :root {
+        --cp-ink: #1E1E1C;
+        --cp-ink-soft: #6b6455;
+        --cp-beige: #D8CBB3;
+        --cp-beige-pale: #F6F1E7;
+        --cp-blue: #2F6BFF;
+        --cp-blue-deep: #1B4FD6;
+        --cp-blue-light: #7EA3FF;
+        --cp-ease: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    body {
+        position: relative;
+        overflow-x: hidden;
+        color: var(--cp-ink);
+        background:
+            radial-gradient(1000px 600px at 100% -10%, rgba(47, 107, 255, .14), transparent 60%),
+            radial-gradient(900px 500px at 0% 40%, rgba(216, 203, 179, .6), transparent 60%),
+            linear-gradient(180deg, #F6F1E7 0%, #E9DFCB 100%) !important;
+        background-attachment: fixed !important;
+        animation: cpPageFade .9s ease backwards;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background-image: radial-gradient(rgba(30, 30, 28, .08) 1.5px, transparent 1.5px);
+        background-size: 30px 30px;
+        animation: cpGridDrift 30s linear infinite;
+    }
+    body::after {
+        content: "";
+        position: fixed;
+        width: 420px; height: 420px;
+        right: -140px; bottom: -140px;
+        border-radius: 50%;
+        background: rgba(47, 107, 255, .25);
+        filter: blur(80px);
+        z-index: -1;
+        pointer-events: none;
+        animation: cpOrb 18s ease-in-out infinite;
+    }
+
+    /* ---------- Back link ---------- */
+    .cp-back {
+        position: relative;
+        display: inline-block;
+        color: var(--cp-blue-deep);
+        font-weight: 700;
+        text-decoration: none;
+        animation: cpSlideRight .7s var(--cp-ease) backwards;
+        transition: transform .35s var(--cp-ease), color .3s ease;
+    }
+    .cp-back::after {
+        content: "";
+        position: absolute;
+        left: 0; bottom: -2px;
+        width: 100%; height: 2px;
+        background: var(--cp-blue);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform .4s var(--cp-ease);
+    }
+    .cp-back:hover { color: var(--cp-blue); transform: translateX(-6px); }
+    .cp-back:hover::after { transform: scaleX(1); }
+
+    /* ---------- Card ---------- */
+    .card.border-0.shadow-sm {
+        position: relative;
+        overflow: hidden;
+        max-width: 640px;
+        background: #FCFAF6;
+        border: 1px solid var(--cp-beige) !important;
+        border-radius: 22px;
+        box-shadow: 0 6px 22px rgba(30, 30, 28, .09) !important;
+        transition: transform .5s var(--cp-ease), box-shadow .5s var(--cp-ease), border-color .4s ease;
+        animation: cpCardIn .9s .2s var(--cp-ease) backwards;
+    }
+    .card.border-0.shadow-sm::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 5px;
+        background: linear-gradient(90deg, #D8CBB3, #2F6BFF, #1E1E1C, #2F6BFF, #D8CBB3);
+        background-size: 300% 100%;
+        animation: cpGradientSlide 4s linear infinite;
+    }
+    .card.border-0.shadow-sm::after {
+        content: "";
+        position: absolute;
+        width: 220px; height: 220px;
+        right: -90px; bottom: -90px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(47, 107, 255, .20), transparent 70%);
+        transition: transform .8s var(--cp-ease);
+        pointer-events: none;
+    }
+    .card.border-0.shadow-sm:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 36px rgba(47, 107, 255, .20) !important;
+        border-color: var(--cp-blue-light) !important;
+    }
+    .card.border-0.shadow-sm:hover::after { transform: scale(2.2); }
+    .card.border-0.shadow-sm > * { position: relative; z-index: 1; }
+
+    /* ---------- Heading ---------- */
+    .card.border-0.shadow-sm h2 {
+        font-weight: 800;
+        letter-spacing: -.5px;
+        color: var(--cp-ink);
+        background: linear-gradient(100deg, #1E1E1C 0%, #1E1E1C 40%, #2F6BFF 50%, #1E1E1C 60%, #1E1E1C 100%);
+        background-size: 250% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: cpSlideRight .8s .35s var(--cp-ease) backwards, cpTextSweep 6s 1.5s ease-in-out infinite;
+    }
+
+    /* ---------- Detail rows ---------- */
+    .cp-details { margin: 8px 0 0; padding: 0; }
+    .cp-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--cp-beige);
+        border-left: 4px solid var(--cp-blue);
+        transition: background .25s ease, transform .3s var(--cp-ease);
+        animation: cpRowIn .7s var(--cp-ease) backwards;
+    }
+    .cp-row:nth-child(1) { animation-delay: .6s; }
+    .cp-row:nth-child(2) { animation-delay: .7s; }
+    .cp-row:nth-child(3) { animation-delay: .8s; }
+    .cp-row:last-child { border-bottom: none; }
+    .cp-row:hover { background: var(--cp-beige-pale); transform: translateX(4px); }
+    .cp-row dt {
+        margin: 0;
+        font-size: .78rem;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        font-weight: 700;
+        color: var(--cp-ink-soft);
+    }
+    .cp-row dd {
+        margin: 0;
+        font-weight: 700;
+        color: var(--cp-ink);
+        text-align: right;
+    }
+    .cp-row.cp-amount dd { color: var(--cp-blue-deep); }
+
+    .cp-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: var(--cp-ink);
+        color: var(--cp-beige);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: capitalize;
+        letter-spacing: .3px;
+        animation: cpBadgePop .7s .85s var(--cp-ease) backwards;
+    }
+
+    /* ---------- Cancel form ---------- */
+    .cp-cancel-form { animation: cpSlideUp .7s 1s var(--cp-ease) backwards; }
+    .card .btn-cancel {
+        position: relative;
+        overflow: hidden;
+        padding: 12px 24px;
+        border: 2px solid var(--cp-ink);
+        border-radius: 12px;
+        background: transparent;
+        color: var(--cp-ink);
+        font-weight: 700;
+        transition: transform .3s var(--cp-ease), background .3s ease, color .3s ease, box-shadow .3s var(--cp-ease);
+    }
+    .card .btn-cancel:hover,
+    .card .btn-cancel:focus {
+        background: var(--cp-ink);
+        color: var(--cp-beige);
+        transform: translateY(-3px);
+        box-shadow: 0 14px 26px rgba(30, 30, 28, .3);
+    }
+    .card .btn-cancel:active { transform: scale(.95); }
+    .card .btn-cancel:focus-visible {
+        outline: 3px solid rgba(126, 163, 255, .7);
+        outline-offset: 2px;
+    }
+
+    /* ---------- Keyframes ---------- */
+    @keyframes cpPageFade     { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes cpSlideUp      { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+    @keyframes cpSlideRight   { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
+    @keyframes cpCardIn       { from { opacity: 0; transform: translateY(46px) scale(.95); } to { opacity: 1; transform: none; } }
+    @keyframes cpRowIn        { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
+    @keyframes cpBadgePop     { 0% { opacity: 0; transform: scale(.4); } 70% { transform: scale(1.12); } 100% { opacity: 1; transform: scale(1); } }
+    @keyframes cpGradientSlide { from { background-position: 0% 0; } to { background-position: 300% 0; } }
+    @keyframes cpTextSweep    { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
+    @keyframes cpGridDrift    { from { background-position: 0 0; } to { background-position: 60px 60px; } }
+    @keyframes cpOrb          { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-80px, -60px); } }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: .01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: .01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+</style>
+
+<a href="javascript:history.back()" class="cp-back">← Back</a>
+<div class="card border-0 shadow-sm p-4 mt-3 mb-4">
+    <h2>Appointment {{ appointment.appointment_id }}</h2>
+
+    <dl class="cp-details">
+        <div class="cp-row">
+            <dt>Date &amp; time</dt>
+            <dd>{{ appointment.appointment_date }} {{ appointment.start_time }}–{{ appointment.end_time }}</dd>
+        </div>
+        <div class="cp-row">
+            <dt>Status</dt>
+            <dd><span class="cp-status">{{ appointment.status }}</span></dd>
+        </div>
+        <div class="cp-row cp-amount">
+            <dt>Amount</dt>
+            <dd>{{ appointment.amount }}</dd>
+        </div>
+    </dl>
+
+    {% if appointment.status == "BOOKED" %}
+    <form method="post"
+          class="cp-cancel-form mt-4"
+          action="{{ url_for('patient.cancel_appointment', appointment_id=appointment.appointment_id) }}"
+          onsubmit="return confirm('Cancel this appointment?');">
+        <button type="submit" class="btn btn-cancel">Cancel appointment</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

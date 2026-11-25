@@ -252,6 +252,7 @@ CREATE TABLE IF NOT EXISTS appointment_slot (
     hold_expires_at DATETIME NULL,
     capacity INT NOT NULL DEFAULT 1,
     booked_count INT NOT NULL DEFAULT 0,
+    version BIGINT UNSIGNED NOT NULL DEFAULT 0,
 
     CONSTRAINT fk_slot_doctor
         FOREIGN KEY (doctor_id)
@@ -281,10 +282,14 @@ CREATE TABLE IF NOT EXISTS appointments (
     appointment_id    BIGINT AUTO_INCREMENT PRIMARY KEY,
     slot_id           BIGINT NOT NULL,
     patient_id        VARCHAR(36) NOT NULL,
+    booking_reference CHAR(36) NULL,
     status            VARCHAR(30) NOT NULL DEFAULT 'BOOKED',
     created_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     reschedule_count  INT NOT NULL DEFAULT 0,
+    CONSTRAINT uq_appointments_booking_reference
+        UNIQUE (booking_reference),
+
     FOREIGN KEY (slot_id) REFERENCES appointment_slot(slot_id),
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -299,4 +304,13 @@ CREATE TABLE IF NOT EXISTS refund_ledger (
     created_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id),
     FOREIGN KEY (patient_id) REFERENCES patients(patient_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS event_outbox (
+    event_id     CHAR(36) PRIMARY KEY,
+    source       VARCHAR(100) NOT NULL,
+    detail_type  VARCHAR(100) NOT NULL,
+    detail_json  JSON NOT NULL,
+    created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    published_at TIMESTAMP NULL,
+    INDEX idx_event_outbox_pending (published_at, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

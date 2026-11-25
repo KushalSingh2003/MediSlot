@@ -4,13 +4,19 @@
 <!-- ===== Page loader (paste-anywhere block) ===== -->
 <style>
   #msLoader {
-    position: fixed; inset: 0; z-index: 99999;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;              /* correct height on mobile browsers */
+    z-index: 2147483647;         /* above navbar, modals, everything */
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 18px; background: #1E1E1C;
+    margin: 0; padding: 0;
     opacity: 1; visibility: visible;
     transition: opacity .45s ease, visibility .45s ease;
   }
-  #msLoader.ms-hide { opacity: 0; visibility: hidden; }
+  #msLoader.ms-hide { opacity: 0; visibility: hidden; pointer-events: none; }
 
   .ms-logo {
     position: relative; display: grid; place-items: center;
@@ -70,6 +76,12 @@
   (function () {
     var loader = document.getElementById("msLoader");
     if (!loader) return;
+
+    // FIX: move the loader out of the page container and attach it directly to <body>.
+    // Inside the content block, a parent with transform/animation/overflow can trap a
+    // position:fixed element, so it only covers that container instead of the screen.
+    document.body.appendChild(loader);
+
     var MIN_VISIBLE = 600;                 // ms, so it never just flashes
     var startedAt = Date.now();
 
@@ -357,6 +369,25 @@
         animation: cpDashPulse 4s ease-in-out infinite;
     }
 
+    /* ---------- Book slot link ---------- */
+    .card .table tbody td a.btn-book {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 999px;
+        background: var(--cp-blue);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: transform .3s var(--cp-ease), background .3s ease, box-shadow .3s ease;
+    }
+    .card .table tbody td a.btn-book:hover {
+        background: var(--cp-blue-deep);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(47, 107, 255, .35);
+    }
+
     /* ---------- Form ---------- */
     .card .form-label {
         color: var(--cp-ink);
@@ -463,5 +494,5 @@
 {% for affiliation in doctor.hospitalAffiliations %}<p><strong>{{ affiliation.hospital }}</strong> — {{ affiliation.department }}</p>{% endfor %}
 <h5 class="mt-3">Consultation types & fees</h5><div class="table-responsive"><table class="table"><thead><tr><th>Consultation</th><th>Duration</th><th>Fee</th><th>Capacity</th></tr></thead><tbody>{% for c in doctor.consultationTypes %}<tr><td>{{ c.name }}</td><td>{{ c.durationMin }} min</td><td>{{ c.fee }}</td><td>{{ c.capacity }}</td></tr>{% else %}<tr><td colspan="4">No active consultation types.</td></tr>{% endfor %}</tbody></table></div></div>
 <div class="card border-0 shadow-sm p-4"><h4>Check availability</h4><form method="get" class="row g-3"><div class="col-md-4"><label class="form-label">From</label><input class="form-control" type="date" name="from" value="{{ from_date }}" required></div><div class="col-md-4"><label class="form-label">To</label><input class="form-control" type="date" name="to" value="{{ to_date }}" required></div><div class="col-md-4 d-flex align-items-end"><button class="btn btn-primary">Find slots</button></div></form>
-{% if from_date and to_date %}<div class="table-responsive mt-3"><table class="table"><thead><tr><th>Date</th><th>Time</th><th>Consultation type ID</th><th>Free seats</th></tr></thead><tbody>{% for slot in slots %}<tr><td>{{ slot.slotDate }}</td><td>{{ slot.startTime }}–{{ slot.endTime }}</td><td>{{ slot.consultationTypeId }}</td><td>{{ slot.freeSeats }}</td></tr>{% else %}<tr><td colspan="4">No available slots in this date range.</td></tr>{% endfor %}</tbody></table></div>{% endif %}</div>
+{% if from_date and to_date %}<div class="table-responsive mt-3"><table class="table"><thead><tr><th>Date</th><th>Time</th><th>Consultation type ID</th><th>Free seats</th><th>Action</th></tr></thead><tbody>{% for slot in slots %}{% set sid = slot.slotId or slot.slot_id %}<tr><td>{{ slot.slotDate or slot.slot_date }}</td><td>{{ slot.startTime or slot.start_time }}–{{ slot.endTime or slot.end_time }}</td><td>{{ slot.consultationTypeId }}</td><td>{{ slot.freeSeats }}</td><td><a class="btn-book" href="{{ url_for('patient.book_appointment', slot_id=sid) }}">Book this slot</a></td></tr>{% else %}<tr><td colspan="5">No available slots in this date range.</td></tr>{% endfor %}</tbody></table></div>{% endif %}</div>
 {% endblock %}
