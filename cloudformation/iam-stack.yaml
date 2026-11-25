@@ -1076,7 +1076,7 @@ Resources:
             Condition:
               StringEquals:
                 cloudwatch:namespace: !Sub '${ProjectName}/${Env}/Appointments'
-                    - Sid: ManageAppointmentIdempotency
+          - Sid: ManageAppointmentIdempotency
             Effect: Allow
             Action:
             - dynamodb:PutItem
