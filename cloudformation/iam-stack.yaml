@@ -1076,6 +1076,14 @@ Resources:
             Condition:
               StringEquals:
                 cloudwatch:namespace: !Sub '${ProjectName}/${Env}/Appointments'
+                    - Sid: ManageAppointmentIdempotency
+            Effect: Allow
+            Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:UpdateItem
+            Resource:
+            - Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-IdempotencyTableArn'
 
 Outputs:
   AuthRegisterRoleArn:

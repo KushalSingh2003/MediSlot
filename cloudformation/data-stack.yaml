@@ -462,3 +462,7 @@ Outputs:
     Value: !GetAtt PhotosBucket.Arn
     Export:
       Name: !Sub '${AWS::StackName}-PhotosBucketArn'
+  IdempotencyTableArn:
+    Value: !GetAtt IdempotencyTable.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-IdempotencyTableArn'
