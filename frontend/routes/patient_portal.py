@@ -1,6 +1,7 @@
 """Patient-facing pages. This Flask app remains an API client; it never accesses RDS."""
 from functools import wraps
 import requests
+import uuid
 from flask import Blueprint, current_app, flash, redirect, render_template, request, session, url_for
 from services.api_client import APIClient
 

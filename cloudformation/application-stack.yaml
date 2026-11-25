@@ -975,6 +975,8 @@ Resources:
         Variables:
           ENV: !Ref Env
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+          IDEMPOTENCY_TABLE_NAME:
+            Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-IdempotencyTableName'
       VpcConfig:
         SubnetIds: !Split
           - ','
