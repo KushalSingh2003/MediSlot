@@ -43,7 +43,10 @@
     #pageLoader {
         position: fixed;
         inset: 0;
-        z-index: 9999;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        z-index: 2147483647;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -1139,6 +1142,10 @@
         <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
     </svg>
 </div>
+<script>
+  /* move the loader to <body> so no wrapper in base.html can clip it or trap its z-index */
+  document.body.appendChild(document.getElementById("pageLoader"));
+</script>
 
 <main class="shifts-page container">
   <section class="hero">
@@ -1553,13 +1560,33 @@
 </main>
 
 <script>
-  /* Page loader: hide once the page has loaded (safety timeout included) */
+  /* Page loader: stays visible for a minimum time, then hides after the page has loaded */
   (function () {
+    var MIN_VISIBLE_MS = 2500;   /* change this to make the loader stay longer or shorter */
     var loader = document.getElementById("pageLoader");
     if (!loader) return;
-    function hideLoader() { loader.classList.add("hide"); }
-    window.addEventListener("load", function () { setTimeout(hideLoader, 700); });
-    setTimeout(hideLoader, 5000);
+
+    var hidden = false;
+    function hideLoader() {
+      if (hidden) return;
+      hidden = true;
+      loader.classList.add("hide");
+    }
+
+    function hideAfterMinimum() {
+      /* performance.now() is the time since navigation started */
+      var remaining = Math.max(0, MIN_VISIBLE_MS - performance.now());
+      setTimeout(hideLoader, remaining);
+    }
+
+    if (document.readyState === "complete") {
+      hideAfterMinimum();
+    } else {
+      window.addEventListener("load", hideAfterMinimum);
+    }
+
+    /* safety net in case the load event never fires */
+    setTimeout(hideLoader, 8000);
   })();
 </script>
 {% endblock %}

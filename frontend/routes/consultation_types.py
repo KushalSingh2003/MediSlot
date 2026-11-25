@@ -287,49 +287,56 @@ def update_consultation_type():
 )
 @login_required
 def remove_consultation_type(type_id):
+    confirmed = request.form.get("confirm_existing") == "true"
+    api_path = f"/doctors/me/consultation-types/{type_id}"
+
+    if confirmed:
+        api_path += "?confirm=true"
 
     try:
+        api_response = APIClient.request("DELETE", api_path)
 
-        response = APIClient.request(
-            "DELETE",
-            f"/doctors/me/consultation-types/{type_id}"
-        )
+        try:
+            data = api_response.json()
+        except ValueError:
+            data = {}
 
-        if response.status_code in (200, 204):
+        if not isinstance(data, dict):
+            data = {}
 
-            flash(
-                "Consultation type removed successfully.",
-                "success"
-            )
+        if api_response.status_code in (200, 204):
+            flash("Consultation type removed successfully.", "success")
+            return redirect(url_for("consultation_types.consultation_types"))
 
-        else:
-
-            current_app.logger.error(
-                "Remove consultation type failed. "
-                "Status: %s, Response: %s",
-                response.status_code,
-                response.text
-            )
-
-            flash(
-                get_error_message(
-                    response,
-                    "Unable to remove consultation type."
+        if (
+            api_response.status_code == 409
+            and data.get("requiresConfirmation")
+        ):
+            return render_template(
+                "consultation_type_delete_confirm.html",
+                type_id=type_id,
+                message=data.get(
+                    "message",
+                    "This consultation type has upcoming appointments.",
                 ),
-                "danger"
+                appointments=data.get("appointments", []),
             )
+
+        current_app.logger.error(
+            "Remove consultation type failed. Status: %s, Response: %s",
+            api_response.status_code,
+            api_response.text,
+        )
+        flash(
+            get_error_message(
+                api_response,
+                "Unable to remove consultation type.",
+            ),
+            "danger",
+        )
 
     except Exception:
+        current_app.logger.exception("Error removing consultation type.")
+        flash("Unable to connect to the server.", "danger")
 
-        current_app.logger.exception(
-            "Error removing consultation type."
-        )
-
-        flash(
-            "Unable to connect to the server.",
-            "danger"
-        )
-
-    return redirect(
-        url_for("consultation_types.consultation_types")
-    )
+    return redirect(url_for("consultation_types.consultation_types"))

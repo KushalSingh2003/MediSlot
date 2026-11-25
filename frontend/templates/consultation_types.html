@@ -927,17 +927,14 @@
 
 
                                         <form method="POST"
-                                              action="{{ url_for('consultation_types.remove_consultation_type', type_id=item.consultationTypeId) }}"
-                                              class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to remove this consultation type?');">
+      action="{{ url_for('consultation_types.remove_consultation_type',
+                         type_id=item.consultationTypeId) }}"
+      class="d-inline">
 
-                                            <button type="submit"
-                                                    class="btn btn-sm btn-outline-danger">
-                                                Remove
-                                            </button>
-
-                                        </form>
-
+    <button type="submit" class="btn btn-sm btn-outline-danger">
+        Remove
+    </button>
+</form>
                                     </td>
 
                                 </tr>
@@ -1244,12 +1241,69 @@
     </div>
 
 </div>
+{% if delete_confirmation %}
+<div class="modal fade"
+     id="deleteAppointmentWarningModal"
+     tabindex="-1"
+     aria-labelledby="deleteAppointmentWarningTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteAppointmentWarningTitle">
+                    Existing appointments
+                </h5>
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>{{ delete_confirmation.message }}</p>
+                <ul>
+                    {% for appointment in delete_confirmation.appointments %}
+                    <li>
+                        {{ appointment.slotDate }}:
+                        {{ appointment.startTime }}–{{ appointment.endTime }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                <p>Continuing keeps these appointments valid but stops new bookings for this type.</p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button>
+
+                <form method="POST"
+                      action="{{ url_for(
+                          'consultation_types.remove_consultation_type',
+                          type_id=delete_confirmation.type_id
+                      ) }}">
+                    <input type="hidden" name="confirm_existing" value="true">
+                    <button type="submit" class="btn btn-danger">Continue</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endif %}
+
 
 
 <!-- ================= JAVASCRIPT ================= -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
 </script>
+{% if delete_confirmation %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const modalElement = document.getElementById("deleteAppointmentWarningModal");
+    bootstrap.Modal.getOrCreateInstance(modalElement).show();
+});
+</script>
+{% endif %}
 
 <script>
 (function () {

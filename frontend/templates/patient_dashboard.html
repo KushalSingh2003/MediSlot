@@ -324,10 +324,11 @@
     @media (max-width: 575.98px) {
         .search-heading {
             align-items: flex-start !important;
+            flex-wrap: wrap;
             gap: 1rem;
         }
 
-        .search-heading > a {
+        .search-heading > .heading-links {
             flex-shrink: 0;
         }
 
@@ -360,7 +361,9 @@
 <!-- ===== Page loader (paste-anywhere block) ===== -->
 <style>
   #msLoader {
-    position: fixed; inset: 0; z-index: 99999;
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh; height: 100dvh;
+    z-index: 2147483647;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 18px; background: #1E1E1C;
     opacity: 1; visibility: visible;
@@ -421,26 +424,32 @@
     <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
   </svg>
 </div>
+<script>
+  /* move the loader to <body> so no wrapper in base.html can clip it or trap its z-index */
+  document.body.appendChild(document.getElementById("msLoader"));
+</script>
 
 <script>
   (function () {
     var loader = document.getElementById("msLoader");
     if (!loader) return;
-    var MIN_VISIBLE = 600;                 // ms, so it never just flashes
-    var startedAt = Date.now();
+    var MIN_VISIBLE = 2500;                /* ms, change this to make the loader stay longer or shorter */
+    var startedAt = Date.now() - performance.now();   /* counts from the start of navigation */
+    var safetyTimer = null;
 
     function hide() {
       var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
       setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
     }
     function show() {
+      clearTimeout(safetyTimer);         /* a stale safety timeout must not hide the loader on navigation */
       startedAt = Date.now();
       loader.classList.remove("ms-hide");
     }
 
     // hide when the page finishes loading (safety timeout included)
     window.addEventListener("load", hide);
-    setTimeout(hide, 6000);
+    safetyTimer = setTimeout(hide, 8000);
 
     // back/forward cache can restore the page with the loader stuck on
     window.addEventListener("pageshow", function (e) {
@@ -475,10 +484,20 @@
             </p>
         </div>
 
-        <a class="btn btn-outline-primary"
-           href="{{ url_for('patient.profile') }}">
-            Edit profile
-        </a>
+        <div class="heading-links d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary"
+               href="{{ url_for('patient.appointments') }}">
+                Appointments
+            </a>
+            <a class="btn btn-outline-primary"
+               href="{{ url_for('patient.refunds') }}">
+                Refunds
+            </a>
+            <a class="btn btn-outline-primary"
+               href="{{ url_for('patient.profile') }}">
+                Edit profile
+            </a>
+        </div>
     </div>
 
     <div class="search-card card border-0 shadow-sm p-3 mb-4">
