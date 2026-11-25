@@ -292,10 +292,13 @@ def claim_idempotency(key, patient_id, fingerprint):
                 Key={"idem_key": key},
                 UpdateExpression=(
                     "SET #status = :in_progress, "
-                    "updated_at = :now, ttl = :ttl"
+                    "updated_at = :now, #ttl = :ttl"
                 ),
                 ConditionExpression="#status = :retryable",
-                ExpressionAttributeNames={"#status": "status"},
+                ExpressionAttributeNames={
+                    "#status": "status",
+                    "#ttl": "ttl",
+                },
                 ExpressionAttributeValues={
                     ":in_progress": "IN_PROGRESS",
                     ":retryable": "RETRYABLE",
@@ -535,10 +538,14 @@ def book_appointment(connection, patient_id, slot_id, key):
                 if not slot:
                     raise ApiError(404, "Available slot not found")
 
-                appointment_start = datetime.combine(
-                    slot["slot_date"],
-                    slot["start_time"],
-                ).replace(tzinfo=TIMEZONE)
+                appointment_start = (
+                    datetime.combine(
+                        slot["slot_date"],
+                        datetime.min.time(),
+                        tzinfo=TIMEZONE,
+                    )
+                    + slot["start_time"]
+                )
 
                 if appointment_start <= datetime.now(TIMEZONE):
                     raise ApiError(409, "This slot is in the past")
@@ -581,7 +588,7 @@ def book_appointment(connection, patient_id, slot_id, key):
                         patient_id,
                         status,
                         amount,
-                        idempotency_key
+                        booking_reference
                     )
                     VALUES (%s, %s, 'BOOKED', %s, %s)
                     """,
@@ -676,7 +683,7 @@ def handle_booking(event, patient_id, connection):
 
     except Exception:
         # The RDS transaction rolled back, or its result can be recovered
-        # by querying the unique idempotency_key on the next retry.
+        # by querying the unique booking_reference on the next retry.
         recovered = recover_idempotent_booking(
             connection,
             key,
@@ -799,10 +806,14 @@ def cancel_appointment(connection, patient_id, appointment_id):
             if appointment["status"] != "BOOKED":
                 raise ApiError(409, "Appointment cannot be cancelled")
 
-            appointment_start = datetime.combine(
-                appointment["slot_date"],
-                appointment["start_time"],
-            ).replace(tzinfo=TIMEZONE)
+            appointment_start = (
+                datetime.combine(
+                    appointment["slot_date"],
+                    datetime.min.time(),
+                    tzinfo=TIMEZONE,
+                )
+                + appointment["start_time"]
+            )
             now = datetime.now(TIMEZONE)
 
             if appointment_start <= now:
