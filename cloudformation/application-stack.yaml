@@ -977,6 +977,8 @@ Resources:
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
           IDEMPOTENCY_TABLE_NAME:
             Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-IdempotencyTableName'
+          EVENT_BUS_NAME:
+            Fn::ImportValue: !Sub '${ProjectName}-${Env}-AppointmentEventBusName'
       VpcConfig:
         SubnetIds: !Split
           - ','
