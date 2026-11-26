@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm consultation type removal{% endblock %}
+
+{% block content %}
+<style>
+    .confirm-card {
+        max-width: 720px;
+        margin: 0 auto;
+        border: 0;
+        border-radius: 14px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .confirm-header {
+        background: #fff4e5;
+        border-bottom: 1px solid #ffe0b2;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+
+    .confirm-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #ffb74d;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .confirm-header h1 {
+        font-size: 1.35rem;
+        margin: 0;
+    }
+
+    .appointment-table th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .appointment-table td,
+    .appointment-table th {
+        padding: 0.75rem 1rem;
+    }
+
+    .time-badge {
+        background: #e7f1ff;
+        color: #0d6efd;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    /* Loader overlay */
+    #page-loader {
+        position: fixed;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(2px);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+    #page-loader.active {
+        display: flex;
+    }
+
+    #page-loader .spinner-border {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+
+    #page-loader p {
+        margin-top: 1rem;
+        font-weight: 500;
+        color: #495057;
+    }
+</style>
+
+<div id="page-loader" role="status" aria-live="polite">
+    <div class="spinner-border text-danger" aria-hidden="true"></div>
+    <p>Removing consultation type, please wait...</p>
+</div>
+
+<div class="container py-4">
+    <div class="card confirm-card">
+
+        <div class="confirm-header">
+            <div class="confirm-icon">!</div>
+            <div>
+                <h1>Appointments already booked</h1>
+                <small class="text-muted">Please review before continuing</small>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <p class="mb-4">{{ message }}</p>
+
+            <h2 class="h6 text-uppercase text-muted mb-2">
+                Affected appointments
+            </h2>
+
+            <div class="table-responsive border rounded mb-4">
+                <table class="table table-hover align-middle mb-0 appointment-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appointment in appointments %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ appointment.slotDate }}</td>
+                            <td>
+                                <span class="time-badge">
+                                    {{ appointment.startTime }}–{{ appointment.endTime }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-3">
+                                No appointment details were provided.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-warning mb-4" role="alert">
+                Continuing will remove this consultation type from your offerings.
+            </div>
+
+            <div class="confirm-actions">
+                <a href="{{ url_for('consultation_types.consultation_types') }}"
+                   class="btn btn-secondary">
+                    Cancel
+                </a>
+
+                <form method="POST"
+                      id="confirm-form"
+                      action="{{ url_for(
+                          'consultation_types.remove_consultation_type',
+                          type_id=type_id
+                      ) }}"
+                      class="d-inline">
+                    <input type="hidden" name="confirm_existing" value="true">
+                    <button type="submit" class="btn btn-danger" id="confirm-btn">
+                        <span class="spinner-border spinner-border-sm d-none"
+                              id="btn-spinner"
+                              aria-hidden="true"></span>
+                        <span id="btn-text">Continue</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var form = document.getElementById("confirm-form");
+        var button = document.getElementById("confirm-btn");
+        var spinner = document.getElementById("btn-spinner");
+        var text = document.getElementById("btn-text");
+        var loader = document.getElementById("page-loader");
+
+        form.addEventListener("submit", function () {
+            // Block double submits and show feedback
+            button.disabled = true;
+            spinner.classList.remove("d-none");
+            text.textContent = "Processing...";
+            loader.classList.add("active");
+        });
+
+        // Reset the loader if the user comes back via the browser Back button
+        window.addEventListener("pageshow", function (event) {
+            if (event.persisted) {
+                button.disabled = false;
+                spinner.classList.add("d-none");
+                text.textContent = "Continue";
+                loader.classList.remove("active");
+            }
+        });
+    })();
+</script>
+{% endblock %}
