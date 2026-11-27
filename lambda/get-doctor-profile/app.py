@@ -188,13 +188,107 @@ def lambda_handler(event, context):
                     """
                     SELECT l.name
                     FROM doctor_language AS dl
-                    JOIN language AS l ON l.language_id = dl.language_id
+                    JOIN language AS l
+                        ON l.language_id = dl.language_id
                     WHERE dl.doctor_id = %s
                     ORDER BY l.name
                     """,
                     (doctor_id,)
                 )
+
                 languages_spoken = [row["name"] for row in cursor.fetchall()]
+                # Get hospitals where the doctor works
+                cursor.execute(
+                    """
+                    SELECT
+                        h.hospital_id,
+                        h.name AS hospital_name,
+                        d.name AS department_name
+                    FROM doctor_hospital AS dh
+                    JOIN hospitals AS h
+                        ON h.hospital_id = dh.hospital_id
+                    JOIN department AS d
+                        ON d.department_id = dh.department_id
+                    WHERE dh.doctor_id = %s
+                    ORDER BY h.name
+                    """,
+                    (doctor_id,)
+                )
+
+                hospitals = [
+                    {
+                        "hospitalId": row["hospital_id"],
+                        "hospitalName": row["hospital_name"],
+                        "department": row["department_name"]
+                    }
+                    for row in cursor.fetchall()
+                ]
+                # Get doctor's specialisations
+                cursor.execute(
+                    """
+                    SELECT s.name
+                    FROM doctor_specialisation AS ds
+                    JOIN specialisations AS s
+                        ON s.specialisation_id = ds.specialisation_id
+                    WHERE ds.doctor_id = %s
+                    ORDER BY s.name
+                    """,
+                    (doctor_id,)
+                )
+
+                specialisations = [
+                    row["name"]
+                    for row in cursor.fetchall()
+                ]
+                # Get doctor's addresses
+                cursor.execute(
+                    """
+                    SELECT
+                        address_line_1,
+                        address_line_2,
+                        city,
+                        postal_code
+                    FROM doctor_address
+                    WHERE doctor_id = %s
+                    ORDER BY id
+                    """,
+                    (doctor_id,)
+                )
+
+                addresses = [
+                    {
+                        "addressLine1": row["address_line_1"],
+                        "addressLine2": row["address_line_2"],
+                        "city": row["city"],
+                        "postalCode": row["postal_code"]
+                    }
+                    for row in cursor.fetchall()
+                ]
+                # Get doctor's medical licences
+                cursor.execute(
+                    """
+                    SELECT
+                        licence_no,
+                        authority,
+                        dates,
+                        verification_status
+                    FROM doctor_licence
+                    WHERE doctor_id = %s
+                    ORDER BY licence_no
+                    """,
+                    (doctor_id,)
+                )
+
+                licences = [
+                    {
+                        "licenceNumber": row["licence_no"],
+                        "authority": row["authority"],
+                        "dates": row["dates"],
+                        "verificationStatus": row["verification_status"]
+                    }
+                    for row in cursor.fetchall()
+                ]
+                
                 
 
                 return response(200, {
@@ -206,6 +300,10 @@ def lambda_handler(event, context):
                     "photoKey": doctor["photo_key"],
                     "createdAt": doctor["created_at"],
                     "languagesSpoken": languages_spoken,
+                    "hospitals": hospitals,
+                    "specialisations": specialisations,
+                    "addresses": addresses,
+                    "licences": licences
                 })
 
             # PUT /doctors/me

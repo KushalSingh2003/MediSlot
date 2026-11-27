@@ -7,887 +7,327 @@
 
     <title>MediSlot | My Profile</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-          rel="stylesheet">
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     <style>
         :root {
-            --pink-primary: #D8CBB3;
-            --pink-blush: #D8CBB3;
-            --pink-rose: #2F6BFF;
-            --pink-deep: #1E1E1C;
-            --pink-bg: #D8CBB3;
-            --pink-border: #D8CBB3;
-            --pink-text: #1E1E1C;
-            --pink-muted: rgba(30, 30, 28, 0.65);
-            --pink-shadow: 0 6px 20px rgba(47, 107, 255, 0.08);
-            --pink-shadow-hover: 0 12px 28px rgba(47, 107, 255, 0.16);
-            --motion-ease: cubic-bezier(.22, 1, .36, 1);
+            --beige: #D8CBB3;
+            --beige-light: #F1EBDD;
+            --blue: #2F6BFF;
+            --blue-soft: #7EA3FF;
+            --blue-deep: #1F4FCC;
+            --dark: #1E1E1C;
+            --muted: rgba(30, 30, 28, 0.65);
+            --shadow: 0 8px 24px rgba(47, 107, 255, 0.12);
+            --ease: cubic-bezier(.22, 1, .36, 1);
         }
 
         html, body {
-            background: linear-gradient(180deg, #D8CBB3 0%, #FFFFFF 100%) !important;
-            color: var(--pink-text) !important;
+            background: linear-gradient(180deg, #D8CBB3 0%, #FFFFFF 100%) fixed !important;
+            color: var(--dark) !important;
             font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
             -webkit-font-smoothing: antialiased;
         }
+        body.nav-open { overflow: hidden; }
 
-        .dashboard-wrapper {
-            display: flex !important;
-            min-height: 100vh;
-            background: transparent !important;
-            animation: pageReveal 0.55s var(--motion-ease) both;
-        }
-
-        /* ---------- Sidebar ---------- */
-        .sidebar {
-            width: 260px !important;
-            flex-shrink: 0;
-            background: linear-gradient(180deg, #FFFFFF 0%, #D8CBB3 100%) !important;
-            border-right: 1px solid var(--pink-border) !important;
-            box-shadow: 4px 0 24px rgba(47, 107, 255, 0.18);
-            padding: 24px 16px !important;
-            display: flex !important;
-            flex-direction: column;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            animation: sidebarReveal 0.6s var(--motion-ease) both;
-        }
-
-        .sidebar .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--pink-rose) !important;
-            padding: 6px 12px 22px;
-            letter-spacing: 0.3px;
-        }
-
-        .sidebar .brand i {
-            width: 40px;
-            height: 40px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #1E1E1C, #2F6BFF);
-            color: #FFFFFF !important;
-            font-size: 1.2rem;
-            box-shadow: 0 6px 14px rgba(47, 107, 255, 0.28);
-        }
-
-        .sidebar-label {
-            font-size: 0.7rem !important;
-            font-weight: 700;
-            letter-spacing: 1.4px;
-            color: var(--pink-muted) !important;
-            padding: 6px 14px;
-            margin-bottom: 6px;
-        }
-
-        .sidebar-nav {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .sidebar-nav .nav-item {
-            animation: navItemReveal 0.45s var(--motion-ease) both;
-        }
-
-        .sidebar-nav .nav-item:nth-child(1) { animation-delay: 0.08s; }
-        .sidebar-nav .nav-item:nth-child(2) { animation-delay: 0.14s; }
-        .sidebar-nav .nav-item:nth-child(3) { animation-delay: 0.20s; }
-        .sidebar-nav .nav-item:nth-child(4) { animation-delay: 0.26s; }
-        .sidebar-nav .nav-item:nth-child(5) { animation-delay: 0.32s; }
-        .sidebar-nav .nav-item:nth-child(6) { animation-delay: 0.38s; }
-
-        .sidebar a.nav-item,
-        .sidebar .logout-btn {
-            display: flex !important;
-            align-items: center;
-            gap: 12px;
-            padding: 11px 14px !important;
-            border-radius: 12px !important;
-            color: var(--pink-text) !important;
-            font-weight: 500;
-            font-size: 0.95rem;
-            text-decoration: none !important;
-            border: 1px solid transparent;
-            background: transparent;
-            transition: all 0.25s ease;
-            width: 100%;
-            text-align: left;
-        }
-
-        .sidebar .nav-item i {
-            color: var(--pink-rose);
-            font-size: 1.1rem;
-            transition: transform 0.25s ease;
-        }
-
-        .sidebar a.nav-item:hover,
-        .sidebar .logout-btn:hover {
-            background: var(--pink-blush) !important;
-            border-color: var(--pink-border);
-            color: var(--pink-rose) !important;
-            transform: translateX(3px);
-        }
-
-        .sidebar a.nav-item:hover i,
-        .sidebar .logout-btn:hover i {
-            transform: scale(1.12);
-        }
-
-        .sidebar a.nav-item.active {
-            background: linear-gradient(135deg, #1E1E1C 0%, #2F6BFF 100%) !important;
-            color: #FFFFFF !important;
-            box-shadow: 0 8px 18px rgba(47, 107, 255, 0.25);
-        }
-
-        .sidebar a.nav-item.active i {
-            color: #FFFFFF !important;
-        }
-
-        .sidebar-bottom {
-            margin-top: auto;
-            padding-top: 16px;
-            border-top: 1px solid var(--pink-border);
-        }
-
-        .sidebar .logout-btn {
-            cursor: pointer;
-        }
-
-        /* ---------- Main + topbar ---------- */
-        .main-content {
-            flex: 1;
-            min-width: 0;
-            background: transparent !important;
-        }
-
+        /* ---------- Topbar ---------- */
         .topbar {
-            display: flex !important;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            padding: 18px 32px !important;
-            background: rgba(255, 255, 255, 0.85) !important;
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--pink-border) !important;
-            box-shadow: 0 4px 16px rgba(47, 107, 255, 0.15);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            animation: topbarReveal 0.5s 0.1s var(--motion-ease) both;
+            position: sticky; top: 0; z-index: 20;
+            display: flex; align-items: center; justify-content: space-between; gap: 16px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, .9); backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--beige);
+            box-shadow: 0 4px 16px rgba(47, 107, 255, .12);
+            animation: dropIn .5s var(--ease) both;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 14px; }
+        .menu-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 9px 16px; border: none; border-radius: 12px; cursor: pointer;
+            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff;
+            font-weight: 600; font-size: .92rem;
+            box-shadow: 0 6px 14px rgba(47, 107, 255, .28); transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .menu-btn i { font-size: 1.25rem; }
+        .menu-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(47, 107, 255, .38); }
+        .topbar h5 { margin: 0; font-weight: 700; }
+        .topbar small { color: var(--muted); }
+        .top-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; color: var(--blue); }
+        .top-brand i { animation: heartbeat 2s ease-in-out infinite; }
+
+        /* ---------- Sidebar drawer (hidden by default) ---------- */
+        .scrim {
+            position: fixed; inset: 0; z-index: 1040; background: rgba(30, 30, 28, .5);
+            opacity: 0; visibility: hidden; transition: opacity .35s ease, visibility 0s .35s;
+        }
+        .nav-open .scrim { opacity: 1; visibility: visible; transition-delay: 0s; }
+
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0; z-index: 1050; width: 270px;
+            display: flex; flex-direction: column; padding: 22px 16px; overflow-y: auto;
+            background: linear-gradient(180deg, #FFFFFF 0%, #D8CBB3 100%);
+            border-right: 1px solid var(--beige);
+            box-shadow: 8px 0 30px rgba(47, 107, 255, .25);
+            transform: translateX(-105%); visibility: hidden;
+            transition: transform .4s var(--ease), visibility 0s .4s;
+        }
+        .nav-open .sidebar { transform: none; visibility: visible; transition-delay: 0s; }
+
+        .sidebar .brand { display: flex; align-items: center; gap: 10px; font-size: 1.35rem; font-weight: 700; color: var(--blue); padding: 4px 8px 18px; }
+        .sidebar .brand i {
+            width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 12px; color: #fff; font-size: 1.15rem;
+            background: linear-gradient(135deg, var(--dark), var(--blue));
+            box-shadow: 0 6px 14px rgba(47, 107, 255, .3);
+        }
+        .close-nav {
+            position: absolute; top: 18px; right: 14px; width: 34px; height: 34px; border-radius: 10px;
+            border: 1px solid var(--beige); background: #fff; color: var(--dark); cursor: pointer; transition: all .25s ease;
+        }
+        .close-nav:hover { background: var(--beige); transform: rotate(90deg); }
+        .sidebar-label { font-size: .7rem; font-weight: 700; letter-spacing: 1.4px; color: var(--muted); padding: 6px 12px; }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 4px; }
+        .sidebar a.nav-item, .sidebar .logout-btn {
+            display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+            padding: 11px 14px; border-radius: 12px; border: 1px solid transparent; background: transparent;
+            color: var(--dark); font-weight: 500; font-size: .95rem; text-decoration: none; cursor: pointer;
+            transition: all .25s ease; opacity: 0; transform: translateX(-14px);
+        }
+        .nav-open .sidebar a.nav-item, .nav-open .sidebar .logout-btn { opacity: 1; transform: none; }
+        .nav-open .sidebar a.nav-item:nth-of-type(1) { transition-delay: .10s; }
+        .nav-open .sidebar a.nav-item:nth-of-type(2) { transition-delay: .15s; }
+        .nav-open .sidebar a.nav-item:nth-of-type(3) { transition-delay: .20s; }
+        .nav-open .sidebar a.nav-item:nth-of-type(4) { transition-delay: .25s; }
+        .nav-open .sidebar a.nav-item:nth-of-type(5) { transition-delay: .30s; }
+        .nav-open .sidebar a.nav-item:nth-of-type(6) { transition-delay: .35s; }
+        .sidebar .nav-item i { color: var(--blue); font-size: 1.1rem; }
+        .sidebar a.nav-item:hover, .sidebar .logout-btn:hover { background: var(--beige); border-color: var(--beige); color: var(--blue); transition-delay: 0s; }
+        .sidebar a.nav-item.active {
+            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff;
+            box-shadow: 0 8px 18px rgba(47, 107, 255, .25);
+        }
+        .sidebar a.nav-item.active i { color: #fff; }
+        .sidebar-bottom { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--beige); }
+
+        /* ---------- Page ---------- */
+        .page { max-width: 880px; margin: 0 auto; padding: 22px 20px 48px; }
+
+        /* Hero banner with 3D logo */
+        .hero {
+            display: flex; align-items: center; gap: 22px;
+            padding: 16px 30px; border-radius: 20px; color: #fff; position: relative; overflow: hidden;
+            background: linear-gradient(120deg, var(--dark) 0%, var(--dark) 45%, var(--blue) 140%);
+            box-shadow: 0 16px 36px rgba(30, 30, 28, .28);
+            animation: cardIn .8s .1s var(--ease) both;
+        }
+        .hero::after {
+            content: ""; position: absolute; right: -60px; top: -60px; width: 240px; height: 240px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(126, 163, 255, .45), rgba(126, 163, 255, 0) 70%);
+            animation: drift 9s ease-in-out infinite;
+        }
+        .hero-text { position: relative; z-index: 1; }
+        .hero-text small { color: var(--blue-soft); font-weight: 600; letter-spacing: .5px; }
+        .hero-text h1 { margin: 2px 0 2px; font-size: 1.6rem; font-weight: 700; color: var(--beige); }
+        .hero-text p { margin: 0; font-size: .9rem; color: rgba(255, 255, 255, .75); }
+        .ecg { position: absolute; right: 26px; bottom: 14px; width: 190px; height: 38px; opacity: .85; }
+        .ecg path {
+            fill: none; stroke: var(--blue-soft); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+            stroke-dasharray: 340; stroke-dashoffset: 340; animation: ecg 3s 1s linear infinite;
         }
 
-        .topbar h5 {
-            margin: 0;
-            font-weight: 700;
-            color: var(--pink-deep) !important;
+        /* 3D caduceus: stacked layers give real depth while it swings */
+        .cadu { position: relative; z-index: 1; width: 92px; height: 116px; flex-shrink: 0; perspective: 700px; }
+        .cadu-spin { position: absolute; inset: 0; transform-style: preserve-3d; animation: swing 7s ease-in-out infinite; }
+        .cadu-spin svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+        .cadu .z1 { transform: translateZ(-20px); filter: brightness(.35); }
+        .cadu .z2 { transform: translateZ(-15px); filter: brightness(.5); }
+        .cadu .z3 { transform: translateZ(-10px); filter: brightness(.65); }
+        .cadu .z4 { transform: translateZ(-5px);  filter: brightness(.82); }
+        .cadu .z5 { transform: translateZ(0); filter: drop-shadow(0 0 8px rgba(126, 163, 255, .6)); }
+        .cadu::after {
+            content: ""; position: absolute; left: 12%; right: 12%; bottom: -10px; height: 10px; border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(0, 0, 0, .5), transparent 70%); animation: shadowPulse 7s ease-in-out infinite;
         }
 
-        .topbar p {
-            margin: 2px 0 0;
-            color: var(--pink-muted) !important;
-            font-size: 0.9rem;
+        /* Avatar above the card */
+        .avatar-block { position: relative; z-index: 2; margin-top: -58px; text-align: center; animation: fadeUp .7s .3s var(--ease) both; }
+        .avatar-ring { position: relative; width: 128px; height: 128px; margin: 0 auto; }
+        .avatar-ring::before {
+            content: ""; position: absolute; inset: 0; border-radius: 50%;
+            background: conic-gradient(var(--blue), var(--beige), var(--blue-soft), var(--blue));
+            animation: spin 6s linear infinite; box-shadow: 0 10px 26px rgba(47, 107, 255, .35);
         }
-
-        .profile-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #1E1E1C, #2F6BFF) !important;
-            color: #FFFFFF !important;
-            font-size: 1.3rem;
-            box-shadow: 0 6px 14px rgba(47, 107, 255, 0.3);
-            border: 2px solid #FFFFFF;
-            animation: avatarFloat 3.2s 0.8s ease-in-out infinite;
-        }
-
-        .dashboard-content {
-            padding: 28px 32px 40px !important;
-            max-width: 1180px;
-            margin: 0 auto;
-        }
-
-        .page-heading {
-            margin-bottom: 24px;
-            animation: fadeRise 0.55s 0.12s var(--motion-ease) both;
-        }
-
-        .page-heading h2 {
-            font-weight: 700;
-            color: var(--pink-deep) !important;
-            margin-bottom: 2px;
-        }
-
-        .page-heading p {
-            margin: 0;
-            color: var(--pink-muted) !important;
-        }
-
-        /* ---------- Cards ---------- */
-        .content-card {
-            background: #FFFFFF !important;
-            border: 1px solid var(--pink-border) !important;
-            border-radius: 20px !important;
-            box-shadow: var(--pink-shadow);
-            padding: 26px !important;
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
-            animation: cardReveal 0.65s var(--motion-ease) both;
-        }
-
-        .content-card:hover {
-            box-shadow: var(--pink-shadow-hover);
-            transform: translateY(-3px);
-        }
-
-        .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
-            animation-delay: 0.08s;
-        }
-
-        .dashboard-content > form[method="POST"] > .content-card:nth-child(2) {
-            animation-delay: 0.16s;
-        }
-
-        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) {
-            animation-delay: 0.24s;
-        }
-
-        .card-heading {
-            display: flex !important;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 20px;
-            padding-bottom: 14px;
-            border-bottom: 1px dashed var(--pink-border);
-        }
-
-        .card-heading h5 {
-            margin: 0;
-            font-weight: 700;
-            color: var(--pink-deep) !important;
-            display: flex;
-            align-items: center;
-        }
-
-        .card-heading h5 i {
-            width: 34px;
-            height: 34px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: var(--pink-blush);
-            color: var(--pink-rose);
-            font-size: 1rem;
-            margin-right: 10px !important;
-            animation: iconPop 0.55s 0.2s var(--motion-ease) both;
-        }
-
-        .card-heading p {
-            margin: 4px 0 0;
-            color: var(--pink-muted) !important;
-            font-size: 0.88rem;
-        }
-
-        /* ---------- Hero profile card ---------- */
-        .content-card:has(.profile-picture-section) {
-            position: relative;
-            overflow: hidden;
-            padding: 0 !important;
-            margin-bottom: 24px !important;
-            animation-delay: 0.06s;
-        }
-
-        .content-card:has(.profile-picture-section)::before {
-            content: "";
-            display: block;
-            height: 110px;
-            background:
-                radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0) 45%),
-                linear-gradient(120deg, #D8CBB3 0%, #2F6BFF 55%, #2F6BFF 120%);
-        }
-
-        .content-card:has(.profile-picture-section) > .d-flex {
-            padding: 0 28px 26px;
-            align-items: flex-end !important;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px !important;
-        }
-
-        .profile-picture-section {
-            display: flex;
-            align-items: flex-end;
-            gap: 22px;
-            flex: 1 1 420px;
-            min-width: 0;
-        }
-
         .profile-picture-preview {
-            width: 124px;
-            height: 124px;
-            flex-shrink: 0;
-            margin-top: -62px;
-            border-radius: 50%;
-            padding: 5px;
-            background: linear-gradient(135deg, #FFFFFF, #D8CBB3);
-            box-shadow: 0 10px 26px rgba(47, 107, 255, 0.28);
-            position: relative;
-            animation: avatarReveal 0.75s 0.2s var(--motion-ease) both;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: absolute; inset: 5px; border-radius: 50%; overflow: hidden;
+            border: 4px solid #fff; background: var(--beige); animation: popIn .8s .45s var(--ease) both;
         }
+        #profilePreview { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s var(--ease); }
+        .avatar-ring:hover #profilePreview { transform: scale(1.1); }
+        #profilePreview.photo-updated { animation: photoPop .7s var(--ease); }
 
-        .profile-picture-preview:hover {
-            transform: scale(1.045) rotate(2deg);
-            box-shadow: 0 14px 32px rgba(47, 107, 255, 0.34);
+        .doc-name { margin: 12px 0 4px; font-size: 1.45rem; font-weight: 700; }
+        .badge-reg {
+            display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px;
+            background: var(--beige); color: var(--dark); font-size: .78rem; font-weight: 600; border: 1px solid var(--beige);
         }
+        .badge-reg i { color: var(--blue); }
 
-        .profile-picture-preview img,
-        #profilePreview {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 3px solid #FFFFFF;
-            background: var(--pink-blush);
-            display: block;
+        .photo-controls { margin-top: 10px; }
+        #choosePhotoBtn, #uploadPhotoBtn {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 999px;
+            font-size: .82rem; font-weight: 600; cursor: pointer; margin: 0 3px; transition: all .25s ease;
         }
-
-        .profile-picture-controls {
-            padding-top: 14px;
-            min-width: 0;
-        }
-
-        .profile-picture-controls h4 {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--pink-deep);
-            margin: 0 0 2px;
-        }
-
-        .profile-picture-controls p {
-            margin: 0 0 10px;
-            color: var(--pink-muted);
-            font-size: 0.85rem;
-        }
-
-        .profile-picture-controls p#photoUploadStatus {
-            margin: 10px 0 0;
-            min-height: 1.1em;
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--pink-rose);
-        }
-
-        #choosePhotoBtn,
+        #choosePhotoBtn { background: #fff; color: var(--blue); border: 1.5px solid var(--blue); }
+        #choosePhotoBtn:hover { background: var(--beige); transform: translateY(-2px); }
         #uploadPhotoBtn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 18px;
-            border-radius: 999px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            margin-right: 6px;
+            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff; border: 1.5px solid transparent;
+            box-shadow: 0 6px 14px rgba(47, 107, 255, .28);
         }
+        #uploadPhotoBtn:hover:not(:disabled) { transform: translateY(-2px); }
+        #uploadPhotoBtn:disabled { background: var(--beige); color: var(--dark); box-shadow: none; cursor: not-allowed; opacity: .75; }
+        #photoUploadStatus { margin: 6px 0 0; min-height: 1.1em; font-size: .8rem; font-weight: 600; color: var(--blue); }
 
-        #choosePhotoBtn {
-            background: #FFFFFF;
-            color: var(--pink-rose);
-            border: 1.5px solid var(--pink-primary);
+        /* ---------- Single details card ---------- */
+        .info-card {
+            margin-top: 14px; padding: 22px 24px 20px; background: #fff;
+            border: 1px solid var(--beige); border-top: 4px solid var(--blue); border-radius: 20px;
+            box-shadow: var(--shadow); animation: cardIn .8s .5s var(--ease) both;
         }
-
-        #choosePhotoBtn:hover {
-            background: var(--pink-blush);
-            border-color: var(--pink-rose);
-            transform: translateY(-1px);
+        .card-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
+        .card-title h5 { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .card-title h5 i {
+            width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 10px; background: var(--beige); color: var(--blue); font-size: .95rem;
         }
+        .card-title span { font-size: .8rem; color: var(--muted); }
 
-        #uploadPhotoBtn {
-            background: linear-gradient(135deg, #1E1E1C, #2F6BFF);
-            color: #FFFFFF;
-            border: 1.5px solid transparent;
-            box-shadow: 0 8px 16px rgba(47, 107, 255, 0.25);
+        .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+        .tile {
+            display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px;
+            background: var(--beige-light); border: 1px solid transparent;
+            animation: fadeUp .55s var(--ease) both; transition: transform .25s ease, box-shadow .25s ease;
         }
-
-        #uploadPhotoBtn:hover:not(:disabled) {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 22px rgba(47, 107, 255, 0.35);
+        .tile:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(47, 107, 255, .14); }
+        .tile:nth-child(1) { animation-delay: .70s; } .tile:nth-child(2) { animation-delay: .76s; }
+        .tile:nth-child(3) { animation-delay: .82s; } .tile:nth-child(4) { animation-delay: .88s; }
+        .tile:nth-child(5) { animation-delay: .94s; } .tile:nth-child(6) { animation-delay: 1s; }
+        .tile:nth-child(7) { animation-delay: 1.06s; } .tile:nth-child(8) { animation-delay: 1.12s; }
+        .tile:nth-child(9) { animation-delay: 1.18s; }
+        .tile > i {
+            flex-shrink: 0; width: 34px; height: 34px; display: grid; place-items: center;
+            border-radius: 10px; background: #fff; color: var(--blue); font-size: 1rem;
         }
+        .tile-body { min-width: 0; flex: 1; }
+        .tile .lbl { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+        .tile .val { margin: 0; font-weight: 600; word-break: break-word; font-size: .95rem; }
 
-        #uploadPhotoBtn:disabled {
-            background: var(--pink-blush);
-            color: #1E1E1C;
-            box-shadow: none;
-            cursor: not-allowed;
-            border-color: var(--pink-border);
+        .tile.edit { background: #fff; border: 1.5px solid var(--blue-soft); box-shadow: 0 4px 14px rgba(47, 107, 255, .10); }
+        .tile.edit > i { background: var(--blue); color: #fff; }
+        .tile.edit .lbl { color: var(--blue); display: flex; justify-content: space-between; align-items: center; }
+        .pill { font-size: .62rem; padding: 2px 8px; border-radius: 999px; background: rgba(47, 107, 255, .12); color: var(--blue); letter-spacing: .3px; }
+        .tile.edit .form-control {
+            border: 1.5px solid var(--beige); border-radius: 10px; padding: 6px 10px; font-weight: 600; font-size: .92rem;
+            color: var(--dark); background: #fff; transition: all .2s ease;
         }
-
-        /* Name / email block in hero */
-        .content-card:has(.profile-picture-section) > .d-flex > div:last-child {
-            padding: 16px 22px;
-            background: var(--pink-bg);
-            border: 1px solid var(--pink-border);
-            border-radius: 16px;
-            min-width: 240px;
+        .tile.edit .form-control:hover { border-color: var(--blue-soft); }
+        .tile.edit .form-control:focus {
+            border-color: var(--blue); outline: none; box-shadow: 0 0 0 .22rem rgba(47, 107, 255, .25); transform: translateY(-1px);
         }
+        .tile.edit .form-control::placeholder { color: rgba(30, 30, 28, .4); font-weight: 400; }
+        .lang-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
+        .lang-chips span { padding: 2px 10px; border-radius: 999px; background: var(--dark); color: #fff; font-size: .72rem; animation: pop .4s var(--ease) both; }
+        .hint { display: block; margin-top: 4px; font-size: .7rem; color: var(--muted); }
 
-        .content-card:has(.profile-picture-section) > .d-flex > div:last-child h4 {
-            color: var(--pink-deep);
-            font-weight: 700;
-            font-size: 1.15rem;
-        }
-
-        .content-card:has(.profile-picture-section) .text-muted {
-            color: var(--pink-muted) !important;
-            word-break: break-word;
-        }
-
-        /* ---------- Form layout ---------- */
-        .dashboard-content > form[method="POST"] {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 24px;
-            align-items: start;
-        }
-
-        .dashboard-content > form[method="POST"] > .content-card {
-            margin: 0 !important;
-        }
-
-        .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
-            grid-column: 1 / -1;
-        }
-
-        .dashboard-content > form[method="POST"] > .content-card:nth-child(2) .col-md-6,
-        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) .col-md-6 {
-            width: 100%;
-        }
-
-        .dashboard-content > form[method="POST"] > .content-card:nth-child(3) {
-            background: linear-gradient(135deg, #FFFFFF 0%, #D8CBB3 100%) !important;
-        }
-
-        .dashboard-content > form[method="POST"] > .d-flex {
-            grid-column: 1 / -1;
-            margin: 0 !important;
-            padding: 18px 22px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 1px solid var(--pink-border);
-            border-radius: 18px;
-            box-shadow: var(--pink-shadow);
-            position: sticky;
-            bottom: 16px;
-            z-index: 5;
-            backdrop-filter: blur(8px);
-        }
-
-        /* ---------- Form controls ---------- */
-        .form-label {
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            color: var(--pink-deep);
-            margin-bottom: 8px;
-        }
-
-        .form-control {
-            border: 1.5px solid var(--pink-border);
-            border-radius: 12px;
-            padding: 11px 14px;
-            background: #FFFFFF;
-            color: var(--pink-text);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-            animation: controlReveal 0.45s var(--motion-ease) both;
-        }
-
-        .form-control:hover {
-            border-color: var(--pink-primary);
-        }
-
-        .form-control:focus {
-            border-color: var(--pink-rose) !important;
-            box-shadow: 0 0 0 0.25rem rgba(47, 107, 255, 0.45) !important;
-            background: #FFFFFF;
-            outline: none;
-        }
-
-        .form-control[readonly] {
-            background: var(--pink-bg);
-            color: var(--pink-muted);
-            border-style: dashed;
-            cursor: not-allowed;
-        }
-
-        .form-control[readonly]:focus {
-            box-shadow: none !important;
-            border-color: var(--pink-border) !important;
-        }
-
-        .form-control::placeholder {
-            color: rgba(30, 30, 28, 0.55);
-        }
-
-        .content-card small.text-muted {
-            display: block;
-            margin-top: 6px;
-            color: var(--pink-muted) !important;
-            font-size: 0.78rem;
-        }
-
-        /* ---------- Buttons ---------- */
-        .btn {
-            border-radius: 12px;
-            padding: 10px 22px;
-            font-weight: 600;
-            transition: all 0.25s ease;
-        }
-
+        .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--beige); }
+        .btn { border-radius: 12px; padding: 9px 22px; font-weight: 600; transition: all .25s ease; }
         .btn-primary {
-            background: linear-gradient(135deg, #1E1E1C 0%, #2F6BFF 100%) !important;
-            background-size: 200% 100% !important;
-            border: none !important;
-            color: #FFFFFF !important;
-            box-shadow: 0 8px 18px rgba(47, 107, 255, 0.28);
-            transition: background-position 0.4s ease, transform 0.25s ease, box-shadow 0.25s ease;
+            position: relative; overflow: hidden;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--blue) 100%) !important; background-size: 200% 100% !important;
+            border: none !important; color: #fff !important; box-shadow: 0 8px 18px rgba(47, 107, 255, .28);
         }
+        .btn-primary::after {
+            content: ""; position: absolute; inset: 0; transform: translateX(-120%); transition: transform .6s ease;
+            background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .35) 50%, transparent 70%);
+        }
+        .btn-primary:hover::after { transform: translateX(120%); }
+        .btn-primary:hover { background-position: 100% 0; transform: translateY(-2px); box-shadow: 0 12px 24px rgba(47, 107, 255, .38); }
+        .btn-outline-secondary { background: #fff !important; color: var(--blue) !important; border: 1.5px solid var(--blue) !important; }
+        .btn-outline-secondary:hover { background: var(--beige) !important; color: var(--dark) !important; transform: translateY(-2px); }
 
-        .btn-primary:hover,
-        .btn-primary:focus {
-            background-position: 100% 0;
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(47, 107, 255, 0.38);
-        }
+        /* Alerts */
+        .alert { border-radius: 14px; border: 1px solid var(--beige); box-shadow: var(--shadow); padding: 12px 16px; font-weight: 500; margin: 14px 0 0; animation: fadeUp .5s var(--ease) both; }
+        .alert-success { background: var(--beige); color: var(--dark); }
+        .alert-danger { background: #FFEBEE; color: #C62828; border-color: #FFCDD2; }
+        .alert-warning { background: #FFF3E0; color: #E65100; border-color: #FFE0B2; }
+        .alert-info { background: rgba(47, 107, 255, .12); color: var(--dark); border-color: var(--blue); }
 
-        .btn-primary:active {
-            transform: translateY(0);
-        }
+        a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 
-        .btn-outline-secondary {
-            background: #FFFFFF !important;
-            color: var(--pink-rose) !important;
-            border: 1.5px solid var(--pink-primary) !important;
+        /* ---------- Keyframes ---------- */
+        @keyframes dropIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(26px) scale(.98); } to { opacity: 1; transform: none; } }
+        @keyframes popIn { from { opacity: 0; transform: scale(.6) rotate(-10deg); } to { opacity: 1; transform: none; } }
+        @keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+        @keyframes photoPop { 0% { transform: scale(.8); filter: blur(6px); opacity: .4; } 100% { transform: scale(1); filter: none; opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes heartbeat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.18); } 30% { transform: scale(1); } 45% { transform: scale(1.1); } }
+        @keyframes drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-26px, 22px); } }
+        @keyframes ecg { 0% { stroke-dashoffset: 340; } 60%, 100% { stroke-dashoffset: 0; } }
+        @keyframes swing {
+            0%, 100% { transform: rotateY(-38deg) rotateX(4deg) translateY(0); }
+            25%      { transform: rotateY(0deg) rotateX(0deg) translateY(-6px); }
+            50%      { transform: rotateY(38deg) rotateX(4deg) translateY(0); }
+            75%      { transform: rotateY(0deg) rotateX(0deg) translateY(-6px); }
         }
-
-        .btn-outline-secondary:hover {
-            background: var(--pink-blush) !important;
-            border-color: var(--pink-rose) !important;
-            color: var(--pink-deep) !important;
-            transform: translateY(-2px);
-        }
-
-        /* ---------- Badges ---------- */
-        .badge {
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 0.74rem;
-            letter-spacing: 0.3px;
-            border: 1px solid transparent;
-        }
-
-        .badge.bg-success {
-            background-color: #D8CBB3 !important;
-            color: #1E1E1C !important;
-            border-color: #D8CBB3;
-        }
-
-        /* ---------- Alerts ---------- */
-        .alert {
-            border-radius: 14px;
-            border: 1px solid var(--pink-border);
-            box-shadow: var(--pink-shadow);
-            padding: 14px 18px;
-            font-weight: 500;
-            margin-bottom: 20px;
-            animation: fadeRise 0.5s var(--motion-ease) both;
-        }
-
-        .alert-success {
-            background: #D8CBB3;
-            color: #1E1E1C;
-            border-color: #D8CBB3;
-        }
-
-        .alert-danger {
-            background: #FFEBEE;
-            color: #C62828;
-            border-color: #FFCDD2;
-        }
-
-        .alert-warning {
-            background: #FFF3E0;
-            color: #E65100;
-            border-color: #FFE0B2;
-        }
-
-        .alert-info {
-            background: rgba(47, 107, 255, 0.12);
-            color: #1E1E1C;
-            border-color: #2F6BFF;
-        }
-
-        .btn-close:focus {
-            box-shadow: 0 0 0 0.2rem rgba(47, 107, 255, 0.5);
-        }
-
-        /* ---------- Misc ---------- */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--pink-primary);
-            border-radius: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--pink-bg);
-        }
-
-        a:focus-visible,
-        button:focus-visible {
-            outline: 2px solid var(--pink-rose);
-            outline-offset: 2px;
-        }
-
-        @keyframes pageReveal {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes sidebarReveal {
-            from { opacity: 0; transform: translateX(-14px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes navItemReveal {
-            from { opacity: 0; transform: translateX(-8px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes topbarReveal {
-            from { opacity: 0; transform: translateY(-12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeRise {
-            from { opacity: 0; transform: translateY(14px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes cardReveal {
-            from { opacity: 0; transform: translateY(22px) scale(0.99); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        @keyframes avatarReveal {
-            from { opacity: 0; transform: scale(0.82) rotate(-8deg); }
-            to { opacity: 1; transform: scale(1) rotate(0); }
-        }
-
-        @keyframes avatarFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-        }
-
-        @keyframes iconPop {
-            from { opacity: 0; transform: scale(0.72); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes controlReveal {
-            from { opacity: 0.75; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes shadowPulse { 0%, 100% { transform: scaleX(.8); opacity: .6; } 25%, 75% { transform: scaleX(1); opacity: .35; } 50% { transform: scaleX(.8); opacity: .6; } }
 
         /* ---------- Responsive ---------- */
-        @media (max-width: 991.98px) {
-            .dashboard-wrapper {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100% !important;
-                height: auto;
-                position: relative;
-                padding: 16px !important;
-                border-right: none !important;
-                border-bottom: 1px solid var(--pink-border) !important;
-            }
-
-            .sidebar-nav {
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            .sidebar a.nav-item {
-                width: auto;
-                padding: 9px 12px !important;
-                font-size: 0.88rem;
-            }
-
-            .sidebar-bottom {
-                margin-top: 12px;
-            }
-
-            .sidebar .logout-btn {
-                width: auto;
-            }
-
-            .topbar {
-                position: relative;
-            }
-
-            .dashboard-content > form[method="POST"] {
-                grid-template-columns: minmax(0, 1fr);
-            }
-
-            .dashboard-content > form[method="POST"] > .content-card:nth-child(1) {
-                grid-column: auto;
-            }
+        @media (max-width: 860px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ecg { display: none; } }
+        @media (max-width: 720px) {
+            .hero { justify-content: center; padding: 16px 20px 70px; }
+            .hero-text { display: none; }
         }
-
         @media (max-width: 575.98px) {
-            .topbar,
-            .dashboard-content {
-                padding-left: 16px !important;
-                padding-right: 16px !important;
-            }
-
-            .content-card {
-                padding: 18px !important;
-            }
-
-            .content-card:has(.profile-picture-section) > .d-flex {
-                padding: 0 18px 20px;
-                justify-content: center;
-            }
-
-            .profile-picture-section {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-
-            .profile-picture-controls {
-                padding-top: 0;
-            }
-
-            #choosePhotoBtn,
-            #uploadPhotoBtn {
-                margin: 4px;
-            }
-
-            .content-card:has(.profile-picture-section) > .d-flex > div:last-child {
-                width: 100%;
-                text-align: center;
-            }
-
-            .dashboard-content > form[method="POST"] > .d-flex {
-                position: static;
-                flex-direction: column-reverse;
-            }
-
-            .dashboard-content > form[method="POST"] > .d-flex .btn {
-                width: 100%;
-            }
+            .topbar { padding: 10px 14px; }
+            .topbar-left small, .top-brand span { display: none; }
+            .page { padding: 16px 12px 40px; }
+            .grid { grid-template-columns: minmax(0, 1fr); }
+            .actions { flex-direction: column-reverse; }
+            .actions .btn { width: 100%; }
         }
-
         @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                animation-delay: 0s !important;
-                scroll-behavior: auto !important;
-                transition-duration: 0.01ms !important;
-            }
-
-            .content-card:hover,
-            .profile-picture-preview:hover,
-            .sidebar a.nav-item:hover,
-            .sidebar .logout-btn:hover {
-                transform: none;
-            }
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
+            .cadu-spin { transform: rotateY(-20deg); }
         }
     </style>
 </head>
 
-<body style="background: linear-gradient(180deg, #D8CBB3 0%, #FFFFFF 100%); color: #1E1E1C; margin: 0;">
-    <!-- ===== Page loader (paste-anywhere block) ===== -->
+<body>
+<!-- ===== Page loader ===== -->
 <style>
   #msLoader {
     position: fixed; inset: 0; z-index: 99999;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 18px; background: #1E1E1C;
-    opacity: 1; visibility: visible;
-    transition: opacity .45s ease, visibility .45s ease;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    background: #1E1E1C; opacity: 1; visibility: visible; transition: opacity .45s ease, visibility .45s ease;
   }
   #msLoader.ms-hide { opacity: 0; visibility: hidden; }
-
   .ms-logo {
-    position: relative; display: grid; place-items: center;
-    width: 78px; height: 78px; border-radius: 22px;
-    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
-    box-shadow: 0 10px 30px rgba(47,107,255,.55);
+    position: relative; display: grid; place-items: center; width: 78px; height: 78px; border-radius: 22px;
+    background: linear-gradient(135deg, #7EA3FF, #2F6BFF); box-shadow: 0 10px 30px rgba(47,107,255,.55);
     animation: ms-beat 1.4s ease-in-out infinite;
   }
   .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
-  .ms-logo::after {
-    content: ""; position: absolute; inset: -12px;
-    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
-    animation: ms-ring 1.4s ease-out infinite;
-  }
-  .ms-title {
-    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
-    letter-spacing: .3px;
-  }
+  .ms-logo::after { content: ""; position: absolute; inset: -12px; border: 2px solid rgba(126,163,255,.55); border-radius: 30px; animation: ms-ring 1.4s ease-out infinite; }
+  .ms-title { color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif; letter-spacing: .3px; }
   .ms-ecg { width: 210px; height: 42px; }
-  .ms-ecg path {
-    fill: none; stroke: #2F6BFF; stroke-width: 3;
-    stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 340; stroke-dashoffset: 340;
-    animation: ms-ecg 1.8s linear infinite;
-  }
-
-  @keyframes ms-beat {
-    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
-    30% { transform: scale(1); }     45% { transform: scale(1.08); }
-  }
-  @keyframes ms-ring {
-    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
-  }
-  @keyframes ms-ecg {
-    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
-  }
+  .ms-ecg path { fill: none; stroke: #2F6BFF; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 340; stroke-dashoffset: 340; animation: ms-ecg 1.8s linear infinite; }
+  @keyframes ms-beat { 0%,100% { transform: scale(1); } 15% { transform: scale(1.12); } 30% { transform: scale(1); } 45% { transform: scale(1.08); } }
+  @keyframes ms-ring { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; } }
+  @keyframes ms-ecg { 0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; } }
+  @media (prefers-reduced-motion: reduce) { .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; } }
 </style>
 
 <noscript><style>#msLoader { display: none !important; }</style></noscript>
@@ -908,28 +348,15 @@
   (function () {
     var loader = document.getElementById("msLoader");
     if (!loader) return;
-    var MIN_VISIBLE = 600;                 // ms, so it never just flashes
-    var startedAt = Date.now();
-
+    var MIN_VISIBLE = 600, startedAt = Date.now();
     function hide() {
       var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
       setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
     }
-    function show() {
-      startedAt = Date.now();
-      loader.classList.remove("ms-hide");
-    }
-
-    // hide when the page finishes loading (safety timeout included)
+    function show() { startedAt = Date.now(); loader.classList.remove("ms-hide"); }
     window.addEventListener("load", hide);
     setTimeout(hide, 6000);
-
-    // back/forward cache can restore the page with the loader stuck on
-    window.addEventListener("pageshow", function (e) {
-      if (e.persisted) loader.classList.add("ms-hide");
-    });
-
-    // show it again when leaving for another page
+    window.addEventListener("pageshow", function (e) { if (e.persisted) loader.classList.add("ms-hide"); });
     document.addEventListener("click", function (e) {
       var a = e.target.closest("a[href]");
       if (!a || e.defaultPrevented) return;
@@ -940,389 +367,295 @@
       if (url.pathname === location.pathname && url.search === location.search) return;
       show();
     });
-    document.addEventListener("submit", function (e) {
-      if (!e.defaultPrevented) show();   // respects a cancelled confirm()
-    });
+    document.addEventListener("submit", function (e) { if (!e.defaultPrevented) show(); });
   })();
 </script>
 <!-- ===== /Page loader ===== -->
 
-<div class="dashboard-wrapper">
+<!-- Caduceus artwork (defined once, reused for the 3D layers) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+        <linearGradient id="gStaff" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#1F4FCC"/><stop offset=".5" stop-color="#7EA3FF"/><stop offset="1" stop-color="#1F4FCC"/>
+        </linearGradient>
+        <radialGradient id="gBall" cx=".35" cy=".3" r=".8">
+            <stop offset="0" stop-color="#D6E2FF"/><stop offset=".5" stop-color="#2F6BFF"/><stop offset="1" stop-color="#1F4FCC"/>
+        </radialGradient>
+        <linearGradient id="gSnake" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#7EA3FF"/><stop offset=".5" stop-color="#2F6BFF"/><stop offset="1" stop-color="#1F4FCC"/>
+        </linearGradient>
+        <linearGradient id="gWing" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#2F6BFF"/><stop offset="1" stop-color="#7EA3FF"/>
+        </linearGradient>
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
+        <g id="cadu">
+            <!-- wings -->
+            <g id="wingL">
+                <path d="M104 64 C82 40 40 36 4 56 C30 56 50 60 62 66 C42 66 26 70 14 78 C40 76 62 80 76 86 C58 88 46 92 38 98 C62 96 84 98 104 106 Z" fill="url(#gWing)"/>
+                <path d="M100 70 C80 58 50 58 24 64 M98 80 C78 72 52 72 30 78 M98 92 C80 86 62 86 48 90" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6" stroke-linecap="round"/>
+            </g>
+            <use href="#wingL" transform="translate(220 0) scale(-1 1)"/>
+            <!-- staff -->
+            <rect x="104" y="30" width="12" height="244" rx="6" fill="url(#gStaff)"/>
+            <circle cx="110" cy="22" r="13" fill="url(#gBall)"/>
+            <!-- snakes -->
+            <g id="snake">
+                <path d="M152 72 C178 76 176 100 110 110 C44 120 44 148 110 156 C176 164 176 190 110 198 C62 204 66 232 110 242" fill="none" stroke="#1F4FCC" stroke-width="15" stroke-linecap="round"/>
+                <path d="M152 72 C178 76 176 100 110 110 C44 120 44 148 110 156 C176 164 176 190 110 198 C62 204 66 232 110 242" fill="none" stroke="url(#gSnake)" stroke-width="11" stroke-linecap="round"/>
+                <path d="M152 70 C176 72 172 94 112 106 C52 118 50 146 108 154" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="152" cy="72" r="8" fill="url(#gBall)"/>
+            </g>
+            <use href="#snake" transform="translate(220 0) scale(-1 1)"/>
+        </g>
+    </defs>
+</svg>
 
-        <div class="brand">
-            <i class="bi bi-heart-pulse-fill"></i>
-            <span>MediSlot</span>
+{% set langs = profile.get('languagesSpoken') or [] %}
+
+<!-- Sidebar drawer (hidden until the menu button is used) -->
+<div class="scrim" id="scrim"></div>
+
+<aside class="sidebar" id="sidebar" aria-label="Main navigation" aria-hidden="true">
+    <button type="button" class="close-nav" id="closeNav" aria-label="Close menu"><i class="bi bi-x-lg"></i></button>
+
+    <div class="brand">
+        <i class="bi bi-heart-pulse-fill"></i>
+        <span>MediSlot</span>
+    </div>
+
+    <div class="sidebar-label">MAIN MENU</div>
+
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard.index') }}" class="nav-item"><i class="bi bi-grid"></i><span>Dashboard</span></a>
+        <a href="{{ url_for('profile.index') }}" class="nav-item active"><i class="bi bi-person"></i><span>My Profile</span></a>
+        <a href="#" class="nav-item"><i class="bi bi-clipboard2-pulse"></i><span>Consultation Types</span></a>
+        <a href="#" class="nav-item"><i class="bi bi-calendar-x"></i><span>Blackout Dates</span></a>
+        <a href="#" class="nav-item"><i class="bi bi-calendar-week"></i><span>My Schedule</span></a>
+        <a href="#" class="nav-item"><i class="bi bi-calendar-check"></i><span>Appointments</span></a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <form action="{{ url_for('auth.logout') }}" method="POST">
+            <button type="submit" class="nav-item logout-btn"><i class="bi bi-box-arrow-left"></i><span>Logout</span></button>
+        </form>
+    </div>
+</aside>
+
+
+<!-- Topbar -->
+<header class="topbar">
+    <div class="topbar-left">
+        <button type="button" class="menu-btn" id="menuBtn" aria-controls="sidebar" aria-expanded="false">
+            <i class="bi bi-list"></i><span>Menu</span>
+        </button>
+        <div>
+            <h5>My Profile</h5>
+            <small>Manage your professional information.</small>
+        </div>
+    </div>
+    <div class="top-brand"><i class="bi bi-heart-pulse-fill"></i><span>MediSlot</span></div>
+</header>
+
+
+<main class="page">
+
+    <!-- Hero banner with the 3D caduceus -->
+    <section class="hero">
+        <div class="cadu" aria-hidden="true">
+            <div class="cadu-spin">
+                <svg viewBox="0 0 220 280" class="z1"><use href="#cadu"/></svg>
+                <svg viewBox="0 0 220 280" class="z2"><use href="#cadu"/></svg>
+                <svg viewBox="0 0 220 280" class="z3"><use href="#cadu"/></svg>
+                <svg viewBox="0 0 220 280" class="z4"><use href="#cadu"/></svg>
+                <svg viewBox="0 0 220 280" class="z5"><use href="#cadu"/></svg>
+            </div>
         </div>
 
-        <div class="sidebar-label">MAIN MENU</div>
+        <div class="hero-text">
+            <small>MEDISLOT</small>
+            <h1>Doctor Profile</h1>
+            <p>Your registered information.</p>
+        </div>
 
-        <nav class="sidebar-nav">
+        <svg class="ecg" viewBox="0 0 220 44" aria-hidden="true"><path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/></svg>
+    </section>
 
-            <a href="{{ url_for('dashboard.index') }}" class="nav-item">
-                <i class="bi bi-grid"></i>
-                <span>Dashboard</span>
-            </a>
 
-            <a href="{{ url_for('profile.index') }}" class="nav-item active">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+
+    <!-- Profile picture, above the card -->
+    <section class="avatar-block">
+        <div class="avatar-ring">
+            <div class="profile-picture-preview">
+                <img id="profilePreview"
+                     src="{{ profile.photoUrl or url_for('static', filename='images/default-profile.png') }}"
+                     alt="Profile Picture">
+            </div>
+        </div>
+
+        <h2 class="doc-name">{{ profile.get('fullName', 'Doctor') }}</h2>
+        <span class="badge-reg"><i class="bi bi-patch-check-fill"></i>Registered Doctor</span>
+
+        <div class="photo-controls">
+            <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" hidden>
+            <button type="button" id="choosePhotoBtn">Change Picture</button>
+            <button type="button" id="uploadPhotoBtn" disabled>Upload Picture</button>
+            <p id="photoUploadStatus"></p>
+        </div>
+    </section>
+
+
+    <!-- One card with every detail -->
+    <form method="POST" action="{{ url_for('profile.index') }}" class="info-card">
+
+        <!-- Kept so the route still receives the (non-editable) full name -->
+        <input type="hidden" name="fullName" value="{{ profile.get('fullName', '') }}">
+
+        <div class="card-title">
+            <h5><i class="bi bi-person-vcard"></i>Doctor Details</h5>
+            <span>Fields marked <b>Editable</b> can be updated.</span>
+        </div>
+
+        <div class="grid">
+
+            <div class="tile">
                 <i class="bi bi-person"></i>
-                <span>My Profile</span>
-            </a>
+                <div class="tile-body"><span class="lbl">Full Name</span><p class="val">{{ profile.get('fullName', 'N/A') }}</p></div>
+            </div>
 
-            <a href="#" class="nav-item">
-                <i class="bi bi-clipboard2-pulse"></i>
-                <span>Consultation Types</span>
-            </a>
+            <div class="tile">
+                <i class="bi bi-hash"></i>
+                <div class="tile-body"><span class="lbl">Doctor ID</span><p class="val">{{ profile.get('doctorId', 'N/A') }}</p></div>
+            </div>
 
-            <a href="#" class="nav-item">
-                <i class="bi bi-calendar-x"></i>
-                <span>Blackout Dates</span>
-            </a>
+            <div class="tile">
+                <i class="bi bi-envelope"></i>
+                <div class="tile-body"><span class="lbl">Email</span><p class="val">{{ profile.get('email', 'N/A') }}</p></div>
+            </div>
 
-            <a href="#" class="nav-item">
-                <i class="bi bi-calendar-week"></i>
-                <span>My Schedule</span>
-            </a>
+            <div class="tile">
+                <i class="bi bi-calendar-event"></i>
+                <div class="tile-body"><span class="lbl">Account Created</span><p class="val">{{ profile.get('createdAt', 'N/A') }}</p></div>
+            </div>
 
-            <a href="#" class="nav-item">
-                <i class="bi bi-calendar-check"></i>
-                <span>Appointments</span>
-            </a>
+            <div class="tile">
+                <i class="bi bi-shield-check"></i>
+                <div class="tile-body"><span class="lbl">Account Status</span><p class="val">Registered</p></div>
+            </div>
 
-        </nav>
+            <div class="tile">
+                <i class="bi bi-image"></i>
+                <div class="tile-body"><span class="lbl">Profile Photo</span><p class="val">{{ 'Uploaded' if profile.get('photoKey') else 'Not uploaded' }}</p></div>
+            </div>
 
-        <div class="sidebar-bottom">
-            <form action="{{ url_for('auth.logout') }}" method="POST">
-                <button type="submit" class="nav-item logout-btn">
-                    <i class="bi bi-box-arrow-left"></i>
-                    <span>Logout</span>
-                </button>
-            </form>
+            <!-- Editable: phone -->
+            <div class="tile edit">
+                <i class="bi bi-telephone"></i>
+                <div class="tile-body">
+                    <label class="lbl" for="phone">Phone Number <span class="pill"><i class="bi bi-pencil"></i> Editable</span></label>
+                    <input type="tel" id="phone" name="phone" class="form-control"
+                           value="{{ profile.get('phone', '') }}" required>
+                </div>
+            </div>
+
+            <!-- Editable: experience -->
+            <div class="tile edit">
+                <i class="bi bi-briefcase"></i>
+                <div class="tile-body">
+                    <label class="lbl" for="yearsExperience">Experience (Years) <span class="pill"><i class="bi bi-pencil"></i> Editable</span></label>
+                    <input type="number" id="yearsExperience" name="yearsExperience" class="form-control"
+                           value="{{ profile.get('yearsExperience', 0) }}" min="0" max="80" step="1" required>
+                </div>
+            </div>
+
+            <!-- Editable: languages -->
+            <div class="tile edit">
+                <i class="bi bi-translate"></i>
+                <div class="tile-body">
+                    <label class="lbl" for="languagesSpoken">Languages Spoken <span class="pill"><i class="bi bi-pencil"></i> Editable</span></label>
+                    <input type="text" id="languagesSpoken" name="languagesSpoken" class="form-control"
+                           value="{{ langs | join(', ') }}" placeholder="English, Hindi, Telugu">
+                    <span class="hint">Separate languages with commas.</span>
+                    <div class="lang-chips" id="langChips">
+                        {% for l in langs %}<span>{{ l }}</span>{% endfor %}
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-    </aside>
+        <div class="actions">
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Save Changes</button>
+        </div>
 
+    </form>
 
-    <!-- Main Content -->
-    <main class="main-content">
+</main>
 
-        <header class="topbar">
 
-            <div>
-                <h5 style="color: #1E1E1C; font-weight: 700;">My Profile</h5>
-                <p style="color: rgba(30, 30, 28, 0.65);">Manage your professional information.</p>
-            </div>
-
-            <div class="topbar-right">
-                <div class="profile-avatar">
-                    <i class="bi bi-person-fill"></i>
-                </div>
-            </div>
-
-        </header>
-
-
-        <section class="dashboard-content">
-
-            <div class="page-heading">
-                <div>
-                    <h2 style="color: #1E1E1C; font-weight: 700;">Doctor Profile</h2>
-                    <p style="color: rgba(30, 30, 28, 0.65);">Manage your registered information.</p>
-                </div>
-            </div>
-
-
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show"
-                             role="alert">
-                            {{ message }}
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="alert"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-
-
-            <!-- Profile Header -->
-            <div class="content-card mb-4">
-
-                <div class="d-flex align-items-center gap-3">
-
-                    <div class="profile-picture-section">
-    <div class="profile-picture-preview">
-        <img
-    id="profilePreview"
-    src="{{ profile.photoUrl or url_for('static', filename='images/default-profile.png') }}"
-    alt="Profile Picture"
->
-    </div>
-
-    <div class="profile-picture-controls">
-        <h4>Profile Picture</h4>
-        <p>Upload a JPG, PNG, or WebP image.</p>
-
-        <input
-            type="file"
-            id="photoInput"
-            accept="image/jpeg,image/png,image/webp"
-            hidden
-        >
-
-        <button type="button" id="choosePhotoBtn">
-            Change Picture
-        </button>
-
-        <button type="button" id="uploadPhotoBtn" disabled>
-            Upload Picture
-        </button>
-
-        <p id="photoUploadStatus"></p>
-    </div>
-</div>
-
-                    <div>
-                        <h4 class="mb-1">
-                            {{ profile.get('fullName', 'Doctor') }}
-                        </h4>
-
-                        <p class="text-muted mb-1">
-                            {{ profile.get('email', 'N/A') }}
-                        </p>
-
-                        <span class="badge bg-success">
-                            Registered Doctor
-                        </span>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- Editable Profile Form -->
-            <form method="POST"
-                  action="{{ url_for('profile.index') }}">
-
-                <!-- Personal Information -->
-                <div class="content-card mb-4">
-
-                    <div class="card-heading">
-                        <div>
-                            <h5>
-                                <i class="bi bi-person me-2"></i>
-                                Personal Information
-                            </h5>
-
-                            <p>Update your basic contact information.</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-4">
-
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                Full Name
-                            </label>
-
-                            <input type="text"
-                                   name="fullName"
-                                   class="form-control"
-                                   value="{{ profile.get('fullName', '') }}"
-                                   maxlength="255"
-                                   required>
-                        </div>
-
-
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                Email Address
-                            </label>
-
-                            <input type="email"
-                                   class="form-control"
-                                   value="{{ profile.get('email', '') }}"
-                                   readonly>
-
-                            <small class="text-muted">
-                                Email cannot currently be changed.
-                            </small>
-                        </div>
-
-
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                Phone Number
-                            </label>
-
-                            <input type="tel"
-                                   name="phone"
-                                   class="form-control"
-                                   value="{{ profile.get('phone', '') }}"
-                                   required>
-                        </div>
-
-
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                Doctor ID
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   value="{{ profile.get('doctorId', '') }}"
-                                   readonly>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Professional Information -->
-                <div class="content-card mb-4">
-
-                    <div class="card-heading">
-                        <div>
-                            <h5>
-                                <i class="bi bi-briefcase me-2"></i>
-                                Professional Information
-                            </h5>
-
-                            <p>Update your professional experience.</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-4">
-
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                Years of Experience
-                            </label>
-
-                            <input type="number"
-                                   name="yearsExperience"
-                                   class="form-control"
-                                   value="{{ profile.get('yearsExperience', 0) }}"
-                                   min="0"
-                                   max="80"
-                                   step="1"
-                                   required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label" for="languagesSpoken">
-                                Languages Spoken
-                            </label>
-
-                            <input type="text"
-                                   id="languagesSpoken"
-                                   name="languagesSpoken"
-                                   class="form-control"
-                                   value="{{ profile.get('languagesSpoken', [])|join(', ') }}"
-                                   placeholder="English, Hindi, Telugu">
-
-                            <small class="text-muted">
-                                Separate languages with commas.
-                            </small>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                Profile Photo
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   value="{{ 'Uploaded' if profile.get('photoKey') else 'Not uploaded' }}"
-                                   readonly>
-
-                            <small class="text-muted">
-                                Photo management will be implemented separately.
-                            </small>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Account Information -->
-                <div class="content-card mb-4">
-
-                    <div class="card-heading">
-                        <div>
-                            <h5>
-                                <i class="bi bi-shield-check me-2"></i>
-                                Account Information
-                            </h5>
-
-                            <p>Your MediSlot account details.</p>
-                        </div>
-                    </div>
-
-                    <div class="row g-4">
-
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                Account Created
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   value="{{ profile.get('createdAt', 'N/A') }}"
-                                   readonly>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">
-                                Account Status
-                            </label>
-
-                            <input type="text"
-                                   class="form-control"
-                                   value="Registered"
-                                   readonly>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <!-- Action Buttons -->
-                <div class="d-flex justify-content-end gap-3 mb-4">
-
-                    <a href="{{ url_for('dashboard.index') }}"
-                       class="btn btn-outline-secondary">
-                        Cancel
-                    </a>
-
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle me-2"></i>
-                        Save Changes
-                    </button>
-
-                </div>
-
-            </form>
-
-        </section>
-
-    </main>
-
-</div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+
+<script>
+  (function () {
+    /* ---- Sidebar: hidden on load, opened with the Menu button ---- */
+    var body = document.body;
+    var menuBtn = document.getElementById("menuBtn");
+    var closeBtn = document.getElementById("closeNav");
+    var scrim = document.getElementById("scrim");
+    var sidebar = document.getElementById("sidebar");
+
+    function setNav(open) {
+      body.classList.toggle("nav-open", open);
+      menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      sidebar.setAttribute("aria-hidden", open ? "false" : "true");
+      if (open) { closeBtn.focus(); } else { menuBtn.focus({ preventScroll: true }); }
+    }
+    menuBtn.addEventListener("click", function () { setNav(!body.classList.contains("nav-open")); });
+    closeBtn.addEventListener("click", function () { setNav(false); });
+    scrim.addEventListener("click", function () { setNav(false); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && body.classList.contains("nav-open")) setNav(false);
+    });
+
+    /* ---- Replay a pop animation when a new picture is chosen/uploaded ---- */
+    var img = document.getElementById("profilePreview");
+    if (img && "MutationObserver" in window) {
+      new MutationObserver(function () {
+        img.classList.remove("photo-updated");
+        void img.offsetWidth;
+        img.classList.add("photo-updated");
+      }).observe(img, { attributes: true, attributeFilter: ["src"] });
+      img.addEventListener("animationend", function () { img.classList.remove("photo-updated"); });
+    }
+
+    /* ---- Language chips update as you type ---- */
+    var input = document.getElementById("languagesSpoken");
+    var chips = document.getElementById("langChips");
+    if (input && chips) {
+      input.addEventListener("input", function () {
+        chips.innerHTML = "";
+        input.value.split(",").map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (l) {
+          var c = document.createElement("span");
+          c.textContent = l;
+          chips.appendChild(c);
+        });
+      });
+    }
+  })();
+</script>
 
 </body>
 </html>
