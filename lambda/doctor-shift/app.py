@@ -69,19 +69,31 @@ def invoke_slot_materializer(doctor_id):
             "SLOT_MATERIALIZER_FUNCTION_ARN is not configured"
         )
 
+    logger.info(
+        "Invoking slot materializer. Doctor=%s Function=%s",
+        doctor_id,
+        function_name,
+    )
+
     result = lambda_client.invoke(
         FunctionName=function_name,
         InvocationType="Event",
-        Payload=json.dumps(
-            {"doctor_id": doctor_id}
-        ).encode("utf-8"),
+        Payload=json.dumps({
+            "doctor_id": doctor_id
+        }).encode("utf-8"),
+    )
+
+    logger.info(
+        "Slot materializer invocation accepted. "
+        "Doctor=%s StatusCode=%s",
+        doctor_id,
+        result["StatusCode"],
     )
 
     if result["StatusCode"] != 202:
         raise RuntimeError(
             "Slot materializer invocation was not accepted"
         )
-
 
 def get_db_connection():
     secret_arn = get_parameter("secret-arn")
