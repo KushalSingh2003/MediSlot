@@ -258,6 +258,19 @@ Resources:
       SubnetIds: [ !Ref PrivateSubnetA, !Ref PrivateSubnetB ]
       SecurityGroupIds: [ !Ref EndpointSg ]
       PrivateDnsEnabled: true
+  LambdaEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Condition: UseInterfaceEndpoints
+    Properties:
+      VpcId: !Ref MediSlotVpc
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.lambda'
+      VpcEndpointType: Interface
+      SubnetIds:
+        - !Ref PrivateSubnetA
+        - !Ref PrivateSubnetB
+      SecurityGroupIds:
+        - !Ref EndpointSg
+      PrivateDnsEnabled: true
   RefundPolicyParameter:
     Type: AWS::SSM::Parameter
     Properties:
