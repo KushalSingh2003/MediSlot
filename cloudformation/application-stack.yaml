@@ -248,6 +248,7 @@ Resources:
         Variables:
           ENV: !Ref Env
           SSM_PREFIX: !Sub '/${ProjectName}/${Env}'
+          SLOT_MATERIALIZER_FUNCTION_ARN: !GetAtt SlotMaterializerFunction.Arn
       VpcConfig:
         SubnetIds: !Split
           - ','

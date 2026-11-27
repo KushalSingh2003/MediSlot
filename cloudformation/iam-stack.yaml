@@ -1005,6 +1005,12 @@ Resources:
             - secretsmanager:GetSecretValue
             Resource:
             - Fn::ImportValue: !Sub '${ProjectName}-${Env}-data-DatabaseSecretArn'
+          - Sid: InvokeSlotMaterializer
+            Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource: !Sub 'arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${ProjectName}-${Env}-slot-materializer'
+          
   PatientAppointmentsRole:
     Type: AWS::IAM::Role
     Metadata:
