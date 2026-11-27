@@ -12,6 +12,7 @@ logger.setLevel(logging.INFO)
 
 ssm = boto3.client("ssm")
 secretsmanager = boto3.client("secretsmanager")
+lambda_client = boto3.client("lambda")
 
 ENV = os.environ.get("ENV", "dev")
 SSM_PREFIX = os.environ.get("SSM_PREFIX", f"/medislot/{ENV}")
@@ -36,6 +37,8 @@ class InvalidExistingSchedule(Exception):
 
 class TemplateSelectionConflict(Exception):
     pass
+class ConsultationTypeRequired(Exception):
+    pass
 
 
 def response(status_code, body):
@@ -56,6 +59,28 @@ def get_parameter(name):
         WithDecryption=True,
     )
     return result["Parameter"]["Value"]
+def invoke_slot_materializer(doctor_id):
+    function_name = os.environ.get(
+        "SLOT_MATERIALIZER_FUNCTION_NAME"
+    )
+
+    if not function_name:
+        raise RuntimeError(
+            "SLOT_MATERIALIZER_FUNCTION_NAME is not configured"
+        )
+
+    result = lambda_client.invoke(
+        FunctionName=function_name,
+        InvocationType="Event",
+        Payload=json.dumps(
+            {"doctor_id": doctor_id}
+        ).encode("utf-8"),
+    )
+
+    if result["StatusCode"] != 202:
+        raise RuntimeError(
+            "Slot materializer invocation was not accepted"
+        )
 
 
 def get_db_connection():
@@ -220,6 +245,22 @@ def lock_doctor(cursor, doctor_id):
     if not cursor.fetchone():
         raise LookupError("Doctor not found")
 
+def require_active_consultation_type(cursor, doctor_id):
+    cursor.execute(
+        """
+        SELECT 1
+        FROM doctor_consultation_type
+        WHERE doctor_id = %s
+          AND active = TRUE
+        LIMIT 1
+        """,
+        (doctor_id,),
+    )
+
+    if not cursor.fetchone():
+        raise ConsultationTypeRequired(
+            "Add and activate a consultation type before selecting a shift."
+        )
 
 def load_active_template(cursor, template_id):
     cursor.execute(
@@ -416,6 +457,27 @@ def get_shift_for_date(cursor, doctor_id, shift_date):
         "start_time": str(row["start_time"]),
         "end_time": str(row["end_time"]),
     }
+def has_future_booked_appointments(cursor, doctor_id):
+    cursor.execute(
+        """
+        SELECT 1
+        FROM appointment_slot AS s
+        JOIN appointments AS a
+          ON a.slot_id = s.slot_id
+        WHERE s.doctor_id = %s
+          AND s.slot_date >= CURRENT_DATE
+          AND a.status = 'BOOKED'
+        LIMIT 1
+        FOR UPDATE
+        """,
+        (doctor_id,),
+    )
+
+    return cursor.fetchone() is not None
+def is_delete_confirmed(event):
+    query = event.get("queryStringParameters") or {}
+
+    return query.get("confirm", "").lower() == "true"
 
 
 def delete_unbooked_future_slots(cursor, doctor_id):
@@ -478,6 +540,7 @@ def lambda_handler(event, context):
         if method == "POST":
             with connection.cursor() as cursor:
                 lock_doctor(cursor, doctor_id)
+                require_active_consultation_type(cursor, doctor_id)
                 template = load_active_template(cursor, template_id)
                 result = save_weekly_shifts(
                     cursor,
@@ -486,6 +549,29 @@ def lambda_handler(event, context):
                 )
 
             connection.commit()
+            try:
+                invoke_slot_materializer(doctor_id)
+            except (BotoCoreError, ClientError, RuntimeError):
+                logger.exception(
+                    "Shift saved, but materializer invocation failed: "
+                    "request_id=%s doctor_id=%s",
+                    request_id,
+                    doctor_id,
+                )
+
+                return response(
+                    503,
+                    {
+                        "code": "SLOT_MATERIALIZATION_QUEUE_FAILED",
+                        "message": (
+                            "Your shift schedule was saved, "
+                            "but slot generation could not be queued. "
+                            "Please contact support."
+                        ),
+                        "shift_saved": True,
+                    },
+                )
+            
 
             status_code = 200 if result["already_configured"] else 201
             message = (
@@ -544,6 +630,18 @@ def lambda_handler(event, context):
         # DELETE: remove this doctor's selection, not the shared template.
         with connection.cursor() as cursor:
             lock_doctor(cursor, doctor_id)
+            has_bookings = has_future_booked_appointments(cursor, doctor_id)
+            if has_bookings:    
+                return response(
+                    409,
+                    {
+                        "code": "FUTURE_BOOKED_APPOINTMENTS",
+                        "message": (
+                            "You have future booked appointments , you cannot change your shift timings. Please cancel your appointments before changing your shift timings."
+                            
+                        ),
+                    },
+                )
 
             slots_deleted = delete_unbooked_future_slots(
                 cursor,
@@ -574,6 +672,17 @@ def lambda_handler(event, context):
 
     except InvalidRequestError as exc:
         return response(400, {"message": str(exc)})
+    except ConsultationTypeRequired as exc:
+        if connection:
+            connection.rollback()
+
+        return response(
+            409,
+            {
+                "code": "CONSULTATION_TYPE_REQUIRED",
+                "message": str(exc),
+            },
+        )
 
     except TemplateSelectionConflict as exc:
         if connection:

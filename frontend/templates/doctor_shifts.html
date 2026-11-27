@@ -104,76 +104,146 @@
     /* ---------- Hero ---------- */
     .hero {
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
         overflow: hidden;
-        padding: clamp(1.5rem, 4vw, 3rem);
-        border: 1px solid rgba(255, 255, 255, .75);
+        min-height: clamp(190px, 26vw, 250px);
+        padding: clamp(1.75rem, 4vw, 3rem);
+        border: 2px solid rgba(255, 255, 255, .7);
         border-radius: 28px;
-        background:
-            radial-gradient(circle at 90% 10%, rgba(255,255,255,.55), transparent 30%),
-            linear-gradient(120deg, var(--sand), rgba(47,107,255,.18), var(--sand));
-        background-size: 100% 100%, 220% 220%;
-        box-shadow: var(--shadow);
+        background: linear-gradient(115deg, var(--blue) 0%, #7EA3FF 55%, var(--sand) 100%);
+        background-size: 200% 200%;
+        box-shadow: 0 20px 44px rgba(47, 107, 255, .30);
         animation: rise-in .7s .08s var(--ease) both,
-                   gradient-drift 12s ease-in-out infinite alternate;
+                   gradient-drift 10s ease-in-out infinite alternate;
     }
 
-    .hero::before,
-    .hero::after {
+    /* decorative background shapes */
+    .hero-deco {
         position: absolute;
-        border: 1px solid rgba(47, 107, 255, .2);
-        border-radius: 50%;
-        content: "";
+        inset: 0;
+        z-index: 0;
         pointer-events: none;
     }
 
-    .hero::before {
-        top: -70px;
-        left: 48%;
-        width: 140px;
-        height: 140px;
-        animation: float 9s ease-in-out infinite reverse;
+    .orb { position: absolute; border-radius: 50%; }
+
+    .orb-1 {
+        top: -90px;
+        right: 18%;
+        width: 230px;
+        height: 230px;
+        background: var(--sand);
+        opacity: .9;
+        animation: float 9s ease-in-out infinite;
     }
 
-    .hero::after {
-        right: 7%;
-        bottom: -85px;
-        width: 210px;
-        height: 210px;
-        animation: float 7s ease-in-out infinite;
+    .orb-2 {
+        bottom: -70px;
+        left: 36%;
+        width: 170px;
+        height: 170px;
+        border: 3px solid rgba(255, 255, 255, .75);
+        animation: float 7s ease-in-out infinite reverse;
     }
 
-    .hero > * { position: relative; z-index: 1; }
+    .orb-3 {
+        top: 18%;
+        left: 52%;
+        width: 26px;
+        height: 26px;
+        background: var(--ink);
+        animation: float 5s ease-in-out infinite;
+    }
 
-    .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: .5rem;
-        margin-bottom: 1rem;
-        padding: .45rem .75rem;
-        border: 1px solid rgba(47, 107, 255, .18);
-        border-radius: 999px;
-        color: var(--blue);
-        background: rgba(255,255,255,.72);
-        font-size: .78rem;
-        font-weight: 800;
-        letter-spacing: .08em;
-        text-transform: uppercase;
+    .dots {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        width: 120px;
+        height: 70px;
+        background-image: radial-gradient(rgba(255,255,255,.75) 2px, transparent 2.5px);
+        background-size: 16px 16px;
     }
 
     .hero h1 {
-        max-width: 700px;
+        position: relative;
+        z-index: 1;
         margin: 0;
-        font-size: clamp(2rem, 5vw, 3.4rem);
-        font-weight: 800;
-        letter-spacing: -.045em;
+        color: var(--white);
+        font-size: clamp(2.8rem, 8vw, 5.2rem);
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -.05em;
+        text-shadow: 0 6px 0 rgba(30, 30, 28, .22);
     }
 
-    .hero p {
-        max-width: 650px;
-        margin: 1rem 0 0;
-        color: var(--muted);
-        font-size: 1.05rem;
-        line-height: 1.7;
+    .hero h1::after {
+        display: block;
+        width: 58%;
+        height: 10px;
+        margin-top: .9rem;
+        border-radius: 999px;
+        content: "";
+        background: var(--sand);
+        box-shadow: 0 4px 0 rgba(30, 30, 28, .18);
+        transform-origin: left;
+        animation: bar-grow .9s .35s var(--ease) both;
+    }
+
+    /* icon cluster on the right */
+    .hero-icons {
+        position: relative;
+        z-index: 1;
+        flex: 0 0 auto;
+        width: 190px;
+        height: 150px;
+    }
+
+    .hi {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        border: 2px solid rgba(255, 255, 255, .85);
+        box-shadow: 0 14px 28px rgba(30, 30, 28, .22);
+    }
+
+    .hi-main {
+        top: 20px;
+        left: 40px;
+        width: 100px;
+        height: 100px;
+        border-radius: 28px;
+        color: var(--blue);
+        background: var(--white);
+        font-size: 2.8rem;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .hi-a {
+        top: 0;
+        right: 0;
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        color: var(--white);
+        background: var(--ink);
+        font-size: 1.5rem;
+        animation: float 5s .4s ease-in-out infinite reverse;
+    }
+
+    .hi-b {
+        bottom: 0;
+        left: 0;
+        width: 56px;
+        height: 56px;
+        border-radius: 18px;
+        color: var(--blue);
+        background: var(--sand);
+        font-size: 1.5rem;
+        animation: float 7s .8s ease-in-out infinite;
     }
 
     /* ---------- Section heading ---------- */
@@ -1027,8 +1097,13 @@
     }
 
     @keyframes gradient-drift {
-        from { background-position: 0 0, 0% 50%; }
-        to { background-position: 0 0, 100% 50%; }
+        from { background-position: 0% 50%; }
+        to { background-position: 100% 50%; }
+    }
+
+    @keyframes bar-grow {
+        from { transform: scaleX(0); }
+        to { transform: scaleX(1); }
     }
 
     @keyframes pop-in {
@@ -1110,11 +1185,15 @@
         .submit-row .btn-select { width: 100%; }
         .range-arrow { display: none; }
         .btn-apply { width: 100%; }
+        .hero-icons { width: 130px; height: 110px; }
+        .hi-main { top: 14px; left: 26px; width: 72px; height: 72px; border-radius: 22px; font-size: 2rem; }
+        .hi-a, .hi-b { width: 42px; height: 42px; border-radius: 14px; font-size: 1.15rem; }
     }
 
     @media (max-width: 520px) {
         .shifts-page { width: min(100% - 1.25rem, 1120px); }
         .hero { border-radius: 20px; }
+        .hero-icons { display: none; }
         .seg-btn { font-size: .82rem; padding: .5rem .3rem; }
     }
 
@@ -1148,13 +1227,32 @@
 </script>
 
 <main class="shifts-page container">
+  {# Display backend messages, including the 409 appointment conflict returned by the delete route. #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ 'danger' if category == 'error' else category }}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
   <section class="hero">
-    <span class="eyebrow">
-      <i class="bi bi-calendar2-check"></i>
-      Schedule
-    </span>
+    <div class="hero-deco" aria-hidden="true">
+      <span class="orb orb-1"></span>
+      <span class="orb orb-2"></span>
+      <span class="orb orb-3"></span>
+      <span class="dots"></span>
+    </div>
+
     <h1>My shifts</h1>
-    <p>Showing shifts from {{ start_date }} through {{ end_date }}.</p>
+
+    <div class="hero-icons" aria-hidden="true">
+      <span class="hi hi-main"><i class="bi bi-calendar2-check-fill"></i></span>
+      <span class="hi hi-a"><i class="bi bi-clock-fill"></i></span>
+      <span class="hi hi-b"><i class="bi bi-heart-pulse-fill"></i></span>
+    </div>
   </section>
 
   {% if has_shifts %}
@@ -1279,12 +1377,13 @@
     <section class="panel">
       <p class="panel-note">
         <strong>Want a different template?</strong>
-        To choose a different template, remove your current selection first.
+        You can remove your current selection only when you have no future booked appointments.
+        If appointments exist, the request will be rejected and your shifts will remain unchanged.
       </p>
       <form
         method="post"
         action="{{ url_for('doctor_shifts.delete_template_selection') }}"
-        onsubmit="return confirm('Remove your current shift template?');"
+        onsubmit="return confirm('Remove your current shift template? This is allowed only if you have no future booked appointments.');"
         class="m-0"
       >
         <button type="submit" class="btn-remove">

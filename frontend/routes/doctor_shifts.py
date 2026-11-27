@@ -55,7 +55,9 @@ def index():
 
     if templates_response.status_code == 200:
         try:
+        
             payload = templates_response.json()
+            print(payload)
         except ValueError:
             payload = None
 
@@ -136,11 +138,22 @@ def select_template():
             _response_message(api_response, "Shift template selected."),
             "success",
         )
+    elif api_response.status_code == 409:
+        data = api_response.json()
+        if data.get("code"=="CONSULTATION_TYPE_REQUIRED"):
+            flash(
+                "You must have an active consultation type to select a shift template.",
+                "danger",
+            )
     else:
         flash(
-            _response_message(api_response, "Unable to select that template."),
+            _response_message(
+                api_response,
+                "Unable to select the shift template.",
+            ),
             "danger",
         )
+        
 
     return redirect(url_for("doctor_shifts.index"))
 
@@ -148,6 +161,7 @@ def select_template():
 @doctor_shifts_bp.route("/delete", methods=["POST"])
 @login_required
 def delete_template_selection():
+
     api_response = APIClient.request(
         "DELETE",
         "/doctors/me/shifts",
@@ -161,6 +175,13 @@ def delete_template_selection():
             ),
             "success",
         )
+    elif api_response.status_code == 409:
+        data = api_response.json()
+        if data.get("code") == "FUTURE_BOOKED_APPOINTMENTS":
+            flash(
+                "You have future booked appointments , you cannot change your shift timings. Please cancel your appointments before changing your shift timings.",
+                "danger",
+            )
     else:
         flash(
             _response_message(
