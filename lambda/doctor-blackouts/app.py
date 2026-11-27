@@ -1365,7 +1365,7 @@ def create_blackout(doctor_id, blackout_date, request_id):
                             "Appointment amount cannot be negative."
                         )
 
-                    reason = "DOCTOR_BLACKOUT"
+                    reason = "The doctor has marked this date as unavailable"
                     cursor.execute(
                         """
                         INSERT INTO refund_ledger (

@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700&display=swap">
 
 <style>
 /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
@@ -31,46 +31,195 @@ body {
 @keyframes fade { from{opacity:0} to{opacity:1} }
 @keyframes up   { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:none} }
 @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(47,107,255,.6)} 50%{box-shadow:0 0 0 7px rgba(47,107,255,0)} }
+@keyframes slideRight { from{opacity:0;transform:translateX(-30px)} to{opacity:1;transform:none} }
+@keyframes fabIn  { from{opacity:0;transform:translateX(-40px) scale(.5)} to{opacity:1;transform:none} }
+@keyframes fabRing{ 0%{transform:scale(1);opacity:.9} 100%{transform:scale(1.55);opacity:0} }
+@keyframes heartBeat { 0%,100%{transform:scale(1)} 15%{transform:scale(1.14)} 30%{transform:scale(1)} 45%{transform:scale(1.09)} }
 
 .layout { display:flex; min-height:100vh; }
 
-/* Sidebar */
-.sidebar { position:relative; overflow:hidden; width:265px; min-width:265px; padding:28px 20px;
-    background:linear-gradient(180deg,#1E1E1C,#2a2a27); box-shadow:4px 0 24px rgba(30,30,28,.25); }
-.sidebar::before { content:""; position:absolute; left:0; right:0; bottom:0; height:240px; pointer-events:none;
-    background:radial-gradient(circle at 20% 100%,rgba(47,107,255,.45),transparent 70%); }
-.sidebar > * { position:relative; z-index:1; }
-.logo { font-size:25px; font-weight:800; color:var(--beige); margin-bottom:55px; display:flex; align-items:center; gap:10px; }
-.logo i { display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:13px;
-    background:linear-gradient(135deg,var(--blue-300),var(--blue-500)); color:#fff; font-size:20px;
-    box-shadow:0 8px 18px rgba(47,107,255,.45); }
-.menu-heading { color:#a89d86; font-size:12px; font-weight:700; margin:25px 12px 15px; letter-spacing:1.2px; }
-.nav-link { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--beige); padding:14px 16px;
-    margin-bottom:8px; border-radius:14px; font-size:15px; font-weight:500; transition:.2s; }
-.nav-link i { font-size:17px; color:var(--blue-300); }
-.nav-link:hover { background:rgba(216,203,179,.12); color:#fff; transform:translateX(5px); }
-.nav-link.active { background:linear-gradient(135deg,var(--blue-500),var(--blue-600)); color:#fff; font-weight:600;
-    box-shadow:0 10px 20px rgba(47,107,255,.4); }
-.nav-link.active i { color:#fff; }
+/* ======================================================
+   SIDE MENU (same look as the other MediSlot pages)
+   Built with plain JS so it does not need Bootstrap.
+   ====================================================== */
+.menu-fab { position:fixed; top:18px; left:18px; z-index:40; width:54px; height:54px; display:grid; place-items:center;
+    border:0; border-radius:18px; cursor:pointer; background:linear-gradient(135deg,var(--blue-300),var(--blue-500));
+    box-shadow:0 12px 28px rgba(47,107,255,.45);
+    transition:transform .4s var(--ease), box-shadow .4s var(--ease), border-radius .4s var(--ease);
+    animation:fabIn .9s .3s var(--ease) both; }
+.menu-fab::after { content:""; position:absolute; inset:0; border-radius:inherit; border:2px solid rgba(126,163,255,.8);
+    animation:fabRing 2.4s ease-out infinite; pointer-events:none; }
+.menu-fab:hover { transform:translateY(-3px) scale(1.06); box-shadow:0 18px 36px rgba(47,107,255,.55); border-radius:50%; }
+.menu-fab:active { transform:scale(.92); }
+.menu-fab:focus-visible { outline:3px solid var(--beige); outline-offset:3px; }
+.menu-fab .bars { display:flex; flex-direction:column; gap:5px; width:22px; }
+.menu-fab .bars span { display:block; height:3px; border-radius:3px; background:#fff; transition:width .35s var(--ease); }
+.menu-fab .bars span:nth-child(2) { width:70%; }
+.menu-fab .bars span:nth-child(3) { width:45%; }
+.menu-fab:hover .bars span { width:100%; }
+
+.side-backdrop { position:fixed; inset:0; z-index:1040; background:rgba(30,30,28,.55); backdrop-filter:blur(5px);
+    opacity:0; visibility:hidden; transition:opacity .4s ease, visibility .4s ease; }
+.side-backdrop.show { opacity:1; visibility:visible; }
+
+.ms-side { position:fixed; top:0; bottom:0; left:0; z-index:1050; width:310px; max-width:88vw; display:flex; flex-direction:column;
+    color:var(--beige); border:0;
+    background:radial-gradient(360px 260px at 100% 0%,rgba(47,107,255,.45),transparent 70%),
+               radial-gradient(300px 240px at 0% 100%,rgba(126,163,255,.25),transparent 70%),var(--ink);
+    box-shadow:30px 0 70px rgba(30,30,28,.45);
+    transform:translateX(-100%); visibility:hidden;
+    transition:transform .55s var(--ease), visibility .55s; }
+.ms-side.show { transform:none; visibility:visible; }
+
+.side-head { display:flex; align-items:center; justify-content:space-between; padding:1.5rem 1.4rem 1rem; }
+.side-brand { display:flex; align-items:center; gap:12px; font-family:'Outfit',sans-serif; font-weight:700; font-size:1.45rem; color:#fff; text-decoration:none; }
+.side-brand:hover { color:#fff; }
+.side-logo { display:grid; place-items:center; width:42px; height:42px; border-radius:13px;
+    background:linear-gradient(135deg,var(--blue-300),var(--blue-500)); box-shadow:0 8px 20px rgba(47,107,255,.5);
+    animation:heartBeat 1.6s ease-in-out infinite; }
+.side-logo svg { width:22px; height:22px; fill:#fff; }
+.side-close { width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:50%; cursor:pointer;
+    background:rgba(216,203,179,.12); color:var(--beige); font-size:15px; transition:transform .4s var(--ease), background .3s; }
+.side-close:hover { transform:rotate(180deg) scale(1.12); background:rgba(216,203,179,.25); color:#fff; }
+.side-close:focus-visible { outline:3px solid var(--beige); outline-offset:2px; }
+
+.side-body { flex:1; display:flex; flex-direction:column; overflow-y:auto; padding:.4rem 1.1rem 1.4rem; }
+.side-label { margin:.6rem .6rem .5rem; font-size:.78rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:rgba(216,203,179,.55); }
+.side-nav { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.side-link { position:relative; display:flex; align-items:center; gap:14px; padding:.85rem 1rem; border-radius:16px;
+    font-weight:700; font-size:15px; color:var(--beige); text-decoration:none; overflow:hidden;
+    transition:background-color .3s ease, color .3s ease, transform .35s var(--ease); }
+.side-link .ico { display:grid; place-items:center; flex-shrink:0; width:38px; height:38px; border-radius:12px;
+    background:rgba(216,203,179,.1); transition:background-color .3s ease, transform .4s var(--ease); }
+.side-link .ico svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.side-link .arrow { margin-left:auto; opacity:0; transform:translateX(-8px); transition:opacity .3s ease, transform .35s var(--ease); }
+.side-link:hover { color:#fff; background:rgba(47,107,255,.22); transform:translateX(6px); }
+.side-link:hover .ico { background:var(--blue-500); transform:rotate(-8deg) scale(1.08); }
+.side-link:hover .arrow { opacity:1; transform:none; }
+.side-link.active { color:#fff; background:linear-gradient(120deg,var(--blue-500),var(--blue-300)); box-shadow:0 12px 26px rgba(47,107,255,.4); }
+.side-link.active .ico { background:rgba(255,255,255,.22); }
+.side-link.active .arrow { opacity:1; transform:none; }
+.side-link:focus-visible { outline:3px solid var(--beige); outline-offset:2px; }
+
+.ms-side.show .side-nav li { animation:slideRight .55s var(--ease) both; }
+.ms-side.show .side-nav li:nth-child(1) { animation-delay:.18s; }
+.ms-side.show .side-nav li:nth-child(2) { animation-delay:.26s; }
+.ms-side.show .side-nav li:nth-child(3) { animation-delay:.34s; }
+.ms-side.show .side-nav li:nth-child(4) { animation-delay:.42s; }
+.ms-side.show .side-nav li:nth-child(5) { animation-delay:.50s; }
+.ms-side.show .side-nav li:nth-child(6) { animation-delay:.58s; }
+
+.side-foot { margin-top:auto; padding-top:1.2rem; border-top:1px solid rgba(216,203,179,.15); }
+.side-link.logout:hover { background:rgba(220,53,69,.25); }
+.side-link.logout:hover .ico { background:#dc3545; }
+.side-note { margin:.9rem .6rem 0; font-size:.8rem; color:rgba(216,203,179,.5); }
 
 /* Main */
 .main { flex:1; min-width:0; }
-.topbar { background:rgba(252,250,246,.8); backdrop-filter:blur(10px); padding:22px 38px; border-bottom:1px solid var(--line); }
+.topbar { background:rgba(252,250,246,.8); backdrop-filter:blur(10px); padding:22px 38px 22px 96px; border-bottom:1px solid var(--line); }
 .topbar h3 { margin:0 0 6px; font-size:19px; font-weight:700; }
 .topbar p  { margin:0; color:var(--ink-soft); font-size:14px; }
 .content { padding:36px 38px; }
 
-.page-heading { position:relative; overflow:hidden; display:flex; justify-content:space-between; align-items:center;
-    flex-wrap:wrap; gap:20px; margin-bottom:30px; padding:28px 30px; border-radius:22px; color:#fff;
-    background:linear-gradient(110deg,#1B4FD6,#2F6BFF 55%,#5A8BFF); box-shadow:0 14px 34px rgba(27,79,214,.28);
-    animation:up .8s var(--ease) backwards; }
-.page-heading h1 { font-size:28px; font-weight:800; margin:0 0 8px; letter-spacing:-.5px; }
-.page-heading p  { margin:0; font-size:14px; opacity:.9; }
+/* ======================================================
+   PAGE HERO  (bright, animated, 3D stethoscope)
+   ====================================================== */
+.page-hero { position:relative; overflow:hidden; isolation:isolate; display:flex; align-items:center; justify-content:space-between;
+    gap:1.5rem; margin-bottom:30px; padding:2.6rem 3rem 3.3rem; min-height:310px; border-radius:28px; color:#fff;
+    background:radial-gradient(520px 320px at 88% 20%,rgba(216,203,179,.55),transparent 65%),
+               radial-gradient(460px 280px at 8% 115%,rgba(126,163,255,.85),transparent 60%),
+               linear-gradient(120deg,#2F6BFF 0%,#4A82FF 48%,#7EA3FF 100%);
+    background-size:100% 100%,100% 100%,200% 200%;
+    box-shadow:0 26px 60px rgba(47,107,255,.3), inset 0 1px 0 rgba(255,255,255,.35);
+    animation:heroIn 1s var(--ease) both, gradientShift 12s ease-in-out infinite; }
+/* light sweep */
+.page-hero::before { content:""; position:absolute; top:-20%; bottom:-20%; left:-40%; width:30%; z-index:0; pointer-events:none;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent); transform:skewX(-18deg);
+    animation:heroSweep 6s 1.2s ease-in-out infinite; }
+/* drifting chart grid */
+.page-hero::after { content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background-image:linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px);
+    background-size:38px 38px;
+    -webkit-mask-image:radial-gradient(ellipse at 75% 50%,#000 0%,transparent 70%); mask-image:radial-gradient(ellipse at 75% 50%,#000 0%,transparent 70%);
+    animation:gridDrift 14s linear infinite; }
 
-.date-filter { display:flex; align-items:center; gap:12px; background:#fff; padding:12px 18px; border-radius:14px;
-    border:1px solid var(--beige); box-shadow:0 6px 16px rgba(30,30,28,.15); }
-.date-filter label { color:var(--blue-600); font-size:13px; font-weight:600; }
-.date-filter input { border:none; outline:none; font-family:inherit; font-size:14px; color:var(--ink); background:transparent; cursor:pointer; }
+.hero-copy { position:relative; z-index:2; max-width:540px; }
+.hero-chip { display:inline-flex; align-items:center; gap:9px; padding:.42rem .95rem; margin-bottom:1rem; border-radius:999px;
+    background:var(--beige); color:var(--ink); font-size:.85rem; font-weight:800; box-shadow:0 8px 20px rgba(30,30,28,.18);
+    animation:badgePop .8s .3s var(--ease) both; }
+.hero-chip i { width:9px; height:9px; border-radius:50%; background:var(--blue-500); animation:pulseBlue 1.8s infinite; }
+
+.page-hero h1 { margin:0 0 .7rem; font-size:clamp(2.1rem,4.4vw,3.2rem); font-weight:800; line-height:1.05; letter-spacing:-1px;
+    background:linear-gradient(100deg,#fff 0%,#fff 35%,var(--beige) 50%,#fff 65%,#fff 100%); background-size:250% 100%;
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
+    filter:drop-shadow(0 6px 16px rgba(30,30,28,.25));
+    animation:up .9s .25s var(--ease) both, textShine 5s 1.4s ease-in-out infinite; }
+.page-hero p { margin:0 0 1.2rem; max-width:470px; font-size:1.02rem; font-weight:500; line-height:1.65;
+    color:rgba(255,255,255,.96) !important; opacity:1; animation:up .9s .4s var(--ease) both; }
+
+.hero-legend { display:flex; flex-wrap:wrap; gap:.55rem; margin-bottom:1.2rem; }
+.hero-legend span { display:inline-flex; align-items:center; gap:8px; padding:.42rem .9rem; border-radius:999px; font-size:.82rem; font-weight:700;
+    color:#fff; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); backdrop-filter:blur(6px);
+    animation:badgePop .7s var(--ease) both; transition:transform .35s var(--ease), background-color .3s; }
+.hero-legend span:nth-child(1){animation-delay:.65s} .hero-legend span:nth-child(2){animation-delay:.8s} .hero-legend span:nth-child(3){animation-delay:.95s}
+.hero-legend span:hover { transform:translateY(-3px); background:rgba(255,255,255,.3); }
+.hero-legend b { width:10px; height:10px; border-radius:50%; display:inline-block; }
+.hero-legend .d-av { background:#fff; animation:pulseWhite 1.8s infinite; }
+.hero-legend .d-bk { background:var(--ink); box-shadow:0 0 0 2px rgba(255,255,255,.7); }
+.hero-legend .d-cl { background:var(--beige); }
+
+.date-filter { display:inline-flex; align-items:center; gap:12px; background:#fff; padding:12px 18px; border-radius:16px;
+    border:1px solid var(--beige); box-shadow:0 10px 24px rgba(30,30,28,.22);
+    animation:badgePop .8s 1.05s var(--ease) both; transition:transform .35s var(--ease), box-shadow .35s var(--ease); }
+.date-filter:hover, .date-filter:focus-within { transform:translateY(-3px); box-shadow:0 16px 32px rgba(30,30,28,.3), 0 0 0 4px rgba(255,255,255,.35); }
+.date-filter label { display:flex; align-items:center; gap:8px; color:var(--blue-600); font-size:13px; font-weight:700; margin:0; }
+.date-filter label i { display:inline-block; animation:calWiggle 3.4s ease-in-out 2s infinite; transform-origin:50% 80%; }
+.date-filter input { border:none; outline:none; font-family:inherit; font-size:14px; font-weight:600; color:var(--ink); background:transparent; cursor:pointer; }
+
+/* 3D stage */
+.hero-stage { position:relative; z-index:2; flex-shrink:0; width:270px; height:270px; perspective:900px; animation:stageIn 1.2s .35s var(--ease) both; }
+.stage-glow { position:absolute; inset:8%; border-radius:50%; filter:blur(10px);
+    background:radial-gradient(circle,rgba(255,255,255,.85),rgba(216,203,179,.55) 40%,transparent 70%); animation:glowPulse 3.4s ease-in-out infinite; }
+.stage-ring { position:absolute; inset:0; border-radius:50%; border:2px dashed rgba(255,255,255,.6); animation:spinSlow 22s linear infinite; }
+.stage-ring.r2 { inset:14%; border:2px solid rgba(216,203,179,.75); border-top-color:transparent; border-bottom-color:transparent; animation:spinSlow 9s linear infinite reverse; }
+.stage-ring::after { content:""; position:absolute; top:-6px; left:50%; width:12px; height:12px; margin-left:-6px; border-radius:50%;
+    background:var(--beige); box-shadow:0 0 14px 3px rgba(255,255,255,.8); }
+.stage-ring.r2::after { display:none; }
+.tilt { position:absolute; inset:0; transform-style:preserve-3d; transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)); transition:transform .25s ease-out; }
+.spin { position:absolute; inset:4% 8%; transform-style:preserve-3d; animation:stethSwing 8s ease-in-out infinite, stethFloat 4.5s ease-in-out infinite; }
+.layer { position:absolute; inset:0; width:100%; height:100%; overflow:visible; transform:translateZ(var(--z,0px)); }
+.layer.back { filter:brightness(.38) saturate(1.4); }
+.layer.front { filter:drop-shadow(0 4px 6px rgba(30,30,28,.3)); }
+.stage-shadow { position:absolute; left:22%; right:22%; bottom:-2%; height:18px; border-radius:50%; background:rgba(30,30,28,.35);
+    filter:blur(10px); animation:shadowPulse 4.5s ease-in-out infinite; }
+
+/* particles + ECG */
+.hero-particles { position:absolute; inset:0; z-index:1; pointer-events:none; }
+.hero-particles b { position:absolute; bottom:-30px; left:var(--x); font-size:var(--s,22px); font-weight:800; line-height:1;
+    color:rgba(255,255,255,.8); animation:riseUp var(--t,9s) var(--d,0s) linear infinite; }
+.hero-particles b.cream { color:var(--beige); }
+.hero-ecg { position:absolute; left:0; right:0; bottom:0; width:100%; height:54px; z-index:1; pointer-events:none; }
+.hero-ecg path { fill:none; stroke-linecap:round; stroke-linejoin:round; vector-effect:non-scaling-stroke; }
+.hero-ecg .base { stroke:rgba(255,255,255,.28); stroke-width:2; }
+.hero-ecg .pulse { stroke:#fff; stroke-width:3.5; stroke-dasharray:18 82; filter:drop-shadow(0 0 6px rgba(255,255,255,.9)); animation:ecgRun 3.2s linear infinite; }
+
+@keyframes heroIn { from{opacity:0;transform:translateY(30px) scale(.97)} to{opacity:1;transform:none} }
+@keyframes stageIn { from{opacity:0;transform:scale(.4) rotate(-25deg)} to{opacity:1;transform:none} }
+@keyframes badgePop { 0%{opacity:0;transform:scale(.4)} 70%{transform:scale(1.12)} 100%{opacity:1;transform:scale(1)} }
+@keyframes gradientShift { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+@keyframes spinSlow { to{transform:rotate(360deg)} }
+@keyframes heroSweep { 0%{left:-40%} 60%,100%{left:130%} }
+@keyframes gridDrift { to{background-position:38px 38px,38px 38px} }
+@keyframes textShine { 0%,100%{background-position:100% 0} 50%{background-position:0% 0} }
+@keyframes glowPulse { 0%,100%{transform:scale(.9);opacity:.75} 50%{transform:scale(1.08);opacity:1} }
+@keyframes stethSwing { 0%,100%{transform:rotateX(10deg) rotateY(-32deg)} 50%{transform:rotateX(4deg) rotateY(32deg)} }
+@keyframes stethFloat { 0%,100%{translate:0 0} 50%{translate:0 -12px} }
+@keyframes shadowPulse { 0%,100%{transform:scaleX(1);opacity:.6} 50%{transform:scaleX(.78);opacity:.35} }
+@keyframes riseUp { 0%{transform:translateY(0) rotate(0);opacity:0} 12%{opacity:1} 85%{opacity:.9} 100%{transform:translateY(-420px) rotate(180deg);opacity:0} }
+@keyframes ecgRun { from{stroke-dashoffset:100} to{stroke-dashoffset:0} }
+@keyframes pulseBlue { 0%{box-shadow:0 0 0 0 rgba(47,107,255,.7)} 70%{box-shadow:0 0 0 10px rgba(47,107,255,0)} 100%{box-shadow:0 0 0 0 rgba(47,107,255,0)} }
+@keyframes pulseWhite { 0%{box-shadow:0 0 0 0 rgba(255,255,255,.8)} 70%{box-shadow:0 0 0 8px rgba(255,255,255,0)} 100%{box-shadow:0 0 0 0 rgba(255,255,255,0)} }
+@keyframes calWiggle { 0%,86%,100%{transform:rotate(0)} 89%{transform:rotate(-14deg)} 92%{transform:rotate(12deg)} 95%{transform:rotate(-8deg)} }
 
 /* Flash */
 .flash-message { padding:14px 18px; margin-bottom:20px; border-radius:12px; font-size:14px; font-weight:500; border-left:5px solid transparent; }
@@ -191,9 +340,12 @@ body {
 
 @media (max-width:1100px){ .summary-grid{grid-template-columns:repeat(2,1fr)} }
 @media (max-width:700px){
-    .layout{display:block} .sidebar{width:100%;min-width:0;padding:15px} .logo{margin-bottom:15px} .menu-heading{display:none}
-    .nav-link{display:inline-flex;padding:10px 12px;margin:3px}
-    .content{padding:20px 15px} .topbar{padding:18px} .page-heading{padding:20px}
+    .layout{display:block}
+    .menu-fab{top:12px;left:12px;width:48px;height:48px}
+    .content{padding:20px 15px} .topbar{padding:18px 18px 18px 74px;min-height:72px}
+    .page-hero{flex-direction:column-reverse;text-align:center;padding:2rem 1.3rem 3.3rem}
+    .hero-copy{max-width:100%} .page-hero p{margin-left:auto;margin-right:auto} .hero-legend{justify-content:center}
+    .hero-stage{width:210px;height:210px}
     .summary-grid{gap:10px} .summary-card{padding:16px} .summary-card .value{font-size:26px}
     .schedule-card{padding:14px} .legend{margin-left:0}
 }
@@ -310,21 +462,103 @@ body {
   })();
 </script>
 <!-- ===== /Page loader ===== -->
-<div class="layout">
 
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo"><i class="bi bi-heart-pulse-fill"></i> MediSlot</div>
-        <div class="menu-heading">MAIN MENU</div>
-        <nav>
-            <a href="{{ url_for('dashboard.index') }}" class="nav-link"><i class="bi bi-grid"></i> Dashboard</a>
-            <a href="{{ url_for('profile.index') }}" class="nav-link"><i class="bi bi-person"></i> My Profile</a>
-            <a href="{{ url_for('consultation_types.consultation_types') }}" class="nav-link"><i class="bi bi-clipboard2-plus"></i> Consultation Types</a>
-            <a href="/blackouts" class="nav-link"><i class="bi bi-calendar-x"></i> Blackout Dates</a>
-            <a href="{{ url_for('schedule.index') }}" class="nav-link active"><i class="bi bi-calendar-week"></i> My Schedule</a>
-            <a href="/appointments" class="nav-link"><i class="bi bi-calendar-check"></i> Appointments</a>
-        </nav>
-    </aside>
+
+<!-- ================= SIDE MENU ================= -->
+
+<button class="menu-fab" id="menuFab" type="button"
+        aria-controls="sideMenu" aria-expanded="false" aria-label="Open menu">
+    <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+</button>
+
+<div class="side-backdrop" id="sideBackdrop"></div>
+
+<aside class="ms-side" id="sideMenu" tabindex="-1" aria-hidden="true" aria-labelledby="sideMenuLabel">
+
+    <div class="side-head">
+        <a class="side-brand" id="sideMenuLabel" href="{{ url_for('dashboard.index') }}">
+            <span class="side-logo">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </span>
+            MediSlot
+        </a>
+        <button type="button" class="side-close" id="sideClose" aria-label="Close menu">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+
+    <div class="side-body">
+
+        <div class="side-label">Main Menu</div>
+
+        <ul class="side-nav">
+
+            <li>
+                <a class="side-link" href="{{ url_for('dashboard.index') }}">
+                    <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg></span>
+                    Dashboard
+                    <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </a>
+            </li>
+
+            <li>
+                <a class="side-link" href="{{ url_for('profile.index') }}">
+                    <span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></span>
+                    My Profile
+                    <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </a>
+            </li>
+
+            <li>
+                <a class="side-link" href="{{ url_for('consultation_types.consultation_types') }}">
+                    <span class="ico"><svg viewBox="0 0 24 24"><path d="M6 3v6a4 4 0 0 0 8 0V3"/><path d="M10 13v2a5 5 0 0 0 10 0v-1"/><circle cx="20" cy="12" r="2"/></svg></span>
+                    Consultation Types
+                    <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </a>
+            </li>
+
+            <li>
+                <a class="side-link" href="/blackouts">
+                    <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M8 14l8 5M16 14l-8 5"/></svg></span>
+                    Blackout Dates
+                    <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </a>
+            </li>
+
+            <li>
+                <a class="side-link active" href="{{ url_for('schedule.index') }}">
+                    <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></span>
+                    My Schedule
+                    <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </a>
+            </li>
+
+            <li>
+                <a class="side-link" href="/appointments">
+                    <span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18M8 15l3 3 5-5"/></svg></span>
+                    Appointments
+                    <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                </a>
+            </li>
+
+        </ul>
+
+        <div class="side-foot">
+            <form method="post" action="{{ url_for('auth.logout') }}">
+    <button type="submit" class="side-link logout">Logout</button>
+</form>
+            <p class="side-note">MediSlot &mdash; smarter appointment slots.</p>
+        </div>
+
+    </div>
+</aside>
+
+
+<!-- ================= MAIN CONTENT ================= -->
+
+<div class="layout">
 
     <main class="main">
         <header class="topbar">
@@ -342,15 +576,106 @@ body {
                 {% endif %}
             {% endwith %}
 
-            <div class="page-heading">
-                <div>
-                    <h1>My Schedule</h1>
-                    <p>View and manage your generated consultation slots, week by week.</p>
+            <!-- ===== Hero ===== -->
+            <div class="page-hero" id="pageHero">
+
+                <!-- floating plus particles -->
+                <div class="hero-particles" aria-hidden="true">
+                    <b style="--x:6%;  --s:20px; --t:9s;  --d:0s;">+</b>
+                    <b class="cream" style="--x:18%; --s:28px; --t:12s; --d:2s;">+</b>
+                    <b style="--x:34%; --s:16px; --t:8s;  --d:4s;">+</b>
+                    <b class="cream" style="--x:52%; --s:24px; --t:11s; --d:1s;">+</b>
+                    <b style="--x:66%; --s:18px; --t:9.5s; --d:3s;">+</b>
+                    <b class="cream" style="--x:80%; --s:30px; --t:13s; --d:0.5s;">+</b>
+                    <b style="--x:92%; --s:20px; --t:10s; --d:5s;">+</b>
                 </div>
-                <form method="GET" action="{{ url_for('schedule.index') }}" class="date-filter">
-                    <label for="scheduleDate">Jump to date</label>
-                    <input type="date" id="scheduleDate" name="date" value="{{ selected_date }}" required onchange="this.form.submit()">
-                </form>
+
+                <!-- text -->
+                <div class="hero-copy">
+                    <span class="hero-chip"><i></i> Weekly calendar</span>
+
+                    <h1>My Schedule</h1>
+
+                    <p>View and manage your generated consultation slots, week by week.</p>
+
+                    <div class="hero-legend" aria-hidden="true">
+                        <span><b class="d-av"></b> Available</span>
+                        <span><b class="d-bk"></b> Booked</span>
+                        <span><b class="d-cl"></b> Closed</span>
+                    </div>
+
+                    <form method="GET" action="{{ url_for('schedule.index') }}" class="date-filter">
+                        <label for="scheduleDate"><i class="bi bi-calendar3"></i> Jump to date</label>
+                        <input type="date" id="scheduleDate" name="date" value="{{ selected_date }}" required onchange="this.form.submit()">
+                    </form>
+                </div>
+
+                <!-- 3D stethoscope -->
+                <div class="hero-stage" aria-hidden="true">
+                    <div class="stage-glow"></div>
+                    <div class="stage-ring"></div>
+                    <div class="stage-ring r2"></div>
+
+                    <svg width="0" height="0" style="position:absolute">
+                        <defs>
+                            <linearGradient id="stTube" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#3A3A36"/>
+                                <stop offset="1" stop-color="#1E1E1C"/>
+                            </linearGradient>
+                            <linearGradient id="stMetal" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#FFFFFF"/>
+                                <stop offset=".55" stop-color="#D8CBB3"/>
+                                <stop offset="1" stop-color="#A89A80"/>
+                            </linearGradient>
+                            <radialGradient id="stDiaphragm" cx=".35" cy=".3" r=".9">
+                                <stop offset="0" stop-color="#7EA3FF"/>
+                                <stop offset="1" stop-color="#2F6BFF"/>
+                            </radialGradient>
+                            <symbol id="stethoscope" viewBox="0 0 200 220">
+                                <path d="M50 26 C50 92 72 122 100 126 C128 122 150 92 150 26"
+                                      fill="none" stroke="url(#stTube)" stroke-width="9" stroke-linecap="round"/>
+                                <path d="M100 126 V146 C100 202 160 208 160 172"
+                                      fill="none" stroke="url(#stTube)" stroke-width="9" stroke-linecap="round"/>
+                                <path d="M47 34 C47 92 70 118 98 122"
+                                      fill="none" stroke="#fff" stroke-opacity=".28" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M97 150 C97 196 150 202 156 172"
+                                      fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="100" cy="126" r="8" fill="url(#stMetal)"/>
+                                <circle cx="50" cy="18" r="9" fill="url(#stMetal)"/>
+                                <circle cx="150" cy="18" r="9" fill="url(#stMetal)"/>
+                                <circle cx="47" cy="15" r="3" fill="#fff" fill-opacity=".7"/>
+                                <circle cx="147" cy="15" r="3" fill="#fff" fill-opacity=".7"/>
+                                <circle cx="160" cy="150" r="26" fill="url(#stMetal)"/>
+                                <circle cx="160" cy="150" r="19" fill="url(#stDiaphragm)" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>
+                                <circle cx="160" cy="150" r="7" fill="#fff" fill-opacity=".85"/>
+                                <path d="M148 140 A16 16 0 0 1 164 134" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="3" stroke-linecap="round"/>
+                            </symbol>
+                        </defs>
+                    </svg>
+
+                    <div class="tilt" id="heroTilt">
+                        <div class="spin">
+                            <svg class="layer back" style="--z:-16px;" viewBox="0 0 200 220"><use href="#stethoscope"/></svg>
+                            <svg class="layer back" style="--z:-13px;" viewBox="0 0 200 220"><use href="#stethoscope"/></svg>
+                            <svg class="layer back" style="--z:-10px;" viewBox="0 0 200 220"><use href="#stethoscope"/></svg>
+                            <svg class="layer back" style="--z:-7px;"  viewBox="0 0 200 220"><use href="#stethoscope"/></svg>
+                            <svg class="layer back" style="--z:-4px;"  viewBox="0 0 200 220"><use href="#stethoscope"/></svg>
+                            <svg class="layer back" style="--z:-1px;"  viewBox="0 0 200 220"><use href="#stethoscope"/></svg>
+                            <svg class="layer front" style="--z:4px;"  viewBox="0 0 200 220"><use href="#stethoscope"/></svg>
+                        </div>
+                    </div>
+
+                    <div class="stage-shadow"></div>
+                </div>
+
+                <!-- running ECG line -->
+                <svg class="hero-ecg" viewBox="0 0 600 54" preserveAspectRatio="none" aria-hidden="true">
+                    <path class="base"
+                          d="M0 34 H110 L124 12 L142 50 L156 34 H250 L262 26 L274 34 H360 L374 12 L392 50 L406 34 H490 L502 26 L514 34 H600"/>
+                    <path class="pulse" pathLength="100"
+                          d="M0 34 H110 L124 12 L142 50 L156 34 H250 L262 26 L274 34 H360 L374 12 L392 50 L406 34 H490 L502 26 L514 34 H600"/>
+                </svg>
+
             </div>
 
             <div class="summary-grid">
@@ -386,6 +711,63 @@ body {
 <div class="modal-bg" id="modalBg" aria-hidden="true">
     <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle"></div>
 </div>
+
+
+<!-- Hero: stethoscope follows the mouse -->
+<script>
+(function () {
+    var hero = document.getElementById('pageHero');
+    var tilt = document.getElementById('heroTilt');
+    if (!hero || !tilt) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    hero.addEventListener('mousemove', function (e) {
+        var r = hero.getBoundingClientRect();
+        var x = (e.clientX - r.left) / r.width  - 0.5;
+        var y = (e.clientY - r.top)  / r.height - 0.5;
+        tilt.style.setProperty('--ry', (x * 34) + 'deg');
+        tilt.style.setProperty('--rx', (-y * 26) + 'deg');
+    });
+    hero.addEventListener('mouseleave', function () {
+        tilt.style.setProperty('--ry', '0deg');
+        tilt.style.setProperty('--rx', '0deg');
+    });
+})();
+</script>
+
+<!-- Side menu behaviour (no Bootstrap needed) -->
+<script>
+(function () {
+    var fab = document.getElementById('menuFab');
+    var side = document.getElementById('sideMenu');
+    var back = document.getElementById('sideBackdrop');
+    var closeBtn = document.getElementById('sideClose');
+
+    function openMenu() {
+        side.classList.add('show');
+        back.classList.add('show');
+        side.setAttribute('aria-hidden', 'false');
+        fab.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function () { side.focus(); }, 60);
+    }
+    function closeMenu() {
+        side.classList.remove('show');
+        back.classList.remove('show');
+        side.setAttribute('aria-hidden', 'true');
+        fab.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        fab.focus();
+    }
+
+    fab.addEventListener('click', openMenu);
+    closeBtn.addEventListener('click', closeMenu);
+    back.addEventListener('click', closeMenu);
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && side.classList.contains('show')) closeMenu();
+    });
+})();
+</script>
 
 <script>
 (function () {

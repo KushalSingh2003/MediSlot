@@ -352,12 +352,17 @@ def get_existing_booking(connection, patient_id, idempotency_key):
                 s.start_time,
                 s.end_time,
                 s.doctor_id,
+                d.name AS doctor_name,
                 s.consultation_type_id
             FROM appointments a
-            JOIN appointment_slot s ON s.slot_id = a.slot_id
+            JOIN appointment_slot s
+                ON s.slot_id = a.slot_id
+            JOIN doctor d
+                ON d.doctor_id = s.doctor_id
             WHERE a.patient_id = %s
-              AND a.booking_reference = %s
+            AND a.booking_reference = %s
             LIMIT 1
+            
             """,
             (patient_id, idempotency_key),
         )
@@ -375,6 +380,7 @@ def appointment_body(row):
         "start_time": str(row.get("start_time")),
         "end_time": str(row.get("end_time")),
         "amount": str(row["amount"]),
+        "doctor_name": row.get("doctor_name"),
     }
 
 

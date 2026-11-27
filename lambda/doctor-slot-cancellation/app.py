@@ -149,7 +149,7 @@ def record_full_refund(cursor, appointment):
     if refund_amount < 0:
         raise ValueError("Appointment amount cannot be negative.")
 
-    reason = "DOCTOR_CANCELLED_SLOT"
+    reason = "Your appointment was cancelled by the doctor"
     cursor.execute(
         """
         INSERT INTO refund_ledger (

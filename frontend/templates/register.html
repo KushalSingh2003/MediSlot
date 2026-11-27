@@ -7,603 +7,192 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
           rel="stylesheet">
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap">
+
     <style>
-        /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
-           (variable names kept so the rest of the file stays the same) */
-        :root {
-            --pink-primary: #D8CBB3;
-            --pink-blush: #EFE7D8;
-            --pink-rose: #2F6BFF;
-            --pink-deep: #1E1E1C;
-            --pink-bg: #F6F1E7;
-            --pink-border: #D8CBB3;
-            --pink-text: #1E1E1C;
-            --pink-muted: #6b6455;
-            --blue-light: #7EA3FF;
-            --blue-deep: #1B4FD6;
-            --ease: cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        /* ---------- Keyframes ---------- */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(22px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes cardIn {
-            from { opacity: 0; transform: translateY(46px) scale(0.96); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-18px); }
-            to   { opacity: 1; transform: translateX(0); }
-        }
-
-        @keyframes floatA {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50%      { transform: translate(40px, 30px) scale(1.08); }
-        }
-
-        @keyframes floatB {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50%      { transform: translate(-45px, -35px) scale(1.1); }
-        }
-
-        @keyframes pulseRing {
-            0%   { box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.45); }
-            70%  { box-shadow: 0 0 0 16px rgba(47, 107, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(47, 107, 255, 0); }
-        }
-
-        @keyframes shimmer {
-            0%   { background-position: 0% 0; }
-            100% { background-position: 300% 0; }
-        }
-
-        @keyframes growLine {
-            from { transform: scaleX(0); }
-            to   { transform: scaleX(1); }
-        }
-
-        /* new animations */
-        @keyframes gridDrift   { from { background-position: 0 0; } to { background-position: 60px 60px; } }
-        @keyframes spinSlow    { to { transform: rotate(360deg); } }
-        @keyframes textSweep   { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
-        @keyframes iconFloat   { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-5px) rotate(-6deg); } }
-        @keyframes barGlow     { 0%, 100% { box-shadow: 0 0 0 rgba(47, 107, 255, 0); } 50% { box-shadow: 0 0 12px rgba(47, 107, 255, 0.7); } }
-        @keyframes letterBreath { 0%, 100% { letter-spacing: 1px; } 50% { letter-spacing: 2.4px; } }
-        @keyframes focusRing   { 0%, 100% { box-shadow: 0 0 0 0.25rem rgba(47, 107, 255, 0.22); } 50% { box-shadow: 0 0 0 0.45rem rgba(47, 107, 255, 0.08); } }
-        @keyframes softPulse {
-            0%, 100% { box-shadow: 0 10px 24px rgba(47, 107, 255, 0.35), 0 0 0 0 rgba(47, 107, 255, 0.4); }
-            50%      { box-shadow: 0 10px 24px rgba(47, 107, 255, 0.35), 0 0 0 10px rgba(47, 107, 255, 0); }
-        }
-        @keyframes btnShine    { 0%, 55% { left: -120%; } 100% { left: 160%; } }
-        @keyframes alertNudge  { 0%, 90%, 100% { transform: translateX(0); } 93% { transform: translateX(-5px); } 96% { transform: translateX(5px); } }
-        @keyframes slideDown   { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
-        @keyframes shake       { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
-        @keyframes dashPulse   { 0%, 100% { border-color: #D8CBB3; } 50% { border-color: #7EA3FF; } }
-
-        /* ---------- Page ---------- */
-        html {
-            background: linear-gradient(160deg, #F6F1E7 0%, #EFE7D8 45%, #D8CBB3 100%) fixed;
-        }
-
-        /* drifting dot grid */
-        html::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            background-image: radial-gradient(rgba(30, 30, 28, 0.08) 1.5px, transparent 1.5px);
-            background-size: 30px 30px;
-            animation: gridDrift 30s linear infinite;
-        }
+        /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF */
+        :root { --ink:#1E1E1C; --beige:#D8CBB3; --cream:#F6F1E7; --blue:#2F6BFF; --blue-light:#7EA3FF;
+                --blue-deep:#1B4FD6; --muted:#6b6455; --ease:cubic-bezier(.22,1,.36,1); }
 
         body {
-            background: transparent !important;
-            color: var(--pink-text);
-            font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
+            min-height: 100vh; min-height: 100dvh; margin: 0;
+            display: flex; align-items: center; justify-content: center;
+            padding: 16px;
+            color: var(--ink);
+            font-family: "Plus Jakarta Sans", "Segoe UI", Arial, sans-serif;
+            background:
+                radial-gradient(circle at 8% 10%, rgba(47,107,255,.22), transparent 38%),
+                radial-gradient(circle at 92% 90%, rgba(30,30,28,.14), transparent 40%),
+                #EFE7D8;
         }
 
-        body::before,
-        body::after {
-            content: "";
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(70px);
-            z-index: 0;
-            pointer-events: none;
+        /* ---------- Doctor holding the form ---------- */
+        .stage { position: relative; z-index: 1; width: 100%; max-width: 640px; margin-right: 230px; }
+        .shell {
+            position: relative; z-index: 2; overflow: hidden;
+            background: #FCFAF6; border-radius: 24px; border: 2px solid #fff;
+            box-shadow: 0 24px 60px rgba(30,30,28,.24);
+            animation: riseIn .8s var(--ease) backwards;
         }
-
-        body::before {
-            width: 420px;
-            height: 420px;
-            top: -120px;
-            left: -120px;
-            background: rgba(47, 107, 255, 0.30);
-            animation: floatA 14s ease-in-out infinite;
+        .shell::before {
+            content: ""; position: absolute; inset: 0 0 auto 0; height: 5px;
+            background: linear-gradient(90deg, var(--beige), var(--blue), var(--ink), var(--blue), var(--beige));
+            background-size: 300% 100%; animation: shimmer 4s linear infinite;
         }
+        .form-side { padding: 22px 46px 18px; }
 
-        body::after {
-            width: 460px;
-            height: 460px;
-            bottom: -160px;
-            right: -140px;
-            background: rgba(30, 30, 28, 0.18);
-            animation: floatB 17s ease-in-out infinite;
+        /* two matching layers: body behind the form, fingers in front of it */
+        .doctor {
+            position: absolute; width: 300px; height: 520px;
+            left: calc(100% - 60px); top: 50%; margin-top: -260px;
+            pointer-events: none; overflow: visible;
+            filter: drop-shadow(0 14px 14px rgba(30,30,28,.25));
+            animation: docIn .9s .3s var(--ease) backwards;
         }
+        .doctor-body  { z-index: 1; }
+        .doctor-hands { z-index: 3; filter: drop-shadow(-3px 5px 4px rgba(30,30,28,.3)); }
+        .doc-head  { transform-origin: 185px 150px; animation: headTilt 5s ease-in-out infinite; }
+        .doc-eyes  { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+        .doc-chest { transform-box: fill-box; transform-origin: center; animation: heartBeat 1.4s ease-in-out infinite; }
 
-        .container {
-            position: relative;
-            z-index: 1;
+        /* ---------- MediSlot logo animation in the background ---------- */
+        .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .mark {
+            display: grid; place-items: center; flex-shrink: 0;
+            width: 58px; height: 58px; border-radius: 18px;
+            background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+            box-shadow: 0 6px 0 var(--blue-deep), 0 14px 24px rgba(47,107,255,.35);
         }
-
-        /* ---------- Card ---------- */
-        .card {
-            background: rgba(252, 250, 246, 0.94) !important;
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--pink-border) !important;
-            border-radius: 24px !important;
-            box-shadow: 0 20px 50px rgba(30, 30, 28, 0.18) !important;
-            padding: 40px 44px !important;
-            position: relative;
-            overflow: hidden;
-            transition: box-shadow 0.5s var(--ease), border-color 0.4s ease;
-            animation: cardIn 0.9s var(--ease) backwards;
+        .mark svg { width: 64%; height: 64%; fill: #fff; }
+        .mark .pulse { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+        .float-logo {
+            position: absolute; display: flex; align-items: center; gap: 12px;
+            font-size: 1.5rem; font-weight: 800; color: var(--ink); opacity: .3;
+            animation: drift 9s ease-in-out infinite;
         }
-
-        .card:hover {
-            box-shadow: 0 26px 60px rgba(47, 107, 255, 0.22) !important;
-            border-color: var(--blue-light) !important;
+        .float-logo .mark { animation: spin3d 6s ease-in-out infinite; }
+        .watermark {
+            position: absolute; left: 50%; bottom: -3vw; transform: translateX(-50%);
+            font-size: 18vw; font-weight: 800; line-height: 1; white-space: nowrap;
+            color: transparent;
+            background: linear-gradient(100deg, rgba(30,30,28,.07) 40%, rgba(47,107,255,.3) 50%, rgba(30,30,28,.07) 60%);
+            background-size: 250% 100%; -webkit-background-clip: text; background-clip: text;
+            animation: sweep 6s ease-in-out infinite;
         }
-
-        .card::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #D8CBB3, #2F6BFF, #1E1E1C, #2F6BFF, #D8CBB3);
-            background-size: 300% 100%;
-            animation: shimmer 4s linear infinite;
-        }
-
-        /* rotating dashed ring in the corner */
-        .card::after {
-            content: "";
-            position: absolute;
-            width: 240px;
-            height: 240px;
-            right: -110px;
-            top: -110px;
-            border-radius: 50%;
-            border: 2px dashed rgba(47, 107, 255, 0.35);
-            pointer-events: none;
-            animation: spinSlow 24s linear infinite;
+        .ecg { position: absolute; left: 0; top: 50%; width: 100%; height: 160px; margin-top: -80px; opacity: .45; }
+        .ecg path {
+            fill: none; stroke: var(--blue); stroke-width: 3; vector-effect: non-scaling-stroke;
+            stroke-dasharray: 25 75; animation: ecgRun 4s linear infinite;
         }
 
         /* ---------- Header ---------- */
-        .card .text-center.mb-4 {
-            margin-bottom: 32px !important;
-            padding-bottom: 24px;
-            border-bottom: 1px dashed var(--pink-border);
-            animation: fadeUp 0.7s ease 0.15s backwards;
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .brand .mark { animation: heartBeat 1.8s ease-in-out infinite; }
+        .brand h1 { margin: 0; font-size: 1.7rem; font-weight: 800; color: var(--blue-deep); }
+        .brand p  { margin: 0; font-size: .85rem; font-weight: 600; color: var(--muted); }
+
+        /* ---------- Step tabs ---------- */
+        .steps { display: flex; gap: 8px; margin: 8px 0 14px; padding: 0; list-style: none; }
+        .steps li { flex: 1; }
+        .steps button {
+            width: 100%; padding: 6px 0 0; text-align: left;
+            background: none; border: 0; border-top: 4px solid var(--beige);
+            font-size: .78rem; font-weight: 700; color: var(--muted);
+            transition: border-color .3s, color .3s;
         }
-
-        .card h2.text-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 2rem;
-            background: linear-gradient(100deg, #1E1E1C 0%, #1E1E1C 38%, #2F6BFF 50%, #1E1E1C 62%, #1E1E1C 100%);
-            background-size: 250% 100%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: transparent !important;
-            margin-bottom: 4px;
-            letter-spacing: 0.4px;
-            animation: textSweep 6s 1.2s ease-in-out infinite;
-        }
-
-        .card h2.text-primary::before {
-            content: "\271A";
-            width: 44px;
-            height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
-            -webkit-text-fill-color: #FFFFFF;
-            color: #FFFFFF;
-            font-size: 1.2rem;
-            animation: pulseRing 2.4s infinite, iconFloat 4s ease-in-out infinite;
-        }
-
-        .card .text-muted {
-            color: var(--pink-muted) !important;
-            font-size: 0.95rem;
-            margin-bottom: 0;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-weight: 600;
-            animation: letterBreath 5s 1.5s ease-in-out infinite;
-        }
-
-        /* ---------- Alerts ---------- */
-        .alert {
-            border-radius: 14px;
-            border: 1px solid var(--pink-border);
-            font-weight: 500;
-            animation: slideIn 0.5s ease backwards, alertNudge 4s 2s ease-in-out infinite;
-        }
-
-        .alert-success { background: #e4f8ee; color: #1a8f5c; border-color: #b6ead0; }
-        .alert-danger  { background: #FFEBEE; color: #C62828; border-color: #FFCDD2; }
-        .alert-warning { background: #FFF3E0; color: #E65100; border-color: #FFE0B2; }
-        .alert-info    { background: #E6EEFF; color: #1B4FD6; border-color: #B8CCFF; }
-
-        /* ---------- Form staggered entrance ---------- */
-        form > * {
-            animation: fadeUp 0.6s ease backwards;
-        }
-
-        form > *:nth-child(1)  { animation-delay: 0.25s; }
-        form > *:nth-child(2)  { animation-delay: 0.30s; }
-        form > *:nth-child(3)  { animation-delay: 0.35s; }
-        form > *:nth-child(4)  { animation-delay: 0.40s; }
-        form > *:nth-child(5)  { animation-delay: 0.45s; }
-        form > *:nth-child(6)  { animation-delay: 0.50s; }
-        form > *:nth-child(7)  { animation-delay: 0.55s; }
-        form > *:nth-child(8)  { animation-delay: 0.60s; }
-        form > *:nth-child(9)  { animation-delay: 0.65s; }
-        form > *:nth-child(10) { animation-delay: 0.70s; }
-        form > *:nth-child(11) { animation-delay: 0.75s; }
-        form > *:nth-child(12) { animation-delay: 0.80s; }
-        form > *:nth-child(13) { animation-delay: 0.85s; }
-        form > *:nth-child(14) { animation-delay: 0.90s; }
-        form > *:nth-child(15) { animation-delay: 0.95s; }
-        form > *:nth-child(16) { animation-delay: 1.00s; }
-        form > *:nth-child(17) { animation-delay: 1.05s; }
-        form > *:nth-child(18) { animation-delay: 1.10s; }
-        form > *:nth-child(19) { animation-delay: 1.15s; }
-
-        /* fields inside each top-level row slide in one after another */
-        form > .row > [class*="col-"] {
-            animation: slideIn 0.6s var(--ease) backwards;
-        }
-        form > .row > [class*="col-"]:nth-child(1) { animation-delay: 0.50s; }
-        form > .row > [class*="col-"]:nth-child(2) { animation-delay: 0.58s; }
-        form > .row > [class*="col-"]:nth-child(3) { animation-delay: 0.66s; }
-        form > .row > [class*="col-"]:nth-child(4) { animation-delay: 0.74s; }
-        form > .row > [class*="col-"]:nth-child(5) { animation-delay: 0.82s; }
-        form > .row > [class*="col-"]:nth-child(6) { animation-delay: 0.90s; }
-        form > .row > [class*="col-"]:nth-child(7) { animation-delay: 0.98s; }
-
-        /* ---------- Section headings & dividers ---------- */
-        form h5 {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--pink-deep);
-            margin-bottom: 20px !important;
-        }
-
-        form h5::before {
-            content: "";
-            width: 6px;
-            height: 24px;
-            border-radius: 6px;
-            background: linear-gradient(180deg, #7EA3FF, #1B4FD6);
-            flex-shrink: 0;
-            animation: barGlow 3s 1.5s ease-in-out infinite;
-        }
-
-        form hr {
-            border: none;
-            height: 1px;
-            opacity: 1;
-            margin: 30px 0;
-            background: linear-gradient(90deg, rgba(216, 203, 179, 0), #2F6BFF, rgba(216, 203, 179, 0));
-            transform-origin: center;
-            animation-name: growLine;
-        }
+        .steps button.done, .steps button.active { border-color: var(--blue); color: var(--blue-deep); }
+        .steps button:disabled { cursor: default; }
 
         /* ---------- Fields ---------- */
-        .form-label {
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            color: var(--pink-deep);
-            margin-bottom: 8px;
-            transition: color 0.3s ease, transform 0.3s var(--ease);
+        .form-label { margin-bottom: 3px; font-size: .8rem; font-weight: 600; }
+        .form-control, .form-select {
+            padding: 7px 12px; font-size: .9rem; color: var(--ink);
+            border: 1.5px solid var(--beige); border-radius: 10px; background-color: #fff;
         }
-
-        .mb-3:focus-within > .form-label {
-            color: var(--blue-deep);
-            transform: translateX(4px);
+        .form-control::placeholder { color: #a89d86; }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--blue); box-shadow: 0 0 0 4px rgba(47,107,255,.2);
         }
-
-        .form-control,
-        .form-select {
-            border: 1.5px solid var(--pink-border);
-            border-radius: 12px;
-            padding: 12px 16px;
-            background-color: #FFFFFF;
-            color: var(--pink-text);
-            transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background-color 0.25s ease;
+        .form-text, .invalid-feedback { margin-top: 2px; font-size: .74rem; font-weight: 600; }
+        .form-text { color: var(--muted); }
+        /* no green ticks on valid or optional fields */
+        .was-validated .form-control:valid, .was-validated .form-select:valid {
+            border-color: var(--beige); background-image: none;
         }
-
-        .form-select {
-            padding-right: 2.5rem;
-            cursor: pointer;
+        .was-validated .form-select:valid {
+            background-image: var(--bs-form-select-bg-img);
         }
+        #licenceNumber.is-invalid ~ .form-text { display: none; }
 
-        .form-control:hover,
-        .form-select:hover {
-            border-color: var(--blue-light);
-            background-color: var(--pink-bg);
-        }
+        .js .step { display: none; }
+        .js .step.active { display: block; animation: stepIn .4s var(--ease) backwards; }
+        .step-area { min-height: 268px; }
 
-        .form-control:focus,
-        .form-select:focus {
-            border-color: var(--pink-rose);
-            background-color: #FFFFFF;
-            box-shadow: 0 0 0 0.25rem rgba(47, 107, 255, 0.22);
-            transform: translateY(-2px);
-            outline: none;
-            animation: focusRing 1.8s ease-in-out infinite;
-        }
-
-        .form-control::placeholder {
-            color: #a89d86;
-        }
-
-        /* "Other" specialization box slides open */
-        #otherSpecialisationContainer:not([hidden]) {
-            animation: slideDown 0.5s var(--ease) backwards;
-        }
-
-        /* hint + validation messages */
-        .form-text {
-            color: var(--pink-muted);
-            font-size: 0.8rem;
-            font-weight: 500;
-            padding: 6px 10px;
-            margin-top: 8px;
-            border-left: 3px solid var(--pink-border);
-            border-radius: 0 8px 8px 0;
-            background: var(--pink-bg);
-            transition: border-color 0.3s ease, transform 0.3s var(--ease);
-        }
-
-        .mb-3:focus-within > .form-text {
-            border-left-color: var(--pink-rose);
-            transform: translateX(4px);
-        }
-
-        .form-control.is-invalid {
-            animation: shake 0.45s ease;
-        }
-
-        .invalid-feedback.d-block {
-            animation: slideDown 0.4s var(--ease) backwards;
-        }
-
-        /* ---------- Qualification rows (also applies to dynamically added rows) ---------- */
-        #qualifications {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 14px;
-        }
-
+        /* ---------- Qualifications (list scrolls, page does not grow) ---------- */
+        #qualifications { max-height: 92px; overflow-y: auto; padding: 3px; }
         .qualification-row {
-            display: grid !important;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 130px 48px;
-            gap: 12px;
-            align-items: center;
-            margin: 0 !important;
-            padding: 14px;
-            background: var(--pink-bg);
-            border: 1px solid var(--pink-border);
-            border-left: 4px solid var(--pink-rose);
-            border-radius: 16px;
-            animation: slideIn 0.45s var(--ease) backwards;
-            transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.3s var(--ease);
+            display: grid; gap: 8px; margin-bottom: 6px;
+            grid-template-columns: minmax(0,1fr) minmax(0,1fr) 104px 36px;
+            animation: stepIn .35s var(--ease) backwards;
         }
-
-        .qualification-row:hover {
-            border-color: var(--blue-light);
-            box-shadow: 0 8px 20px rgba(47, 107, 255, 0.16);
-            transform: translateX(4px);
+        .btn-remove {
+            border: 1.5px solid var(--beige); border-radius: 10px; background: #fff;
+            color: var(--ink); font-size: 1.2rem; line-height: 1;
         }
+        .btn-remove:hover { background: #FFEBEE; color: #C62828; border-color: #EF9A9A; }
+        .btn-add { padding: 0; border: 0; background: none; font-size: .8rem; font-weight: 700; color: var(--blue-deep); }
 
-        .qualification-row > [class*="col-"] {
-            width: 100% !important;
-            max-width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
+        /* ---------- Buttons and footer ---------- */
+        .actions { display: flex; gap: 10px; margin-top: 12px; }
+        .actions .btn { border-radius: 10px; font-weight: 700; padding: 9px 22px; }
+        .btn-main {
+            flex: 1; border: 0; color: #fff;
+            background: linear-gradient(135deg, #5A8BFF, var(--blue));
+            box-shadow: 0 8px 18px rgba(47,107,255,.32);
         }
-
-        /* ---------- Buttons ---------- */
-        .btn {
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.25s ease;
-        }
-
-        .btn-primary {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(120deg, #7EA3FF 0%, #2F6BFF 50%, #7EA3FF 100%) !important;
-            background-size: 200% 100% !important;
-            border: none !important;
-            color: #FFFFFF !important;
-            padding: 14px 24px;
-            font-size: 1.02rem;
-            letter-spacing: 0.4px;
-            box-shadow: 0 10px 24px rgba(47, 107, 255, 0.35);
-            animation: softPulse 2.8s 2.2s ease-in-out infinite;
-        }
-
-        /* shine sweep on the main button */
-        .btn-primary::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -120%;
-            width: 60%;
-            height: 100%;
-            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-            transform: skewX(-20deg);
-            animation: btnShine 3.6s 2s ease-in-out infinite;
-            pointer-events: none;
-        }
-
-        .btn-primary:hover,
-        .btn-primary:focus {
-            background-position: 100% 0 !important;
-            transform: translateY(-3px);
-            box-shadow: 0 16px 32px rgba(47, 107, 255, 0.45);
-            animation: none;
-        }
-
-        .btn-primary:active {
-            transform: translateY(0) scale(0.97);
-        }
-
-        .btn-outline-primary {
-            color: var(--pink-rose) !important;
-            background: #FFFFFF !important;
-            border: 1.5px solid var(--pink-primary) !important;
-            border-radius: 999px;
-            padding: 8px 20px;
-        }
-
-        .btn-outline-primary:hover {
-            background: linear-gradient(135deg, #5A8BFF, #1B4FD6) !important;
-            color: #FFFFFF !important;
-            border-color: transparent !important;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(47, 107, 255, 0.32);
-        }
-
-        .btn-outline-primary:active {
-            transform: scale(0.95);
-        }
-
-        .btn-outline-danger {
-            width: 48px;
-            height: 48px;
-            padding: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            line-height: 1;
-            color: #1E1E1C !important;
-            background: #FFFFFF !important;
-            border: 1.5px solid var(--pink-border) !important;
-            border-radius: 12px;
-        }
-
-        .btn-outline-danger:hover {
-            background: #FFEBEE !important;
-            border-color: #EF9A9A !important;
-            color: #C62828 !important;
-            transform: rotate(90deg) scale(1.08);
-        }
-
-        /* ---------- Footer link ---------- */
-        .card > p.text-center {
-            color: var(--pink-muted);
-            padding-top: 20px;
-            border-top: 1px dashed var(--pink-border);
-            margin-bottom: 0;
-            animation: fadeUp 0.6s ease 1.25s backwards;
-        }
-
-        .card a {
-            color: var(--blue-deep);
-            font-weight: 700;
-            text-decoration: none;
-            background-image: linear-gradient(var(--pink-rose), var(--pink-rose));
-            background-size: 0 2px;
-            background-position: 0 100%;
-            background-repeat: no-repeat;
-            transition: background-size 0.3s ease, color 0.2s ease;
-        }
-
-        .card a:hover {
-            background-size: 100% 2px;
-            color: var(--pink-rose);
-        }
-
-        /* ---------- Scrollbar ---------- */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: var(--pink-primary); border-radius: 8px; }
-        ::-webkit-scrollbar-track { background: var(--pink-bg); }
-        ::selection { background: #2F6BFF; color: #fff; }
+        .btn-main:hover, .btn-main:focus-visible { color: #fff; background: var(--blue-deep); transform: translateY(-2px); }
+        .btn-back { border: 1.5px solid var(--beige); background: #fff; color: var(--ink); }
+        .login-link { margin: 10px 0 0; text-align: center; font-size: .85rem; color: var(--muted); }
+        .login-link a { font-weight: 700; color: var(--blue-deep); text-decoration: none; }
+        .alert { padding: 7px 12px; margin: 8px 0 0; font-size: .85rem; border-radius: 10px; }
 
         /* ---------- Responsive ---------- */
-        @media (max-width: 767.98px) {
-            .card {
-                padding: 28px 20px !important;
-                border-radius: 20px !important;
-            }
-
-            .container {
-                padding-left: 14px;
-                padding-right: 14px;
-            }
-
-            .qualification-row {
-                grid-template-columns: minmax(0, 1fr) 48px;
-            }
-
-            .qualification-row > [class*="col-"]:nth-child(1),
-            .qualification-row > [class*="col-"]:nth-child(2) {
-                grid-column: 1 / -1 !important;
-            }
-
-            .qualification-row > [class*="col-"]:nth-child(3) {
-                grid-column: 1 / 2 !important;
-            }
-
-            .qualification-row > [class*="col-"]:nth-child(4) {
-                grid-column: 2 / 3 !important;
-            }
+        /* narrower screens: shrink, then hide the doctor */
+        @media (max-width: 1099.98px) {
+            .stage { margin-right: 0; }
+            .doctor { display: none; }
+        }
+        @media (max-width: 480px) { .form-side { padding: 20px 18px 16px; } }
+        @media (max-width: 480px) {
+            .qualification-row { grid-template-columns: minmax(0,1fr) 36px; }
+            .qualification-row input:nth-of-type(-n+2) { grid-column: 1 / -1; }
+            #qualifications { max-height: 132px; }
         }
 
-        @media (max-width: 575.98px) {
-            .card h2.text-primary {
-                font-size: 1.6rem;
-            }
-        }
+        /* ---------- Keyframes ---------- */
+        @keyframes riseIn  { from { opacity: 0; transform: translateY(30px) scale(.97); } to { opacity: 1; transform: none; } }
+        @keyframes stepIn  { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+        @keyframes shimmer { to { background-position: 300% 0; } }
+        @keyframes blink     { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+        @keyframes heartBeat { 0%, 40%, 100% { transform: scale(1); } 15% { transform: scale(1.14); } 28% { transform: scale(1.03); } }
+        @keyframes docIn     { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: none; } }
+        @keyframes headTilt  { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-5deg); } }
+        @keyframes drift     { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-26px) rotate(4deg); } }
+        @keyframes spin3d    { 0%, 100% { transform: perspective(300px) rotateY(-35deg); } 50% { transform: perspective(300px) rotateY(35deg); } }
+        @keyframes sweep     { 0%, 15% { background-position: 100% 0; } 85%, 100% { background-position: 0 0; } }
+        @keyframes ecgRun    { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
 
-        /* ---------- Accessibility: reduced motion ---------- */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
-                animation-duration: 0.01ms !important;
+                animation-duration: .01ms !important;
                 animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
+                transition-duration: .01ms !important;
             }
         }
     </style>
 </head>
-<body class="bg-light" style="background: transparent; color: #1E1E1C; margin: 0;">
+<body>
     <!-- ===== Page loader (paste-anywhere block) ===== -->
 <style>
   #msLoader {
@@ -712,13 +301,87 @@
 </script>
 <!-- ===== /Page loader ===== -->
 
-<div class="container py-5">
-    <div class="card shadow border-0 mx-auto p-4" style="max-width: 850px;">
+<div class="bg" aria-hidden="true">
+    <div class="watermark">MediSlot</div>
+    <svg class="ecg" viewBox="0 0 1200 160" preserveAspectRatio="none">
+        <path pathLength="100" d="M0 80H220L250 30L290 140L320 80H520L545 55L570 80H800L830 20L870 145L900 80H1200"/>
+    </svg>
+    <div class="float-logo" style="left:4%; top:6%; animation-delay:0s"><span class="mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="float-logo" style="left:78%; top:5%; animation-delay:-3s"><span class="mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="float-logo" style="left:3%; top:72%; animation-delay:-5s"><span class="mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="float-logo" style="left:86%; top:80%; animation-delay:-2s"><span class="mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+</div>
 
-        <div class="text-center mb-4">
-            <h2 class="fw-bold text-primary">MediSlot</h2>
-            <p class="text-muted">Doctor Registration</p>
-        </div>
+<main class="stage">
+    <svg class="doctor doctor-body" viewBox="0 0 300 520" aria-hidden="true">
+        <defs>
+            <linearGradient id="coat" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#D8CBB3"/>
+            </linearGradient>
+            <radialGradient id="skin" cx="38%" cy="35%" r="75%">
+                <stop offset="0" stop-color="#F6E0C8"/><stop offset="1" stop-color="#D3A581"/>
+            </radialGradient>
+        </defs>
+        <!-- legs and shoes -->
+        <path d="M142 380H183L178 490H148Z" fill="#2c2c29"/>
+        <path d="M187 380H228L222 490H192Z" fill="#1E1E1C"/>
+        <path d="M130 504Q132 486 150 486H180V504Z" fill="#2F6BFF"/>
+        <path d="M190 486H220Q240 486 242 504H190Z" fill="#1B4FD6"/>
+        <!-- sleeve outlines (behind the coat) -->
+        <g fill="none" stroke="#c4b595" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M145 189L110 250L80 243"/><path d="M230 189L266 256L280 214"/>
+        </g>
+        <!-- coat -->
+        <path d="M132 160Q185 138 238 160Q256 172 250 240L246 408Q185 424 124 408L128 240Q118 172 132 160Z" fill="url(#coat)" stroke="#c4b595" stroke-width="2"/>
+        <path d="M163 152L185 236L207 152Z" fill="#2F6BFF"/>
+        <path d="M163 152L185 236L158 214L148 166Z" fill="#F6F1E7"/>
+        <path d="M207 152L185 236L212 214L222 166Z" fill="#EFE7D8"/>
+        <path d="M185 236V414" stroke="#c4b595" stroke-width="2"/>
+        <circle cx="193" cy="272" r="4" fill="#1E1E1C"/><circle cx="193" cy="310" r="4" fill="#1E1E1C"/>
+        <path d="M212 268h8v-8h8v8h8v8h-8v8h-8v-8h-8Z" fill="#2F6BFF"/>
+        <path d="M140 340h32M200 340h34" stroke="#c4b595" stroke-width="3"/>
+        <!-- sleeves joined to the shoulders -->
+        <g fill="none" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M145 189L110 250L80 243" stroke="#FBF9F4"/>
+            <path d="M230 189L266 256L280 214" stroke="#E3D9C5"/>
+        </g>
+        <!-- elbow creases and cuffs -->
+        <path d="M107 238L118 250M260 244L256 258" stroke="#c4b595" stroke-width="2" stroke-linecap="round"/>
+        <path d="M92 230L86 261M263 217L295 228" stroke="#2F6BFF" stroke-width="8" stroke-linecap="round"/>
+        <!-- thumbs-up hand -->
+        <g fill="#E8C4A2" stroke="#B98A66" stroke-width="1.8" stroke-linejoin="round">
+            <path d="M268 220L265 194Q265 186 273 185L276 164Q278 154 286 157Q292 160 290 170L288 185H300Q308 186 308 193Q308 197 305 199Q309 202 307 207Q306 209 304 210Q306 214 303 217Q302 219 299 219Q299 226 291 226Z"/>
+            <path d="M290 199H305M290 210H304M288 185Q286 190 287 193" fill="none"/>
+        </g>
+        <!-- stethoscope -->
+        <g fill="none" stroke="#1E1E1C" stroke-width="7" stroke-linecap="round">
+            <path d="M166 156C144 192 146 232 162 254"/>
+            <path d="M204 156C222 182 226 206 222 222"/>
+            <path d="M210 250C210 230 214 222 222 222S236 230 236 250"/>
+        </g>
+        <circle cx="210" cy="252" r="5" fill="#1E1E1C"/><circle cx="236" cy="252" r="5" fill="#1E1E1C"/>
+        <g class="doc-chest">
+            <circle cx="163" cy="262" r="14" fill="#1E1E1C"/><circle cx="163" cy="262" r="9" fill="#D8CBB3"/><circle cx="163" cy="262" r="4" fill="#2F6BFF"/>
+        </g>
+        <!-- head -->
+        <g class="doc-head">
+            <path d="M170 118H200V154Q185 168 170 154Z" fill="#D3A581"/>
+            <circle cx="145" cy="92" r="8" fill="#D3A581"/><circle cx="225" cy="92" r="8" fill="#D3A581"/>
+            <ellipse cx="185" cy="88" rx="41" ry="47" fill="url(#skin)"/>
+            <path d="M143 92C134 40 168 24 196 31C226 32 238 56 226 92C223 74 218 64 210 58C192 72 168 72 154 62C148 70 145 80 143 92Z" fill="#1E1E1C"/>
+            <g class="doc-eyes" fill="#1E1E1C"><circle cx="169" cy="92" r="4"/><circle cx="201" cy="92" r="4"/></g>
+            <path d="M170 112Q185 125 200 112" fill="none" stroke="#1E1E1C" stroke-width="3" stroke-linecap="round"/>
+        </g>
+    </svg>
+<div class="shell">
+    <section class="form-side">
+        <header class="brand">
+            <span class="mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>
+            <div>
+                <h1>Register</h1>
+                <p>MediSlot | Doctor Registration</p>
+            </div>
+        </header>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% for category, message in messages %}
@@ -726,48 +389,50 @@
             {% endfor %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('auth.register') }}">
+        <ol class="steps">
+            <li><button type="button">1. Personal</button></li>
+            <li><button type="button">2. Professional</button></li>
+            <li><button type="button">3. Address &amp; Hospital</button></li>
+        </ol>
 
-            <h5 class="mb-3">Personal Information</h5>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">First Name *</label>
-                    <input name="firstName" class="form-control" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Last Name *</label>
-                    <input name="lastName" class="form-control" required>
-                </div>
-                
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Email *</label>
-                    <input type="email" name="email" class="form-control" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Password *</label>
-                    <input type="password" name="password" class="form-control"
-                           minlength="8" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Phone *</label>
-                    <input name="phone" class="form-control" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Years of Experience *</label>
-                    <input type="number" name="yearsExperience"
-                           class="form-control" min="0" required>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label for="specialisation" class="form-label">Specialization *</label>
-                    <select id="specialisation" name="specialisation"
-                            class="form-select" required>
+        <form id="registerForm" method="POST" action="{{ url_for('auth.register') }}" novalidate>
+            <div class="step-area">
+                <!-- Step 1: personal information -->
+                <div class="step">
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <label for="firstName" class="form-label">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" class="form-control" placeholder="Enter first name" required>
+                            <div class="invalid-feedback">This field is required.</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="lastName" class="form-label">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" class="form-control" placeholder="Enter last name" required>
+                            <div class="invalid-feedback">This field is required.</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" id="email" name="email" class="form-control" placeholder="doctor@example.com" required>
+                            <div class="invalid-feedback">Enter a valid email address.</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="password" class="form-label">Password *</label>
+                            <input type="password" id="password" name="password" class="form-control" placeholder="At least 8 characters" minlength="8" required>
+                            <div class="invalid-feedback">Use at least 8 characters.</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="phone" class="form-label">Phone *</label>
+                            <input type="tel" id="phone" name="phone" class="form-control" placeholder="Enter phone number" required>
+                            <div class="invalid-feedback">This field is required.</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="yearsExperience" class="form-label">Years of Experience *</label>
+                            <input type="number" id="yearsExperience" name="yearsExperience" class="form-control" placeholder="e.g. 5" min="0" required>
+                            <div class="invalid-feedback">Enter 0 or more.</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="specialisation" class="form-label">Specialization *</label>
+                            <select id="specialisation" name="specialisation" class="form-select" required>
                         <option value="" selected disabled>Select a specialization</option>
                         <option value="General Practice">General Practice</option>
                         <option value="Cardiology">Cardiology</option>
@@ -788,162 +453,175 @@
                         <option value="Radiology">Radiology</option>
                         <option value="Urology">Urology</option>
                         <option value="Other">Other</option>
-                    </select>
-                    <div id="otherSpecialisationContainer" class="mt-3" hidden>
-                        <label for="otherSpecialisation" class="form-label">
-                            Enter your specialization *
-                        </label>
-                        <input id="otherSpecialisation" type="text"
-                               class="form-control"
-                               placeholder="Your specialization"
-                               maxlength="100">
+                            </select>
+                            <div class="invalid-feedback">Select a specialization.</div>
+                        </div>
+                        <div class="col-sm-6" id="otherSpecialisationContainer" hidden>
+                            <label for="otherSpecialisation" class="form-label">Enter your specialization *</label>
+                            <input id="otherSpecialisation" type="text" class="form-control"
+                                   placeholder="Your specialization" maxlength="100">
+                            <div class="invalid-feedback">This field is required.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: licence, qualifications, languages -->
+                <div class="step">
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <label for="licenceNumber" class="form-label">Licence Number *</label>
+                            <input type="text" id="licenceNumber" name="licenceNumber" class="form-control"
+                                   placeholder="Enter licence number" minlength="3" maxlength="30"
+                                   pattern="[A-Za-z0-9\/ \-]{3,30}"
+                                   title="Enter 3-30 letters, numbers, spaces, / or -."
+                                   aria-describedby="licenceNumberFormat licenceNumberError" required>
+                            <div id="licenceNumberError" class="invalid-feedback">
+                                Invalid number. Use 3-30 letters, numbers, spaces, "/" or "-".
+                            </div>
+                            <div id="licenceNumberFormat" class="form-text">
+                                Format: 3-30 letters, numbers, spaces, "/" or "-".
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="licenceAuthority" class="form-label">Licence Authority *</label>
+                            <input type="text" id="licenceAuthority" name="licenceAuthority" class="form-control" placeholder="Enter licence authority" required>
+                            <div class="invalid-feedback">This field is required.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-label mt-2">Qualifications</div>
+                    <div id="qualifications">
+<div class="qualification-row">
+    <input name="degree[]" class="form-control" placeholder="Degree" aria-label="Degree">
+    <input name="institution[]" class="form-control" placeholder="Institution" aria-label="Institution">
+    <input type="number" name="year[]" class="form-control" placeholder="Year" aria-label="Year">
+    <button type="button" class="btn-remove" aria-label="Remove qualification"
+            onclick="this.closest('.qualification-row').remove()">&times;</button>
+</div>
+                    </div>
+                    <button type="button" class="btn-add" onclick="addQualification()">+ Add Qualification</button>
+
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <label for="languagesSpoken" class="form-label">Languages Spoken</label>
+                            <input type="text" id="languagesSpoken" name="languagesSpoken" class="form-control" placeholder="English, Hindi, Telugu">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: address and hospital -->
+                <div class="step">
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <label for="addressLine1" class="form-label">Address Line 1</label>
+                            <input type="text" id="addressLine1" name="addressLine1" class="form-control" placeholder="House / street">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="addressLine2" class="form-label">Address Line 2</label>
+                            <input type="text" id="addressLine2" name="addressLine2" class="form-control" placeholder="Area / landmark">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="city" class="form-label">City</label>
+                            <input type="text" id="city" name="city" class="form-control" placeholder="City">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="postalCode" class="form-label">Postal Code</label>
+                            <input type="text" id="postalCode" name="postalCode" class="form-control" placeholder="Postal code">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="hospitalName" class="form-label">Hospital Name</label>
+                            <input type="text" id="hospitalName" name="hospitalName" class="form-control" placeholder="Hospital name">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="department" class="form-label">Department</label>
+                            <input type="text" id="department" name="department" class="form-control" placeholder="Department">
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <hr>
-
-            <h5 class="mb-3">Medical Licence</h5>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="licenceNumber" class="form-label">Licence Number *</label>
-                    <input
-    type="text"
-    id="licenceNumber"
-    name="licenceNumber"
-    class="form-control"
-    minlength="3"
-    maxlength="30"
-    pattern="[A-Za-z0-9/ -]{3,30}"
-    title="Enter 3-30 letters, numbers, spaces, / or -."
-    aria-describedby="licenceNumberFormat licenceNumberError"
-    required
->
-                    <div id="licenceNumberFormat" class="form-text">
-                        Format: 3-30 letters, numbers, spaces, "/" or "-".
-                    </div>
-                    <div id="licenceNumberError" class="invalid-feedback">
-                        Invalid medical registration number. Use 3-30 letters,
-                        numbers, spaces, "/" or "-".
-                    </div>
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Licence Authority *</label>
-                    <input name="licenceAuthority" class="form-control" required>
-                </div>
+            <div class="actions">
+                <button type="button" class="btn btn-back" id="backBtn">Back</button>
+                <button type="button" class="btn btn-main" id="nextBtn">Next</button>
+                <button type="submit" class="btn btn-main" id="submitBtn">Register as Doctor</button>
             </div>
-
-            <hr>
-
-            <h5 class="mb-3">Qualifications</h5>
-
-            <div id="qualifications">
-                <div class="row qualification-row mb-3">
-                    <div class="col-md-4">
-                        <input name="degree[]" class="form-control"
-                               placeholder="Degree">
-                    </div>
-                    <div class="col-md-4">
-                        <input name="institution[]" class="form-control"
-                               placeholder="Institution">
-                    </div>
-                    <div class="col-md-3">
-                        <input type="number" name="year[]" class="form-control"
-                               placeholder="Year">
-                    </div>
-                    <div class="col-md-1">
-                        <button type="button" class="btn btn-outline-danger"
-                                onclick="this.closest('.qualification-row').remove()">
-                            ×
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <button type="button" class="btn btn-outline-primary btn-sm mb-3"
-                    onclick="addQualification()">
-                + Add Qualification
-            </button>
-
-            <hr>
-
-            <h5 class="mb-3">Address</h5>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <input name="addressLine1" class="form-control"
-                           placeholder="Address Line 1">
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <input name="addressLine2" class="form-control"
-                           placeholder="Address Line 2">
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <input name="city" class="form-control" placeholder="City">
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <input name="postalCode" class="form-control"
-                           placeholder="Postal Code">
-                </div>
-            </div>
-
-            <hr>
-
-            <h5 class="mb-3">Languages</h5>
-
-            <div class="mb-3">
-                <input name="languagesSpoken" class="form-control"
-                       placeholder="English, Hindi, Telugu">
-            </div>
-
-            <hr>
-
-            <h5 class="mb-3">Hospital Information</h5>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <input name="hospitalName" class="form-control"
-                           placeholder="Hospital Name">
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <input name="department" class="form-control"
-                           placeholder="Department">
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100 mt-3">
-                Register as Doctor
-            </button>
-
         </form>
 
-        <p class="text-center mt-3">
-            Already registered?
-            <a href="{{ url_for('auth.login') }}">Login</a>
-        </p>
+        <p class="login-link">Already registered? <a href="{{ url_for('auth.login') }}">Login</a></p>
+    </section>
 
-    </div>
 </div>
+    <svg class="doctor doctor-hands" viewBox="0 0 300 520" aria-hidden="true">
+        <g fill="#E8C4A2" stroke="#B98A66" stroke-width="1.6" stroke-linejoin="round">
+            <rect x="36" y="222" width="42" height="11" rx="5.5"/>
+            <rect x="31" y="232" width="47" height="11" rx="5.5"/>
+            <rect x="33" y="242" width="45" height="11" rx="5.5"/>
+            <rect x="40" y="252" width="38" height="11" rx="5.5"/>
+            <path d="M62 224Q72 214 88 228L84 260Q72 266 62 262Q70 243 62 224Z"/>
+            <path d="M80 229Q74 205 60 206Q52 209 57 216Q66 218 69 231Z"/>
+        </g>
+    </svg>
+</main>
 
 <script>
+const form = document.getElementById("registerForm");
+const steps = [...form.querySelectorAll(".step")];
+const tabs = [...document.querySelectorAll(".steps button")];
+const backBtn = document.getElementById("backBtn");
+const nextBtn = document.getElementById("nextBtn");
+const submitBtn = document.getElementById("submitBtn");
 const licenceNumberInput = document.getElementById("licenceNumber");
-const licenceNumberError = document.getElementById("licenceNumberError");
 const specialisationSelect = document.getElementById("specialisation");
 const otherSpecialisationContainer = document.getElementById("otherSpecialisationContainer");
 const otherSpecialisationInput = document.getElementById("otherSpecialisation");
+let current = 0;
+
+function showStep(index) {
+    current = index;
+    steps.forEach((s, i) => s.classList.toggle("active", i === index));
+    tabs.forEach((t, i) => {
+        t.classList.toggle("active", i === index);
+        t.classList.toggle("done", i < index);
+        t.disabled = i > index;
+    });
+    backBtn.hidden = index === 0;
+    nextBtn.hidden = index === steps.length - 1;
+    submitBtn.hidden = index !== steps.length - 1;
+}
+
+/* true when every field in the step is valid, otherwise shows the errors */
+function checkStep(index) {
+    steps[index].classList.add("was-validated");
+    const bad = steps[index].querySelector("input:invalid, select:invalid");
+    if (!bad) return true;
+    showStep(index);
+    bad.focus();
+    return false;
+}
+
+nextBtn.addEventListener("click", () => {
+    if (checkStep(current)) showStep(current + 1);
+});
+backBtn.addEventListener("click", () => showStep(current - 1));
+tabs.forEach((t, i) => t.addEventListener("click", () => showStep(i)));
+
+/* Enter moves to the next step instead of submitting early */
+form.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.matches("input, select") && current < steps.length - 1) {
+        e.preventDefault();
+        nextBtn.click();
+    }
+});
+
+/* final check of all steps (also stops the page loader on errors) */
+form.addEventListener("submit", (e) => {
+    if (!steps.every((s, i) => checkStep(i))) e.preventDefault();
+});
 
 function toggleOtherSpecialisation() {
     const isOther = specialisationSelect.value === "Other";
-
     otherSpecialisationContainer.hidden = !isOther;
     otherSpecialisationInput.required = isOther;
-
     if (isOther) {
         specialisationSelect.removeAttribute("name");
         otherSpecialisationInput.name = "specialisation";
@@ -953,49 +631,30 @@ function toggleOtherSpecialisation() {
         otherSpecialisationInput.value = "";
     }
 }
-
 specialisationSelect.addEventListener("change", toggleOtherSpecialisation);
-toggleOtherSpecialisation();
 
 function showLicenceNumberFormatError() {
-    const hasValue = licenceNumberInput.value.length > 0;
-    const hasInvalidFormat = hasValue && !licenceNumberInput.checkValidity();
-
-    licenceNumberInput.classList.toggle("is-invalid", hasInvalidFormat);
-    licenceNumberError.classList.toggle("d-block", hasInvalidFormat);
+    const bad = licenceNumberInput.value.length > 0 && !licenceNumberInput.checkValidity();
+    licenceNumberInput.classList.toggle("is-invalid", bad);
 }
-
 licenceNumberInput.addEventListener("input", showLicenceNumberFormatError);
 licenceNumberInput.addEventListener("blur", showLicenceNumberFormatError);
 
 function addQualification() {
     const container = document.getElementById("qualifications");
-
-    const row = document.createElement("div");
-    row.className = "row qualification-row mb-3";
-
-    row.innerHTML = `
-        <div class="col-md-4">
-            <input name="degree[]" class="form-control" placeholder="Degree">
-        </div>
-        <div class="col-md-4">
-            <input name="institution[]" class="form-control"
-                   placeholder="Institution">
-        </div>
-        <div class="col-md-3">
-            <input type="number" name="year[]" class="form-control"
-                   placeholder="Year">
-        </div>
-        <div class="col-md-1">
-            <button type="button" class="btn btn-outline-danger"
-                    onclick="this.closest('.qualification-row').remove()">
-                ×
-            </button>
-        </div>
-    `;
-
-    container.appendChild(row);
+    container.insertAdjacentHTML("beforeend", `<div class="qualification-row">
+    <input name="degree[]" class="form-control" placeholder="Degree" aria-label="Degree">
+    <input name="institution[]" class="form-control" placeholder="Institution" aria-label="Institution">
+    <input type="number" name="year[]" class="form-control" placeholder="Year" aria-label="Year">
+    <button type="button" class="btn-remove" aria-label="Remove qualification"
+            onclick="this.closest('.qualification-row').remove()">&times;</button>
+</div>`);
+    container.scrollTop = container.scrollHeight;
 }
+
+document.documentElement.classList.add("js");
+toggleOtherSpecialisation();
+showStep(0);
 </script>
 
 </body>

@@ -108,291 +108,403 @@
   })();
 </script>
 <!-- ===== /Page loader ===== -->
+<!-- ===== Page loader (paste-anywhere block) ===== -->
 <style>
-    /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF
-       Styles are scoped to this page's registration card. */
-    :root {
-        --pr-ink: #1E1E1C;
-        --pr-ink-soft: #6b6455;
-        --pr-beige: #D8CBB3;
-        --pr-beige-pale: #F6F1E7;
-        --pr-blue: #2F6BFF;
-        --pr-blue-deep: #1B4FD6;
-        --pr-blue-light: #7EA3FF;
-        --pr-ease: cubic-bezier(.22, 1, .36, 1);
+  #msLoader {
+    position: fixed; inset: 0; z-index: 99999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; background: #1E1E1C;
+    opacity: 1; visibility: visible;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #msLoader.ms-hide { opacity: 0; visibility: hidden; pointer-events: none; }
+
+  .ms-logo {
+    position: relative; display: grid; place-items: center;
+    width: 78px; height: 78px; border-radius: 22px;
+    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+    box-shadow: 0 10px 30px rgba(47,107,255,.55);
+    animation: ms-beat 1.4s ease-in-out infinite;
+  }
+  .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
+  .ms-logo::after {
+    content: ""; position: absolute; inset: -12px;
+    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
+    animation: ms-ring 1.4s ease-out infinite;
+  }
+  .ms-title {
+    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
+    letter-spacing: .3px;
+  }
+  .ms-ecg { width: 210px; height: 42px; }
+  .ms-ecg path {
+    fill: none; stroke: #2F6BFF; stroke-width: 3;
+    stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 340; stroke-dashoffset: 340;
+    animation: ms-ecg 1.8s linear infinite;
+  }
+
+  @keyframes ms-beat {
+    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
+    30% { transform: scale(1); }     45% { transform: scale(1.08); }
+  }
+  @keyframes ms-ring {
+    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
+  }
+  @keyframes ms-ecg {
+    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
+  }
+</style>
+
+<noscript><style>#msLoader { display: none !important; }</style></noscript>
+
+<div id="msLoader" aria-live="polite" aria-label="Loading">
+  <div class="ms-logo">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+    </svg>
+  </div>
+  <div class="ms-title">MediSlot</div>
+  <svg class="ms-ecg" viewBox="0 0 220 44" aria-hidden="true">
+    <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
+  </svg>
+</div>
+
+<script>
+  (function () {
+    var loader = document.getElementById("msLoader");
+    if (!loader) return;
+
+    /* move to <body> so no wrapper in base.html can clip it or trap its z-index */
+    document.body.appendChild(loader);
+
+    var MIN_VISIBLE = 600;     /* ms, so it never just flashes */
+    var FAILSAFE    = 5000;    /* ms, the loader can never stay longer than this */
+    var startedAt   = Date.now();
+    var hideTimer = null, failTimer = null;
+
+    function hide() {
+      clearTimeout(hideTimer);
+      clearTimeout(failTimer);
+      var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
+      hideTimer = setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
     }
 
-    body {
-        position: relative;
-        overflow-x: hidden;
-        color: var(--pr-ink);
-        background:
-            radial-gradient(1000px 600px at 100% -10%, rgba(47, 107, 255, .14), transparent 60%),
-            radial-gradient(900px 500px at 0% 40%, rgba(216, 203, 179, .6), transparent 60%),
-            linear-gradient(180deg, #F6F1E7 0%, #E9DFCB 100%) !important;
-        background-attachment: fixed !important;
-        animation: prPageFade .9s ease backwards;
+    function show() {
+      startedAt = Date.now();
+      loader.classList.remove("ms-hide");
+      clearTimeout(failTimer);
+      failTimer = setTimeout(hide, FAILSAFE);   /* if navigation never happens, hide again */
     }
 
-    /* drifting dot grid + floating orbs (behind content) */
-    body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-        background-image: radial-gradient(rgba(30, 30, 28, .08) 1.5px, transparent 1.5px);
-        background-size: 30px 30px;
-        animation: prGridDrift 30s linear infinite;
-    }
-    body::after {
-        content: "";
-        position: fixed;
-        width: 420px; height: 420px;
-        left: -120px; bottom: -120px;
-        border-radius: 50%;
-        background: rgba(47, 107, 255, .26);
-        filter: blur(80px);
-        z-index: -1;
-        pointer-events: none;
-        animation: prOrb 17s ease-in-out infinite;
-    }
+    /* hide when the page has loaded (works even if "load" already fired) */
+    if (document.readyState === "complete") hide();
+    else window.addEventListener("load", hide);
+    failTimer = setTimeout(hide, FAILSAFE);
 
-    /* ---------- Card ---------- */
-    .col-md-8.col-lg-7 > .card {
-        position: relative;
-        overflow: hidden;
-        background: rgba(252, 250, 246, .95);
-        border: 1px solid var(--pr-beige) !important;
-        border-radius: 24px;
-        box-shadow: 0 22px 56px rgba(30, 30, 28, .18) !important;
-        transition: transform .5s var(--pr-ease), box-shadow .5s var(--pr-ease), border-color .4s ease;
-        animation: prCardIn 1s .15s var(--pr-ease) backwards;
-    }
-    .col-md-8.col-lg-7 > .card:hover {
-        box-shadow: 0 26px 60px rgba(47, 107, 255, .22) !important;
-        border-color: var(--pr-blue-light) !important;
-    }
+    /* back/forward cache can restore the page with the loader still on */
+    window.addEventListener("pageshow", function () {
+      clearTimeout(hideTimer);
+      loader.classList.add("ms-hide");
+    });
 
-    /* flowing top border */
-    .col-md-8.col-lg-7 > .card::before {
-        content: "";
-        position: absolute;
-        inset: 0 0 auto 0;
-        height: 5px;
+    /* show it only for links that really leave this page */
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest("a[href]");
+      if (!a || e.defaultPrevented) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+      if (a.target === "_blank" || a.hasAttribute("download")) return;
+      var href = a.getAttribute("href") || "";
+      if (href.charAt(0) === "#" || /^(javascript|mailto|tel):/i.test(href)) return;
+      var url = new URL(a.href, location.href);
+      if (url.origin !== location.origin) return;
+      if (url.pathname === location.pathname && url.search === location.search) return;
+      show();
+    });
+
+    /* show it for form submits that actually go through */
+    document.addEventListener("submit", function (e) {
+      if (e.defaultPrevented) return;            /* respects a cancelled confirm() */
+      if (e.target.target === "_blank") return;
+      show();
+    });
+  })();
+</script>
+<!-- ===== /Page loader ===== -->
+
+    /* ---------- Card: scene on the left, form on the right ---------- */
+    .pr-card {
+        position: relative; overflow: hidden;
+        display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr);
+        max-width: 1040px; margin: 16px auto;
+        background: #FCFAF6;
+        border: 8px solid var(--pr-ink); border-radius: 28px;
+        box-shadow: 0 24px 60px rgba(30,30,28,.28);
+        animation: prRiseIn .8s var(--pr-ease) backwards;
+    }
+    .pr-card::before {
+        content: ""; position: absolute; inset: 0 0 auto 0; height: 5px; z-index: 2;
         background: linear-gradient(90deg, #D8CBB3, #2F6BFF, #1E1E1C, #2F6BFF, #D8CBB3);
-        background-size: 300% 100%;
-        animation: prGradientSlide 4s linear infinite;
+        background-size: 300% 100%; animation: prShimmer 4s linear infinite;
     }
-    /* rotating dashed ring in the corner */
-    .col-md-8.col-lg-7 > .card::after {
-        content: "";
-        position: absolute;
-        width: 220px; height: 220px;
-        right: -100px; top: -100px;
-        border-radius: 50%;
-        border: 2px dashed rgba(47, 107, 255, .35);
-        pointer-events: none;
-        animation: prSpin 22s linear infinite;
-    }
-    .col-md-8.col-lg-7 > .card > * { position: relative; z-index: 1; }
+    .pr-scene { position: relative; min-height: 480px; }
+    .pr-scene svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .pr-form { padding: 24px 30px 18px; }
 
-    /* ---------- Heading & text ---------- */
-    .col-md-8.col-lg-7 > .card h2 {
-        position: relative;
-        display: inline-block;
-        padding-bottom: 10px;
-        font-weight: 800;
-        letter-spacing: -.5px;
-        color: var(--pr-ink);
-        background: linear-gradient(100deg, #1E1E1C 0%, #1E1E1C 40%, #2F6BFF 50%, #1E1E1C 60%, #1E1E1C 100%);
-        background-size: 250% 100%;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: prSlideRight .8s .3s var(--pr-ease) backwards, prTextSweep 6s 1.5s ease-in-out infinite;
-    }
-    .col-md-8.col-lg-7 > .card h2::after {
-        content: "";
-        position: absolute;
-        left: 0; bottom: 0;
-        height: 4px;
-        width: 56px;
-        border-radius: 4px;
-        background: linear-gradient(90deg, var(--pr-blue-light), var(--pr-blue-deep));
-        -webkit-text-fill-color: initial;
-        animation: prGrowX .9s .7s var(--pr-ease) backwards, prBarGlow 3s 2s ease-in-out infinite;
-    }
+    /* scene animations */
+    .pr-head   { transform-origin: 300px 225px; animation: prHeadTilt 5s ease-in-out infinite; }
+    .pr-eyes   { transform-box: fill-box; transform-origin: center; animation: prBlink 4.5s infinite; }
+    .pr-hand   { animation: prType .5s ease-in-out infinite; }
+    .pr-hand2  { animation: prType .5s -.25s ease-in-out infinite; }
+    .pr-minute { transform-origin: 405px 90px; animation: prSpin 12s linear infinite; }
+    .pr-leaves { transform-origin: 440px 465px; animation: prSway 5s ease-in-out infinite; }
+    .pr-steam  { stroke-dasharray: 10 8; animation: prSteam 1.6s linear infinite; }
+    .pr-badge  { animation: prBob 3.2s ease-in-out infinite; }
 
-    .col-md-8.col-lg-7 > .card > .text-muted {
-        color: var(--pr-ink-soft) !important;
-        font-weight: 500;
-        animation: prSlideUp .8s .5s var(--pr-ease) backwards;
+    /* ---------- Heading and form ---------- */
+    .pr-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+    .pr-brand .pr-mark { animation: prBeat 1.8s ease-in-out infinite; }
+    .pr-brand h2 {
+        margin: 0; font-size: 1.55rem; font-weight: 800;
+        background: linear-gradient(100deg, #1E1E1C 40%, #2F6BFF 50%, #1E1E1C 60%);
+        background-size: 250% 100%; -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent; animation: prSweep 6s 1.5s ease-in-out infinite;
     }
+    .pr-brand p { margin: 0; font-size: .88rem; color: var(--pr-ink-soft); }
 
-    /* ---------- Form ---------- */
-    .card form > * { animation: prSlideRight .8s var(--pr-ease) backwards; }
-    .card form > :nth-child(1) { animation-delay: .60s; }
-    .card form > :nth-child(2) { animation-delay: .72s; }
-    .card form > :nth-child(3) { animation-delay: .84s; }
-    .card form > :nth-child(4) { animation-delay: .96s; }
-    .card form > :nth-child(5) { animation-delay: 1.08s; }
-    .card form > :nth-child(6) { animation-delay: 1.20s; animation-name: prSlideUp; }
+    .pr-card form .row > div { animation: prSlideRight .7s var(--pr-ease) backwards; }
+    .pr-card form .row > div:nth-child(1) { animation-delay: .30s; }
+    .pr-card form .row > div:nth-child(2) { animation-delay: .38s; }
+    .pr-card form .row > div:nth-child(3) { animation-delay: .46s; }
+    .pr-card form .row > div:nth-child(4) { animation-delay: .54s; }
+    .pr-card form .row > div:nth-child(5) { animation-delay: .62s; }
+    .pr-card form .row > div:nth-child(6) { animation-delay: .70s; }
+    .pr-card form .row > div:nth-child(7) { animation-delay: .78s; }
+    .pr-card form .row > div:nth-child(8) { animation-delay: .86s; }
 
-    .card .form-label {
-        color: var(--pr-ink);
-        font-weight: 700;
-        font-size: 14px;
-        margin-bottom: 7px;
-        transition: color .3s ease, transform .3s var(--pr-ease);
+    .pr-card .form-label { margin-bottom: 3px; font-size: .8rem; font-weight: 700; transition: color .3s, transform .3s var(--pr-ease); }
+    .pr-card .row > div:focus-within .form-label { color: var(--pr-blue-deep); transform: translateX(4px); }
+    .pr-card .form-control {
+        padding: 7px 12px; font-size: .9rem; font-weight: 500; color: var(--pr-ink);
+        border: 2px solid var(--pr-beige); border-radius: 10px; background: var(--pr-beige-pale);
+        transition: border-color .3s, box-shadow .3s, background .3s, transform .3s var(--pr-ease);
     }
-    .card .mb-3:focus-within > .form-label {
-        color: var(--pr-blue-deep);
-        transform: translateX(4px);
-    }
-
-    .card .form-control {
-        padding: 12px 14px;
-        border: 2px solid var(--pr-beige);
-        border-radius: 12px;
-        background: var(--pr-beige-pale);
-        color: var(--pr-ink);
-        font-weight: 500;
-        transition: border-color .3s ease, box-shadow .3s ease, background .3s ease, transform .3s var(--pr-ease);
-    }
-    .card .form-control:hover { border-color: var(--pr-blue-light); }
-    .card .form-control:focus {
-        background: #fff;
-        border-color: var(--pr-blue);
-        color: var(--pr-ink);
-        box-shadow: 0 0 0 .28rem rgba(47, 107, 255, .22);
-        transform: translateY(-2px);
+    .pr-card .form-control:hover { border-color: var(--pr-blue-light); }
+    .pr-card .form-control:focus {
+        background: #fff; border-color: var(--pr-blue); transform: translateY(-2px);
         animation: prFocusRing 1.8s ease-in-out infinite;
     }
-    /* filled required fields get a soft blue border */
-    .card input[required]:valid:not(:focus) {
-        border-color: var(--pr-blue-light);
-        background: #fff;
-    }
+    .pr-card input[required]:valid:not(:focus) { border-color: var(--pr-blue-light); background: #fff; }
+    .pr-card .form-text { margin-top: 3px; font-size: .74rem; font-weight: 600; color: var(--pr-ink-soft); }
 
-    .card .form-text {
-        color: var(--pr-ink-soft);
-        font-size: 12.5px;
-        font-weight: 500;
-        padding: 6px 10px;
-        margin-top: 8px;
-        border-left: 3px solid var(--pr-beige);
-        border-radius: 0 8px 8px 0;
-        background: var(--pr-beige-pale);
-        transition: border-color .3s ease, transform .3s var(--pr-ease);
-        animation: prFadeIn 1s 1.3s ease backwards;
-    }
-    .card .mb-3:focus-within > .form-text {
-        border-left-color: var(--pr-blue);
-        transform: translateX(4px);
-    }
-
-    /* ---------- Button ---------- */
-    .card .btn-primary {
-        position: relative;
-        overflow: hidden;
-        padding: 13px;
-        border: none;
-        border-radius: 14px;
-        font-weight: 700;
-        font-size: 15px;
+    .pr-card .btn-primary {
+        position: relative; overflow: hidden; margin-top: 14px; padding: 10px;
+        border: none; border-radius: 12px; font-weight: 700;
         background: linear-gradient(135deg, var(--pr-blue-light), var(--pr-blue) 55%, var(--pr-blue-deep));
-        box-shadow: 0 12px 24px rgba(47, 107, 255, .35);
-        transition: transform .3s var(--pr-ease), box-shadow .3s var(--pr-ease);
-        animation: prSlideUp .8s 1.2s var(--pr-ease) backwards, prSoftPulse 2.8s 2.4s ease-in-out infinite;
+        animation: prSoftPulse 2.8s 2s ease-in-out infinite;
     }
-    .card .btn-primary::after {
-        content: "";
-        position: absolute;
-        top: 0; left: -120%;
-        width: 60%; height: 100%;
-        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .5), transparent);
-        transform: skewX(-20deg);
-        animation: prBtnShine 3.6s 2s ease-in-out infinite;
-        pointer-events: none;
+    .pr-card .btn-primary::after {
+        content: ""; position: absolute; top: 0; left: -120%; width: 60%; height: 100%;
+        background: linear-gradient(100deg, transparent, rgba(255,255,255,.5), transparent);
+        transform: skewX(-20deg); animation: prBtnShine 3.6s 2s ease-in-out infinite; pointer-events: none;
     }
-    .card .btn-primary:hover,
-    .card .btn-primary:focus {
-        background: linear-gradient(135deg, var(--pr-blue), var(--pr-blue-deep));
-        transform: translateY(-3px);
-        box-shadow: 0 16px 30px rgba(47, 107, 255, .45);
-        animation: none;
+    .pr-card .btn-primary:hover, .pr-card .btn-primary:focus-visible {
+        background: var(--pr-blue-deep); transform: translateY(-2px);
+        box-shadow: 0 14px 26px rgba(47,107,255,.45); animation: none;
     }
-    .card .btn-primary:active { transform: scale(.96); }
-    .card .btn-primary:focus-visible {
-        outline: 3px solid rgba(126, 163, 255, .7);
-        outline-offset: 2px;
-    }
+    .pr-login { margin: 10px 0 0; text-align: center; font-size: .86rem; color: var(--pr-ink-soft); }
+    .pr-login a { font-weight: 700; color: var(--pr-blue-deep); text-decoration: none; }
+    .pr-login a:hover { text-decoration: underline; }
 
-    /* ---------- Sign-in link ---------- */
-    .col-md-8.col-lg-7 > .card > p.mt-3 {
-        color: var(--pr-ink-soft);
-        font-weight: 500;
-        animation: prFadeIn .9s 1.4s ease backwards;
+    @media (max-width: 860px) {
+        .pr-card { grid-template-columns: minmax(0, 1fr); max-width: 560px; }
+        .pr-scene { min-height: 0; height: 370px; order: -1; }
+        .pr-form { padding: 20px 18px 16px; }
     }
-    .col-md-8.col-lg-7 > .card > p.mt-3 a {
-        position: relative;
-        color: var(--pr-blue-deep);
-        font-weight: 700;
-        text-decoration: none;
-    }
-    .col-md-8.col-lg-7 > .card > p.mt-3 a::after {
-        content: "";
-        position: absolute;
-        left: 0; bottom: -2px;
-        width: 100%; height: 2px;
-        background: var(--pr-blue);
-        transform: scaleX(0);
-        transform-origin: left;
-        transition: transform .4s var(--pr-ease);
-    }
-    .col-md-8.col-lg-7 > .card > p.mt-3 a:hover { color: var(--pr-blue); }
-    .col-md-8.col-lg-7 > .card > p.mt-3 a:hover::after { transform: scaleX(1); }
 
     /* ---------- Keyframes ---------- */
-    @keyframes prPageFade     { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes prFadeIn       { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes prSlideUp      { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
-    @keyframes prSlideRight   { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
-    @keyframes prCardIn       { from { opacity: 0; transform: translateY(60px) scale(.94); } to { opacity: 1; transform: none; } }
-    @keyframes prGrowX        { from { transform: scaleX(0); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
-    @keyframes prBarGlow      { 0%, 100% { box-shadow: 0 0 0 rgba(47, 107, 255, 0); } 50% { box-shadow: 0 0 12px rgba(47, 107, 255, .7); } }
-    @keyframes prGradientSlide { from { background-position: 0% 0; } to { background-position: 300% 0; } }
-    @keyframes prTextSweep    { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
-    @keyframes prSpin         { to { transform: rotate(360deg); } }
-    @keyframes prGridDrift    { from { background-position: 0 0; } to { background-position: 60px 60px; } }
-    @keyframes prOrb          { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(90px, -70px); } }
-    @keyframes prFocusRing    { 0%, 100% { box-shadow: 0 0 0 .28rem rgba(47, 107, 255, .22); } 50% { box-shadow: 0 0 0 .5rem rgba(47, 107, 255, .08); } }
-    @keyframes prSoftPulse    {
-        0%, 100% { box-shadow: 0 12px 24px rgba(47, 107, 255, .35), 0 0 0 0 rgba(47, 107, 255, .4); }
-        50%      { box-shadow: 0 12px 24px rgba(47, 107, 255, .35), 0 0 0 10px rgba(47, 107, 255, 0); }
+    @keyframes prRiseIn     { from { opacity: 0; transform: translateY(30px) scale(.97); } to { opacity: 1; transform: none; } }
+    @keyframes prShimmer    { to { background-position: 300% 0; } }
+    @keyframes prDrift      { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-26px) rotate(4deg); } }
+    @keyframes prSpin3d     { 0%, 100% { transform: perspective(300px) rotateY(-35deg); } 50% { transform: perspective(300px) rotateY(35deg); } }
+    @keyframes prSweep      { 0%, 15% { background-position: 100% 0; } 85%, 100% { background-position: 0 0; } }
+    @keyframes prEcg        { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+    @keyframes prHeadTilt   { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-4deg); } }
+    @keyframes prBlink      { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+    @keyframes prType       { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    @keyframes prSpin       { to { transform: rotate(360deg); } }
+    @keyframes prSway       { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2.5deg); } }
+    @keyframes prSteam      { to { stroke-dashoffset: -36; } }
+    @keyframes prBob        { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+    @keyframes prBeat       { 0%, 40%, 100% { transform: scale(1); } 15% { transform: scale(1.12); } 28% { transform: scale(1.03); } }
+    @keyframes prSlideRight { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+    @keyframes prFocusRing  { 0%, 100% { box-shadow: 0 0 0 .22rem rgba(47,107,255,.22); } 50% { box-shadow: 0 0 0 .4rem rgba(47,107,255,.08); } }
+    @keyframes prSoftPulse  {
+        0%, 100% { box-shadow: 0 10px 22px rgba(47,107,255,.35), 0 0 0 0 rgba(47,107,255,.4); }
+        50%      { box-shadow: 0 10px 22px rgba(47,107,255,.35), 0 0 0 9px rgba(47,107,255,0); }
     }
-    @keyframes prBtnShine     { 0%, 55% { left: -120%; } 100% { left: 160%; } }
+    @keyframes prBtnShine   { 0%, 55% { left: -120%; } 100% { left: 160%; } }
 
-    /* Respect reduced motion */
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
             animation-duration: .01ms !important;
             animation-iteration-count: 1 !important;
             transition-duration: .01ms !important;
-            scroll-behavior: auto !important;
         }
     }
 </style>
 
-<div class="row justify-content-center"><div class="col-md-8 col-lg-7"><div class="card shadow-sm border-0 p-4">
-<h2>Create patient account</h2><p class="text-muted">Enter your details to get started.</p>
-<form method="post"><div class="row"><div class="col-md-6 mb-3"><label class="form-label">First name</label><input class="form-control" name="firstName" required></div>
-<div class="col-md-6 mb-3"><label class="form-label">Last name</label><input class="form-control" name="lastName" required></div></div>
-<div class="mb-3"><label class="form-label">Email</label><input class="form-control" type="email" name="email" required></div>
-<div class="mb-3"><label class="form-label">Password</label><input class="form-control" type="password" name="password" minlength="10" required><div class="form-text">At least 10 characters, including a letter and a digit.</div></div>
-<div class="row"><div class="col-md-6 mb-3"><label class="form-label">Phone</label><input class="form-control" name="phone"></div><div class="col-md-6 mb-3"><label class="form-label">City</label><input class="form-control" name="city"></div></div>
-<div class="row"><div class="col-md-6 mb-3"><label class="form-label">Date of birth</label><input class="form-control" type="date" name="dateOfBirth"></div><div class="col-md-6 mb-3"><label class="form-label">Gender</label><input class="form-control" name="gender"></div></div>
-<button class="btn btn-primary w-100">Create account</button></form><p class="mt-3 mb-0">Already registered? <a href="{{ url_for('patient.login') }}">Sign in</a></p>
-</div></div></div>
+<div class="pr-bg" aria-hidden="true">
+    <div class="pr-watermark">MediSlot</div>
+    <svg class="pr-ecg" viewBox="0 0 1200 160" preserveAspectRatio="none">
+        <path pathLength="100" d="M0 80H220L250 30L290 140L320 80H520L545 55L570 80H800L830 20L870 145L900 80H1200"/>
+    </svg>
+    <div class="pr-float" style="left:3%; top:12%; animation-delay:0s"><span class="pr-mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pr-pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="pr-float" style="left:84%; top:9%; animation-delay:-3s"><span class="pr-mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pr-pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="pr-float" style="left:2%; top:74%; animation-delay:-5s"><span class="pr-mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pr-pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="pr-float" style="left:87%; top:78%; animation-delay:-2s"><span class="pr-mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pr-pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+</div>
+
+<div class="pr-card">
+    <div class="pr-scene">
+    <svg viewBox="0 0 500 600" preserveAspectRatio="xMidYMid slice" role="img" aria-label="A patient booking an appointment on a laptop">
+        <defs>
+            <linearGradient id="prWall" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#F6F1E7"/><stop offset="1" stop-color="#D8CBB3"/>
+            </linearGradient>
+            <linearGradient id="prFloor" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#34342f"/><stop offset="1" stop-color="#1E1E1C"/>
+            </linearGradient>
+            <linearGradient id="prShirt" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#7EA3FF"/><stop offset="1" stop-color="#1B4FD6"/>
+            </linearGradient>
+            <radialGradient id="prSkin" cx="38%" cy="35%" r="75%">
+                <stop offset="0" stop-color="#F6E0C8"/><stop offset="1" stop-color="#CF9C76"/>
+            </radialGradient>
+            <linearGradient id="prWhite" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d9d4c8"/>
+            </linearGradient>
+        </defs>
+
+        <!-- room -->
+        <rect width="500" height="600" fill="url(#prWall)"/>
+        <path d="M0 430L500 395V600H0Z" fill="url(#prFloor)"/>
+
+        <!-- clock -->
+        <circle cx="408" cy="95" r="31" fill="#1E1E1C" opacity=".15"/>
+        <circle cx="405" cy="90" r="31" fill="#fff" stroke="#1E1E1C" stroke-width="6"/>
+        <path d="M405 90L418 96" stroke="#1E1E1C" stroke-width="4" stroke-linecap="round"/>
+        <path class="pr-minute" d="M405 90V68" stroke="#2F6BFF" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- cabinet and cactus -->
+        <ellipse cx="55" cy="452" rx="68" ry="12" fill="#000" opacity=".25"/>
+        <rect x="-10" y="230" width="104" height="220" rx="16" fill="url(#prWhite)"/>
+        <path d="M-10 302H94M-10 374H94" stroke="#c4b595" stroke-width="3"/>
+        <path d="M32 266h24M32 338h24M32 410h24" stroke="#1E1E1C" stroke-width="5" stroke-linecap="round"/>
+        <path d="M45 205V170M45 192H32V178M45 186H58V172" fill="none" stroke="#2F6BFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M28 204H62L58 230H32Z" fill="#fff"/>
+
+        <!-- plant -->
+        <ellipse cx="442" cy="522" rx="48" ry="11" fill="#000" opacity=".3"/>
+        <g class="pr-leaves">
+            <path d="M436 468C405 420 406 360 410 330C432 365 446 420 446 468Z" fill="#1B4FD6"/>
+            <path d="M438 468C428 390 440 320 456 285C470 340 462 420 450 468Z" fill="#2F6BFF"/>
+            <path d="M446 468C450 420 465 385 490 362C490 405 472 445 456 468Z" fill="#7EA3FF"/>
+        </g>
+        <path d="M408 462H476L468 520H416Z" fill="url(#prWhite)"/>
+
+        <!-- chair -->
+        <ellipse cx="310" cy="530" rx="85" ry="14" fill="#000" opacity=".3"/>
+        <rect x="308" y="250" width="86" height="150" rx="30" fill="#b9ae98"/>
+        <rect x="242" y="388" width="136" height="24" rx="12" fill="#a89d86"/>
+        <path d="M310 412V500M260 522L310 500L362 522M310 500V528" fill="none" stroke="#d9d4c8" stroke-width="9" stroke-linecap="round"/>
+        <g fill="#0f0f0e"><circle cx="260" cy="526" r="9"/><circle cx="362" cy="526" r="9"/><circle cx="310" cy="532" r="9"/></g>
+
+        <!-- legs and sneakers -->
+        <path d="M262 390H318L300 420L280 520H248L252 420Z" fill="#3a4a73"/>
+        <path d="M296 395H346L338 515H306L304 425Z" fill="#2c395a"/>
+        <path d="M232 540Q234 512 256 512H284V540Z" fill="#2F6BFF"/>
+        <path d="M296 538Q298 508 318 508H344V538Z" fill="#1B4FD6"/>
+        <path d="M232 540H284M296 538H344" stroke="#fff" stroke-width="6"/>
+
+        <!-- patient -->
+        <path d="M252 398C246 300 258 244 300 240C348 236 362 300 354 398Z" fill="url(#prShirt)"/>
+        <g class="pr-head">
+            <path d="M288 212H312V244Q300 258 288 244Z" fill="#CF9C76"/>
+            <circle cx="338" cy="140" r="24" fill="#2a211c"/>
+            <path d="M254 188C240 120 280 128 302 128C348 128 358 170 346 214Q330 230 320 200Z" fill="#2a211c"/>
+            <ellipse cx="298" cy="180" rx="40" ry="46" fill="url(#prSkin)"/>
+            <path d="M257 180C254 136 292 126 316 136C336 142 344 164 339 182C322 176 308 162 302 152C292 168 276 178 257 180Z" fill="#2a211c"/>
+            <g class="pr-eyes" fill="#1E1E1C"><circle cx="282" cy="187" r="3.8"/><circle cx="312" cy="187" r="3.8"/></g>
+            <path d="M284 204Q297 217 311 204" fill="none" stroke="#1E1E1C" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="274" cy="200" r="6" fill="#e8907c" opacity=".45"/><circle cx="321" cy="200" r="6" fill="#e8907c" opacity=".45"/>
+        </g>
+        <path d="M284 241L300 258L316 241" fill="none" stroke="#F6F1E7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- arms joined at the shoulders -->
+        <g fill="none" stroke="url(#prShirt)" stroke-linecap="round" stroke-linejoin="round" stroke-width="27">
+            <path d="M268 272L232 330L206 347" stroke="#5A8BFF"/>
+            <path d="M337 272L362 340L296 354" stroke="#1B4FD6"/>
+        </g>
+
+        <!-- desk -->
+        <path d="M80 390L66 556M385 390L398 556M120 390L124 505M345 390L342 505" stroke="#F6F1E7" stroke-width="9" stroke-linecap="round"/>
+        <path d="M68 354H398L420 386H46Z" fill="#2c2c29"/>
+        <rect x="46" y="384" width="374" height="16" rx="8" fill="#0f0f0e"/>
+
+        <!-- hands on the keyboard -->
+        <g class="pr-hand"><ellipse cx="206" cy="350" rx="17" ry="11" fill="url(#prSkin)"/></g>
+        <g class="pr-hand2"><ellipse cx="288" cy="357" rx="18" ry="11" fill="url(#prSkin)"/></g>
+
+        <!-- laptop, seen from the back -->
+        <path d="M141 290H249Q258 290 260 299L272 366H160L136 298Q134 290 141 290Z" fill="#c9c6bf"/>
+        <path d="M160 366H272L284 374H168Z" fill="#8f8b82"/>
+        <circle cx="202" cy="328" r="13" fill="#2F6BFF"/>
+        <path d="M195 328h14M202 321v14" stroke="#fff" stroke-width="4"/>
+
+        <!-- paper, pencil, phone and mug -->
+        <path d="M80 366L132 362L142 378L86 382Z" fill="#fff"/>
+        <path d="M92 374L128 368" stroke="#D8CBB3" stroke-width="5" stroke-linecap="round"/>
+        <path d="M300 372L336 370L344 380L306 382Z" fill="#D8CBB3"/>
+        <rect x="355" y="346" width="28" height="32" rx="6" fill="#2F6BFF"/>
+        <path d="M383 354q14 0 10 11q-3 7-10 6" fill="none" stroke="#2F6BFF" stroke-width="5"/>
+        <path class="pr-steam" d="M364 340q-8-10 0-20t0-20M376 340q-8-10 0-20" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- appointment confirmed bubble -->
+        <g class="pr-badge">
+            <rect x="105" y="105" width="130" height="62" rx="16" fill="#fff" stroke="#1E1E1C" stroke-width="3"/>
+            <path d="M200 167L220 188L218 166Z" fill="#1E1E1C"/>
+            <circle cx="135" cy="136" r="17" fill="#2F6BFF"/>
+            <path d="M127 136l6 6l11-12" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M163 126h54M163 144h36" stroke="#D8CBB3" stroke-width="8" stroke-linecap="round"/>
+        </g>
+    </svg>
+    </div>
+
+    <div class="pr-form">
+        <div class="pr-brand">
+            <span class="pr-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pr-pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>
+            <div>
+                <h2>Create patient account</h2>
+                <p>Enter your details to get started.</p>
+            </div>
+        </div>
+        <form method="post">
+          <div class="row g-2">
+            <div class="col-sm-6"><label class="form-label" for="firstName">First name</label><input class="form-control" id="firstName" name="firstName" required></div>
+            <div class="col-sm-6"><label class="form-label" for="lastName">Last name</label><input class="form-control" id="lastName" name="lastName" required></div>
+            <div class="col-12"><label class="form-label" for="email">Email</label><input class="form-control" id="email" type="email" name="email" required></div>
+            <div class="col-12"><label class="form-label" for="password">Password</label><input class="form-control" id="password" type="password" name="password" minlength="10" required><div class="form-text">At least 10 characters, including a letter and a digit.</div></div>
+            <div class="col-sm-6"><label class="form-label" for="phone">Phone</label><input class="form-control" id="phone" name="phone"></div>
+            <div class="col-sm-6"><label class="form-label" for="city">City</label><input class="form-control" id="city" name="city"></div>
+            <div class="col-sm-6"><label class="form-label" for="dateOfBirth">Date of birth</label><input class="form-control" id="dateOfBirth" type="date" name="dateOfBirth"></div>
+            <div class="col-sm-6"><label class="form-label" for="gender">Gender</label><input class="form-control" id="gender" name="gender"></div>
+          </div>
+          <button class="btn btn-primary w-100">Create account</button>
+        </form>
+        <p class="pr-login">Already registered? <a href="{{ url_for('patient.login') }}">Sign in</a></p>
+    </div>
+</div>
 {% endblock %}

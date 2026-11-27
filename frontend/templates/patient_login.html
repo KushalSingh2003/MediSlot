@@ -11,13 +11,16 @@
         --theme-muted: rgba(30, 30, 28, 0.68);
         --theme-blue-soft: rgba(47, 107, 255, 0.14);
         --theme-beige-soft: rgba(216, 203, 179, 0.35);
+        --theme-field: #F3F1EC;
     }
 
+    /* ---------- Page + animated MediSlot background ---------- */
     .patient-login-page {
         position: relative;
         isolation: isolate;
         display: flex;
         align-items: center;
+        justify-content: center;
         min-height: calc(100vh - 7rem);
         padding-top: 2rem;
         padding-bottom: 2rem;
@@ -27,7 +30,7 @@
     .patient-login-page::before,
     .patient-login-page::after {
         position: absolute;
-        z-index: -1;
+        z-index: -2;
         content: "";
         border-radius: 50%;
         pointer-events: none;
@@ -52,59 +55,316 @@
         animation: driftBeige 16s ease-in-out infinite;
     }
 
+    .pl-bg {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .pl-bg .pl-plus {
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        opacity: 0;
+        animation: floatUp 14s linear infinite;
+    }
+
+    .pl-bg .pl-plus::before,
+    .pl-bg .pl-plus::after {
+        position: absolute;
+        content: "";
+        border-radius: 3px;
+        background: var(--theme-blue);
+    }
+
+    .pl-bg .pl-plus::before { top: 8px; left: 0; width: 22px; height: 6px; }
+    .pl-bg .pl-plus::after  { top: 0; left: 8px; width: 6px; height: 22px; }
+
+    .pl-bg .pl-plus.beige::before,
+    .pl-bg .pl-plus.beige::after { background: var(--theme-beige); }
+
+    .pl-bg .pl-plus:nth-child(1) { left: 6%;  bottom: -30px; animation-delay: 0s;  }
+    .pl-bg .pl-plus:nth-child(2) { left: 22%; bottom: -30px; animation-delay: 4s;  transform: scale(.7); }
+    .pl-bg .pl-plus:nth-child(3) { left: 46%; bottom: -30px; animation-delay: 8s;  transform: scale(1.2); }
+    .pl-bg .pl-plus:nth-child(4) { left: 71%; bottom: -30px; animation-delay: 2s;  transform: scale(.8); }
+    .pl-bg .pl-plus:nth-child(5) { left: 90%; bottom: -30px; animation-delay: 6s;  }
+
+    .pl-bg .pl-heart {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        fill: var(--theme-blue);
+        opacity: 0;
+        animation: floatUp 18s linear infinite;
+    }
+
+    .pl-bg .pl-heart.h1 { left: 13%; bottom: -40px; animation-delay: 1s; }
+    .pl-bg .pl-heart.h2 { left: 82%; bottom: -40px; animation-delay: 9s; fill: var(--theme-beige); }
+
+    .pl-bg .pl-chip {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        gap: .45rem;
+        padding: .45rem .8rem;
+        border-radius: 999px;
+        border: 1px solid rgba(30, 30, 28, 0.1);
+        background: rgba(255, 255, 255, 0.85);
+        color: var(--theme-charcoal);
+        font-size: .78rem;
+        font-weight: 600;
+        box-shadow: 0 8px 20px rgba(30, 30, 28, 0.08);
+        animation: chipFloat 7s ease-in-out infinite;
+    }
+
+    .pl-bg .pl-chip i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--theme-blue);
+        box-shadow: 0 0 0 4px var(--theme-blue-soft);
+    }
+
+    .pl-bg .pl-chip.c1 { top: 9%;    left: 4%;  animation-delay: 0s; }
+    .pl-bg .pl-chip.c2 { bottom: 12%; right: 4%; animation-delay: 2s; }
+    .pl-bg .pl-chip.c3 { top: 14%;   right: 7%; animation-delay: 4s; }
+    .pl-bg .pl-chip.c3 i { background: var(--theme-beige); box-shadow: 0 0 0 4px var(--theme-beige-soft); }
+
+    .pl-bg .pl-ecg {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 5%;
+        width: 100%;
+        height: 70px;
+        opacity: .5;
+    }
+
+    .pl-bg .pl-ecg path {
+        fill: none;
+        stroke: var(--theme-blue);
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 1400;
+        stroke-dashoffset: 1400;
+        animation: ecgTrace 6s linear infinite;
+    }
+
+    /* ---------- Split card ---------- */
     .patient-login-card {
         position: relative;
+        display: grid;
+        grid-template-columns: 1fr 1.05fr;
+        width: 100%;
+        max-width: 62rem;
+        min-height: 34rem;
         overflow: hidden;
-        border: 1px solid rgba(30, 30, 28, 0.12) !important;
-        border-radius: 1.5rem !important;
-        background: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 18px 42px rgba(30, 30, 28, 0.1) !important;
+        padding: .85rem;
+        gap: 1rem;
+        border: 1px solid rgba(30, 30, 28, 0.1);
+        border-radius: 1.75rem;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 24px 56px rgba(30, 30, 28, 0.12);
         animation: cardReveal 0.75s cubic-bezier(.22, 1, .36, 1) both;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .patient-login-card::before {
+    /* Left visual panel */
+    .pl-visual {
+        position: relative;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 1.25rem;
+        background:
+            radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.65), transparent 55%),
+            linear-gradient(160deg, #E6DCC8, var(--theme-beige));
+    }
+
+    .pl-brand {
         position: absolute;
-        inset: 0 0 auto;
-        height: 5px;
-        content: "";
-        background: linear-gradient(
-            90deg,
-            var(--theme-charcoal),
-            var(--theme-blue),
-            var(--theme-beige),
-            var(--theme-blue)
-        );
-        background-size: 250% 100%;
-        animation: accentFlow 6s linear infinite;
+        top: 1.1rem;
+        left: 1.2rem;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        color: var(--theme-charcoal);
+        font-weight: 700;
+        letter-spacing: .2px;
     }
 
-    .patient-login-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 24px 50px rgba(47, 107, 255, 0.16) !important;
+    .pl-brand span.pl-mark {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: linear-gradient(135deg, #7EA3FF, var(--theme-blue));
+        box-shadow: 0 6px 14px rgba(47, 107, 255, .4);
+    }
+
+    .pl-brand svg { width: 16px; height: 16px; fill: #fff; }
+
+    .pl-doctor-art {
+        position: relative;
+        z-index: 1;
+        display: block;
+        width: 92%;
+        max-width: 430px;
+        height: auto;
+    }
+
+    .pl-doctor-art .pl-figure {
+        animation: doctorFloat 6s ease-in-out infinite;
+    }
+
+    .pl-doctor-art .pl-halo {
+        animation: haloPulse 5s ease-in-out infinite;
+        transform-origin: 200px 240px;
+    }
+
+    .pl-doctor-art .pl-eyes {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: blink 5s ease-in-out infinite;
+    }
+
+    .pl-doctor-art .pl-pulse {
+        fill: none;
+        stroke: #fff;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 120;
+        stroke-dashoffset: 120;
+        animation: screenEcg 2.4s linear infinite;
+    }
+
+    .pl-doctor-art .pl-screen-dot {
+        animation: pixelBlink 1.6s ease-in-out infinite;
+    }
+
+    /* Floating chips inside the visual panel */
+    .pl-visual-chip {
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .5rem .9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(30, 30, 28, 0.08);
+        background: rgba(255, 255, 255, 0.92);
+        color: var(--theme-charcoal);
+        font-size: .8rem;
+        font-weight: 600;
+        white-space: nowrap;
+        box-shadow: 0 10px 24px rgba(30, 30, 28, 0.14);
+        animation: chipFloat 6s ease-in-out infinite;
+    }
+
+    .pl-visual-chip i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--theme-blue);
+        box-shadow: 0 0 0 4px var(--theme-blue-soft);
+    }
+
+    .pl-visual-chip.v1 { top: 14%; right: 6%; }
+    .pl-visual-chip.v2 { top: 44%; left: 5%; animation-delay: 2.5s; }
+    .pl-visual-chip.v2 i { background: var(--theme-charcoal); box-shadow: 0 0 0 4px rgba(30, 30, 28, .12); }
+
+    .pl-visual-heart {
+        position: absolute;
+        z-index: 2;
+        top: 8%;
+        right: 3%;
+        width: 26px;
+        height: 26px;
+        fill: var(--theme-blue);
+        opacity: .55;
+        animation: heartBeat 1.6s ease-in-out infinite;
+    }
+
+    /* Right form panel */
+    .pl-form-side {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 3.2rem 2rem 1.5rem;
+    }
+
+    .pl-top-link {
+        position: absolute;
+        top: 1.1rem;
+        right: 1.3rem;
+        margin: 0;
+        font-size: .82rem;
+        color: var(--theme-muted);
+        animation: fadeRise 0.55s 0.45s ease both;
+    }
+
+    .pl-inner {
+        width: 100%;
+        max-width: 21rem;
+        margin: 0 auto;
     }
 
     .patient-login-card h2 {
         color: var(--theme-charcoal);
+        font-size: clamp(2rem, 4vw, 2.7rem);
         font-weight: 700;
+        letter-spacing: -0.04em;
         animation: fadeRise 0.6s 0.1s ease both;
     }
 
     .patient-login-description {
         color: var(--theme-muted) !important;
+        margin-bottom: 1.6rem;
         animation: fadeRise 0.6s 0.18s ease both;
     }
 
     .patient-login-card .form-label {
+        margin-bottom: .35rem;
         color: var(--theme-charcoal);
+        font-size: .82rem;
         font-weight: 600;
     }
 
+    .pl-field {
+        position: relative;
+    }
+
+    .pl-field svg {
+        position: absolute;
+        top: 50%;
+        left: .95rem;
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: var(--theme-muted);
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transform: translateY(-50%);
+        pointer-events: none;
+        transition: stroke .2s ease;
+    }
+
+    .pl-field:focus-within svg { stroke: var(--theme-blue); }
+
     .patient-login-card .form-control {
-        border: 1px solid rgba(30, 30, 28, 0.18);
-        border-radius: 0.75rem;
-        padding: 0.75rem 0.9rem;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        border: 1px solid transparent;
+        border-radius: 0.8rem;
+        background: var(--theme-field);
+        padding: 0.8rem 0.9rem 0.8rem 2.7rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background .2s ease;
     }
 
     .patient-login-card .form-control:hover {
@@ -113,24 +373,23 @@
 
     .patient-login-card .form-control:focus {
         border-color: var(--theme-blue);
+        background: #fff;
         box-shadow: 0 0 0 0.22rem var(--theme-blue-soft);
-        transform: translateY(-1px);
     }
 
     .patient-login-card form .mb-3 {
         animation: fadeRise 0.55s ease both;
     }
 
-    .patient-login-card form .mb-3:nth-child(1) {
-        animation-delay: 0.24s;
-    }
-
-    .patient-login-card form .mb-3:nth-child(2) {
-        animation-delay: 0.34s;
-    }
+    .patient-login-card form .mb-3:nth-child(1) { animation-delay: 0.24s; }
+    .patient-login-card form .mb-3:nth-child(2) { animation-delay: 0.34s; }
 
     .patient-login-card .btn-primary {
+        margin-top: .4rem;
+        padding: .8rem 1rem;
         border: 0;
+        border-radius: 999px;
+        font-weight: 600;
         background: linear-gradient(110deg, var(--theme-charcoal), var(--theme-blue)) !important;
         background-size: 200% 100% !important;
         box-shadow: 0 8px 20px rgba(47, 107, 255, 0.22);
@@ -158,15 +417,14 @@
         text-underline-offset: 4px;
     }
 
-    .patient-login-card p a {
-        display: inline-block;
-    }
+    .patient-login-card p a { display: inline-block; }
 
-    .patient-login-card p.mt-3 {
-        animation: fadeRise 0.55s 0.45s ease both;
-    }
-
-    .patient-login-card p.mt-2 {
+    .pl-doctor {
+        margin: 1.2rem 0 0;
+        padding-top: 1.1rem;
+        border-top: 1px solid rgba(30, 30, 28, 0.1);
+        text-align: center;
+        font-size: .9rem;
         animation: fadeRise 0.55s 0.55s ease both;
     }
 
@@ -176,68 +434,93 @@
         outline-offset: 3px;
     }
 
+    /* ---------- Keyframes ---------- */
     @keyframes cardReveal {
-        from {
-            opacity: 0;
-            transform: translateY(28px) scale(0.98);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
+        from { opacity: 0; transform: translateY(28px) scale(0.98); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     @keyframes fadeRise {
-        from {
-            opacity: 0;
-            transform: translateY(12px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @keyframes accentFlow {
-        from {
-            background-position: 0 0;
-        }
-
-        to {
-            background-position: 250% 0;
-        }
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes buttonGlow {
-        0%, 100% {
-            box-shadow: 0 8px 20px rgba(47, 107, 255, 0.18);
-        }
-
-        50% {
-            box-shadow: 0 10px 26px rgba(47, 107, 255, 0.32);
-        }
+        0%, 100% { box-shadow: 0 8px 20px rgba(47, 107, 255, 0.18); }
+        50%      { box-shadow: 0 10px 26px rgba(47, 107, 255, 0.32); }
     }
 
     @keyframes driftBlue {
-        0%, 100% {
-            transform: translate(0, 0);
-        }
-
-        50% {
-            transform: translate(30px, 22px);
-        }
+        0%, 100% { transform: translate(0, 0); }
+        50%      { transform: translate(30px, 22px); }
     }
 
     @keyframes driftBeige {
-        0%, 100% {
-            transform: translate(0, 0);
+        0%, 100% { transform: translate(0, 0); }
+        50%      { transform: translate(-26px, -20px); }
+    }
+
+    @keyframes floatUp {
+        0%   { opacity: 0; translate: 0 0; rotate: 0deg; }
+        10%  { opacity: .35; }
+        85%  { opacity: .25; }
+        100% { opacity: 0; translate: 30px -105vh; rotate: 180deg; }
+    }
+
+    @keyframes chipFloat {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-12px); }
+    }
+
+    @keyframes ecgTrace {
+        0%   { stroke-dashoffset: 1400; }
+        70%, 100% { stroke-dashoffset: 0; }
+    }
+
+    @keyframes doctorFloat {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-6px); }
+    }
+
+    @keyframes haloPulse {
+        0%, 100% { transform: scale(1);    opacity: .9; }
+        50%      { transform: scale(1.05); opacity: 1; }
+    }
+
+    @keyframes blink {
+        0%, 92%, 100% { transform: scaleY(1); }
+        96%           { transform: scaleY(.1); }
+    }
+
+    @keyframes screenEcg {
+        0%   { stroke-dashoffset: 120; }
+        70%, 100% { stroke-dashoffset: 0; }
+    }
+
+    @keyframes pixelBlink {
+        0%, 100% { opacity: .45; }
+        50%      { opacity: 1; }
+    }
+
+    @keyframes heartBeat {
+        0%, 100% { transform: scale(1); }
+        20%      { transform: scale(1.18); }
+        40%      { transform: scale(1); }
+        60%      { transform: scale(1.1); }
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 767.98px) {
+        .patient-login-card {
+            grid-template-columns: 1fr;
+            min-height: auto;
         }
 
-        50% {
-            transform: translate(-26px, -20px);
-        }
+        .pl-visual { min-height: 20rem; }
+        .pl-doctor-art { width: 78%; max-width: 340px; }
+        .pl-visual-chip.v2 { display: none; }
+        .pl-form-side { padding: 2.6rem 1rem 1.2rem; }
+        .pl-top-link { position: static; margin-bottom: 1.2rem; text-align: right; }
     }
 
     @media (max-width: 575.98px) {
@@ -246,6 +529,8 @@
             padding-top: 1rem;
             padding-bottom: 1rem;
         }
+
+        .pl-bg .pl-chip { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -259,10 +544,7 @@
             transition-duration: 0.01ms !important;
         }
 
-        .patient-login-card:hover,
-        .patient-login-card .btn-primary:hover {
-            transform: none;
-        }
+        .patient-login-card .btn-primary:hover { transform: none; }
     }
 </style>
 {% endblock %}
@@ -384,45 +666,218 @@
 </script>
 <!-- ===== /Page loader ===== -->
 
-<div class="patient-login-page row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="patient-login-card card shadow-sm border-0 p-4">
+<div class="patient-login-page">
 
-            <h2 class="mb-2">Patient sign in</h2>
-            <p class="patient-login-description">
-                Access your MediSlot patient account.
-            </p>
+    <!-- Animated MediSlot background -->
+    <div class="pl-bg" aria-hidden="true">
+        <span class="pl-plus"></span>
+        <span class="pl-plus beige"></span>
+        <span class="pl-plus"></span>
+        <span class="pl-plus beige"></span>
+        <span class="pl-plus"></span>
 
-            <form method="post">
-                <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input class="form-control"
-                           type="email"
-                           name="email"
-                           required>
-                </div>
+        <svg class="pl-heart h1" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <svg class="pl-heart h2" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
 
-                <div class="mb-3">
-                    <label class="form-label">Password</label>
-                    <input class="form-control"
-                           type="password"
-                           name="password"
-                           required>
-                </div>
+        <div class="pl-chip c1"><i></i>9:30 AM slot open</div>
+        <div class="pl-chip c2"><i></i>Appointment booked</div>
+        <div class="pl-chip c3"><i></i>Doctor available</div>
 
-                <button class="btn btn-primary w-100" type="submit">
-                    Sign in
-                </button>
-            </form>
+        <svg class="pl-ecg" viewBox="0 0 1200 70" preserveAspectRatio="none">
+            <path d="M0 40 H260 L290 10 L320 62 L350 40 H560 L590 24 L620 40 H820 L850 10 L880 62 L910 40 H1200"/>
+        </svg>
+    </div>
 
-            <p class="mt-3 mb-0">
+    <div class="patient-login-card card shadow-sm border-0">
+
+        <!-- Left: 3D doctor illustration -->
+        <div class="pl-visual">
+            <div class="pl-brand">
+                <span class="pl-mark">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </span>
+                MediSlot
+            </div>
+
+            <svg class="pl-visual-heart" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+
+            <div class="pl-visual-chip v1"><i></i>9:30 AM slot open</div>
+            <div class="pl-visual-chip v2"><i></i>Appointment booked</div>
+
+            <svg class="pl-doctor-art" viewBox="0 0 400 460" role="img" aria-label="Illustration of a smiling doctor holding a tablet">
+                <defs>
+                    <linearGradient id="docCoat" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#FFFFFF"/>
+                        <stop offset="1" stop-color="#EFE6D3"/>
+                    </linearGradient>
+                    <linearGradient id="docCoatShade" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0" stop-color="#F6F0E3"/>
+                        <stop offset="1" stop-color="#D9CCB0"/>
+                    </linearGradient>
+                    <linearGradient id="docTop" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#7EA3FF"/>
+                        <stop offset="1" stop-color="#2F6BFF"/>
+                    </linearGradient>
+                    <linearGradient id="docSkin" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#F6C3AA"/>
+                        <stop offset="1" stop-color="#E9A185"/>
+                    </linearGradient>
+                    <linearGradient id="docHair" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#4A3238"/>
+                        <stop offset="1" stop-color="#1E1416"/>
+                    </linearGradient>
+                    <linearGradient id="docTablet" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#4C80FF"/>
+                        <stop offset="1" stop-color="#1F4FD1"/>
+                    </linearGradient>
+                    <radialGradient id="docHalo" cx="50%" cy="50%" r="50%">
+                        <stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/>
+                        <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+                    </radialGradient>
+                </defs>
+
+                <!-- soft halo behind the doctor -->
+                <circle class="pl-halo" cx="200" cy="240" r="190" fill="url(#docHalo)"/>
+                <circle cx="318" cy="120" r="26" fill="#2F6BFF" opacity=".16"/>
+                <circle cx="70" cy="190" r="16" fill="#1E1E1C" opacity=".08"/>
+
+                <g class="pl-figure">
+
+                    <!-- hair (back) -->
+                    <path d="M118 150 C106 86 158 54 206 56 C258 58 296 96 286 152 C300 198 280 238 258 244 L250 204 L150 204 L142 244 C118 238 100 196 118 150 Z" fill="url(#docHair)"/>
+
+                    <!-- neck -->
+                    <path d="M182 196 L220 196 L224 256 L178 256 Z" fill="#E59A7E"/>
+                    <path d="M182 196 L220 196 L221 214 C208 224 194 224 181 214 Z" fill="#D58468" opacity=".7"/>
+
+                    <!-- shirt (blue turtleneck) -->
+                    <path d="M158 250 C176 238 226 238 244 250 L250 460 L152 460 Z" fill="url(#docTop)"/>
+                    <path d="M160 252 C178 262 224 262 242 252 L244 272 C226 282 176 282 158 272 Z" fill="#1F4FD1" opacity=".5"/>
+
+                    <!-- trousers hint -->
+                    <path d="M165 416 L237 416 L240 460 L162 460 Z" fill="#1E1E1C"/>
+                    <rect x="165" y="414" width="72" height="6" fill="#D8CBB3"/>
+
+                    <!-- coat: her right side (viewer left) with hand in pocket -->
+                    <path d="M160 252 L112 272 C80 298 62 366 58 460 L168 460 L180 334 Z" fill="url(#docCoat)" stroke="#CDBF9F" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M112 272 C84 300 70 360 76 422 L116 432 C116 380 134 330 158 302 Z" fill="url(#docCoatShade)" stroke="#CDBF9F" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M160 252 L192 322 L180 334" fill="none" stroke="#CDBF9F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <!-- pocket + hand -->
+                    <path d="M82 392 C96 386 118 388 130 398" fill="none" stroke="#CDBF9F" stroke-width="2.5" stroke-linecap="round"/>
+                    <ellipse cx="104" cy="396" rx="16" ry="10" fill="url(#docSkin)"/>
+
+                    <!-- coat: her left side (viewer right) -->
+                    <path d="M242 252 L290 272 C322 298 340 366 344 460 L234 460 L222 334 Z" fill="url(#docCoat)" stroke="#CDBF9F" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M242 252 L210 322 L222 334" fill="none" stroke="#CDBF9F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="230" cy="352" r="3.5" fill="#CDBF9F"/>
+
+                    <!-- forearm holding tablet -->
+                    <path d="M290 272 C326 300 346 356 336 412 L296 424 C298 376 286 326 262 302 Z" fill="url(#docCoatShade)" stroke="#CDBF9F" stroke-width="2" stroke-linejoin="round"/>
+
+                    <!-- tablet -->
+                    <g transform="translate(272 352) rotate(-24)">
+                        <rect x="0" y="0" width="70" height="96" rx="9" fill="#1E1E1C"/>
+                        <rect x="5" y="5" width="60" height="86" rx="6" fill="url(#docTablet)"/>
+                        <rect x="12" y="14" width="30" height="5" rx="2.5" fill="#fff" opacity=".85"/>
+                        <rect x="12" y="24" width="20" height="4" rx="2" fill="#fff" opacity=".5"/>
+                        <path class="pl-pulse" d="M10 52 H24 L29 40 L36 66 L42 52 H60"/>
+                        <rect class="pl-screen-dot" x="12" y="72" width="14" height="10" rx="3" fill="#D8CBB3"/>
+                        <rect class="pl-screen-dot" x="30" y="72" width="14" height="10" rx="3" fill="#fff" opacity=".7"/>
+                        <rect class="pl-screen-dot" x="48" y="72" width="10" height="10" rx="3" fill="#D8CBB3"/>
+                    </g>
+
+                    <!-- fingers over tablet edge -->
+                    <rect x="270" y="410" width="30" height="11" rx="5.5" fill="url(#docSkin)" transform="rotate(-24 285 415)"/>
+                    <rect x="274" y="422" width="30" height="11" rx="5.5" fill="url(#docSkin)" transform="rotate(-24 289 427)"/>
+                    <rect x="280" y="434" width="26" height="10" rx="5" fill="url(#docSkin)" transform="rotate(-24 293 439)"/>
+                    <ellipse cx="318" cy="418" rx="16" ry="12" fill="url(#docSkin)" transform="rotate(-24 318 418)"/>
+
+                    <!-- ears + earring -->
+                    <ellipse cx="150" cy="160" rx="8" ry="13" fill="#E59A7E"/>
+                    <ellipse cx="250" cy="160" rx="8" ry="13" fill="#E59A7E"/>
+                    <circle cx="149" cy="178" r="4.5" fill="#E7B04A"/>
+
+                    <!-- face -->
+                    <ellipse cx="200" cy="150" rx="51" ry="62" fill="url(#docSkin)"/>
+                    <circle cx="170" cy="174" r="12" fill="#EE7F78" opacity=".4"/>
+                    <circle cx="230" cy="174" r="12" fill="#EE7F78" opacity=".4"/>
+
+                    <!-- eyes -->
+                    <g class="pl-eyes">
+                        <ellipse cx="179" cy="152" rx="3.8" ry="4.6" fill="#2B1F22"/>
+                        <ellipse cx="223" cy="152" rx="3.8" ry="4.6" fill="#2B1F22"/>
+                    </g>
+
+                    <!-- brows -->
+                    <path d="M163 131 Q178 122 193 129" fill="none" stroke="#2B1F22" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M209 129 Q224 122 238 131" fill="none" stroke="#2B1F22" stroke-width="3" stroke-linecap="round"/>
+
+                    <!-- glasses -->
+                    <circle cx="178" cy="152" r="20" fill="#fff" fill-opacity=".18" stroke="#B8893A" stroke-width="3"/>
+                    <circle cx="224" cy="152" r="20" fill="#fff" fill-opacity=".18" stroke="#B8893A" stroke-width="3"/>
+                    <path d="M197 150 Q201 144 205 150" fill="none" stroke="#B8893A" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M158 148 L150 144 M244 148 L252 144" stroke="#B8893A" stroke-width="3" stroke-linecap="round"/>
+
+                    <!-- nose + smile -->
+                    <path d="M201 162 Q197 173 204 175" fill="none" stroke="#D1805F" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M186 188 Q200 183 215 187 Q202 202 186 188 Z" fill="#C8453F"/>
+                    <path d="M190 190 Q201 193 212 190" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round"/>
+
+                    <!-- bangs + side hair -->
+                    <path d="M148 128 C146 86 196 72 226 88 C252 100 254 124 254 144 C238 120 208 112 186 118 C170 123 158 132 148 146 Z" fill="url(#docHair)"/>
+                    <path d="M154 108 C170 92 196 88 214 92" fill="none" stroke="#6B4A52" stroke-width="2" stroke-linecap="round" opacity=".7"/>
+                    <path d="M147 140 C139 172 142 206 152 222 L162 210 C157 184 158 156 162 134 Z" fill="url(#docHair)"/>
+                    <path d="M253 140 C261 172 258 206 248 222 L238 210 C243 184 242 156 238 134 Z" fill="url(#docHair)"/>
+                </g>
+            </svg>
+        </div>
+
+        <!-- Right: sign-in form -->
+        <div class="pl-form-side">
+
+            <p class="pl-top-link">
                 New to MediSlot?
                 <a href="{{ url_for('patient.register') }}">Create patient account</a>
             </p>
 
-            <p class="mt-2">
-                <a href="{{ url_for('auth.login') }}">Doctor login</a>
-            </p>
+            <div class="pl-inner">
+                <h2 class="mb-2">Patient sign in</h2>
+                <p class="patient-login-description">
+                    Access your MediSlot patient account.
+                </p>
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <div class="pl-field">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg>
+                            <input class="form-control"
+                                   type="email"
+                                   name="email"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <div class="pl-field">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                            <input class="form-control"
+                                   type="password"
+                                   name="password"
+                                   required>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary w-100" type="submit">
+                        Sign in
+                    </button>
+                </form>
+
+                <p class="pl-doctor">
+                    <a href="{{ url_for('auth.login') }}">Doctor login</a>
+                </p>
+            </div>
 
         </div>
     </div>

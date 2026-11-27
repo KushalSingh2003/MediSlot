@@ -135,24 +135,6 @@
             animation: textSweep 6s 1.4s ease-in-out infinite;
         }
 
-        .card h2::before {
-            content: "\F6E0";
-            font-family: "bootstrap-icons";
-            display: block;
-            width: 62px;
-            height: 62px;
-            line-height: 62px;
-            margin: 0 auto 14px;
-            border-radius: 20px;
-            background: linear-gradient(135deg, var(--pink-300), var(--pink-500));
-            color: #ffffff;
-            -webkit-text-fill-color: #ffffff;
-            font-size: 28px;
-            font-weight: 400;
-            box-shadow: 0 12px 24px rgba(47, 107, 255, 0.4);
-            animation: iconPop .9s .35s var(--ease) backwards, iconFloat 4s 1.3s ease-in-out infinite, ringPulse 2.8s 1.3s ease-in-out infinite;
-        }
-
         .card .text-muted {
             color: var(--plum-soft) !important;
             font-weight: 500;
@@ -317,7 +299,119 @@
             }
         }
 
+        /* ---------- 3D logo: doctor + stethoscope ---------- */
+        .ms3d {
+            position: relative;
+            width: 190px; height: 180px;
+            margin: 0 auto 6px;
+            perspective: 700px;
+        }
+        .ms3d-tilt, .ms3d-coin {
+            position: absolute; inset: 0;
+            transform-style: preserve-3d;
+        }
+        .ms3d-tilt { transition: transform .25s ease-out; }
+        .ms3d-coin { animation: coinTurn 7s ease-in-out infinite; }
+
+        /* every layer shares the same centred 150px square */
+        .ms3d-layer {
+            position: absolute;
+            left: 20px; top: 8px;
+            width: 150px; height: 150px;
+            border-radius: 50%;
+        }
+        /* stacked discs give the medallion its thickness */
+        .ms3d-edge { background: #1B4FD6; transform: translateZ(calc(var(--i) * -2px)); }
+        .ms3d-edge:nth-child(n+5) { background: #1E1E1C; }
+        .ms3d-face { transform: translateZ(1px); }
+        .ms3d-steth { transform: translateZ(26px); pointer-events: none; overflow: visible; }
+
+        .ms3d-tube {
+            fill: none; stroke-linecap: round; stroke-linejoin: round;
+            stroke-dasharray: 100; stroke-dashoffset: 0;
+            animation: tubeDraw 6s ease-in-out infinite;
+        }
+        .ms3d-chest { transform-box: fill-box; transform-origin: center; animation: heartBeat 1.4s ease-in-out infinite; }
+        .ms3d-wave  { transform-box: fill-box; transform-origin: center; animation: waveOut 1.4s ease-out infinite; }
+        .ms3d-eyes  { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+
+        /* floating badges around the medallion */
+        .ms3d-chip {
+            position: absolute;
+            display: grid; place-items: center;
+            width: 36px; height: 36px;
+            border-radius: 12px;
+            color: #ffffff; font-size: 17px;
+            background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+            box-shadow: 0 5px 0 #1B4FD6, 0 12px 18px rgba(30, 30, 28, .25);
+            animation: chipFloat 3.6s ease-in-out infinite;
+        }
+        .ms3d-chip.c1 { left: -4px; top: 14px; }
+        .ms3d-chip.c2 { right: -4px; top: 50px; animation-delay: -1.2s;
+                        background: #1E1E1C; color: #D8CBB3; box-shadow: 0 5px 0 #000, 0 12px 18px rgba(30,30,28,.25); }
+        .ms3d-chip.c3 { left: 2px; top: 118px; animation-delay: -2.4s;
+                        background: #D8CBB3; color: #1E1E1C; box-shadow: 0 5px 0 #a89d86, 0 12px 18px rgba(30,30,28,.2); }
+
+        /* soft floor shadow */
+        .ms3d-shadow {
+            position: absolute; left: 45px; bottom: 0;
+            width: 100px; height: 12px;
+            border-radius: 50%;
+            background: rgba(30, 30, 28, .28);
+            filter: blur(6px);
+            animation: shadowBreathe 3.5s ease-in-out infinite;
+        }
+
+        /* extruded depth under the MediSlot wordmark */
+        .card h2 {
+            font-size: 2.3rem;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 1px 0 #1B4FD6) drop-shadow(0 1px 0 #1B4FD6)
+                    drop-shadow(0 2px 0 #1E1E1C) drop-shadow(0 6px 8px rgba(30, 30, 28, .25));
+        }
+
+        /* ---------- MediSlot logo animation in the background ---------- */
+        .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .mark {
+            display: grid; place-items: center; flex-shrink: 0;
+            width: 58px; height: 58px; border-radius: 18px;
+            background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
+            box-shadow: 0 6px 0 #1B4FD6, 0 14px 24px rgba(47,107,255,.35);
+        }
+        .mark svg { width: 64%; height: 64%; fill: #fff; }
+        .mark .pulse { fill: none; stroke: #1E1E1C; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+        .float-logo {
+            position: absolute; display: flex; align-items: center; gap: 12px;
+            font-size: 1.5rem; font-weight: 800; color: #1E1E1C; opacity: .3;
+            animation: drift 9s ease-in-out infinite;
+        }
+        .float-logo .mark { animation: spin3d 6s ease-in-out infinite; }
+        .watermark {
+            position: absolute; left: 50%; bottom: -3vw; transform: translateX(-50%);
+            font-size: 18vw; font-weight: 800; line-height: 1; white-space: nowrap;
+            color: transparent;
+            background: linear-gradient(100deg, rgba(30,30,28,.07) 40%, rgba(47,107,255,.3) 50%, rgba(30,30,28,.07) 60%);
+            background-size: 250% 100%; -webkit-background-clip: text; background-clip: text;
+            animation: sweep 6s ease-in-out infinite;
+        }
+        .ecg { position: absolute; left: 0; top: 50%; width: 100%; height: 160px; margin-top: -80px; opacity: .45; }
+        .ecg path {
+            fill: none; stroke: #2F6BFF; stroke-width: 3; vector-effect: non-scaling-stroke;
+            stroke-dasharray: 25 75; animation: ecgRun 4s linear infinite;
+        }
+
         /* ---------- Keyframes ---------- */
+        @keyframes drift     { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-26px) rotate(4deg); } }
+        @keyframes spin3d    { 0%, 100% { transform: perspective(300px) rotateY(-35deg); } 50% { transform: perspective(300px) rotateY(35deg); } }
+        @keyframes sweep     { 0%, 15% { background-position: 100% 0; } 85%, 100% { background-position: 0 0; } }
+        @keyframes ecgRun    { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+        @keyframes coinTurn    { 0%, 100% { transform: rotateY(-28deg) rotateX(6deg); } 50% { transform: rotateY(28deg) rotateX(-4deg); } }
+        @keyframes tubeDraw    { 0% { stroke-dashoffset: 100; } 30%, 100% { stroke-dashoffset: 0; } }
+        @keyframes heartBeat   { 0%, 40%, 100% { transform: scale(1); } 15% { transform: scale(1.18); } 28% { transform: scale(1.05); } }
+        @keyframes waveOut     { 0% { transform: scale(.8); opacity: .9; } 100% { transform: scale(1.9); opacity: 0; } }
+        @keyframes blink       { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+        @keyframes chipFloat   { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-9px) rotate(6deg); } }
+        @keyframes shadowBreathe { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(.8); opacity: .6; } }
         @keyframes pageFade    { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeIn      { from { opacity: 0; } to { opacity: 1; } }
         @keyframes cardIn      { from { opacity: 0; transform: translateY(60px) scale(.92); } to { opacity: 1; transform: none; } }
@@ -326,12 +420,6 @@
         @keyframes slideRight  { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
         @keyframes alertIn     { from { opacity: 0; transform: translateY(-18px) scale(.97); } to { opacity: 1; transform: none; } }
         @keyframes alertNudge  { 0%, 90%, 100% { transform: translateX(0); } 93% { transform: translateX(-5px); } 96% { transform: translateX(5px); } }
-        @keyframes iconPop     { 0% { opacity: 0; transform: scale(.3) rotate(-90deg); } 70% { transform: scale(1.15) rotate(8deg); } 100% { opacity: 1; transform: none; } }
-        @keyframes iconFloat   { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-6px) rotate(-4deg); } }
-        @keyframes ringPulse   {
-            0%, 100% { box-shadow: 0 12px 24px rgba(47, 107, 255, .4), 0 0 0 0 rgba(47, 107, 255, .45); }
-            50%      { box-shadow: 0 12px 24px rgba(47, 107, 255, .4), 0 0 0 14px rgba(47, 107, 255, 0); }
-        }
         @keyframes textSweep   { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
         @keyframes gradientSlide { from { background-position: 0% 0; } to { background-position: 300% 0; } }
         @keyframes spinSlow    { to { transform: rotate(360deg); } }
@@ -469,9 +557,111 @@
 </script>
 <!-- ===== /Page loader ===== -->
 
-<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+<div class="bg" aria-hidden="true">
+    <div class="watermark">MediSlot</div>
+    <svg class="ecg" viewBox="0 0 1200 160" preserveAspectRatio="none">
+        <path pathLength="100" d="M0 80H220L250 30L290 140L320 80H520L545 55L570 80H800L830 20L870 145L900 80H1200"/>
+    </svg>
+    <div class="float-logo" style="left:4%; top:6%; animation-delay:0s"><span class="mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="float-logo" style="left:78%; top:5%; animation-delay:-3s"><span class="mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="float-logo" style="left:3%; top:72%; animation-delay:-5s"><span class="mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+    <div class="float-logo" style="left:86%; top:80%; animation-delay:-2s"><span class="mark"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/><path class="pulse" d="M3 11h5l2-4 3 8 2-4h6"/></svg></span>MediSlot</div>
+</div>
+
+<div class="container min-vh-100 py-4 d-flex align-items-center justify-content-center">
     <div class="card shadow border-0 p-4" style="width: 420px;">
         <div class="text-center mb-4">
+                        <!-- ===== 3D logo: doctor + stethoscope ===== -->
+            <div class="ms3d" role="img" aria-label="MediSlot logo: a doctor wearing a stethoscope">
+                <div class="ms3d-shadow"></div>
+                <div class="ms3d-tilt">
+                  <div class="ms3d-coin">
+                    <div class="ms3d-layer ms3d-edge" style="--i:1"></div>
+                    <div class="ms3d-layer ms3d-edge" style="--i:2"></div>
+                    <div class="ms3d-layer ms3d-edge" style="--i:3"></div>
+                    <div class="ms3d-layer ms3d-edge" style="--i:4"></div>
+                    <div class="ms3d-layer ms3d-edge" style="--i:5"></div>
+                    <div class="ms3d-layer ms3d-edge" style="--i:6"></div>
+                    <div class="ms3d-layer ms3d-edge" style="--i:7"></div>
+
+                    <!-- front face: the doctor -->
+                    <svg class="ms3d-layer ms3d-face" viewBox="0 0 200 200" aria-hidden="true">
+                        <defs>
+                            <radialGradient id="msBg" cx="35%" cy="28%" r="80%">
+                                <stop offset="0" stop-color="#7EA3FF"/>
+                                <stop offset=".6" stop-color="#2F6BFF"/>
+                                <stop offset="1" stop-color="#1B4FD6"/>
+                            </radialGradient>
+                            <linearGradient id="msCoat" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0" stop-color="#ffffff"/>
+                                <stop offset="1" stop-color="#D8CBB3"/>
+                            </linearGradient>
+                            <radialGradient id="msSkin" cx="38%" cy="35%" r="75%">
+                                <stop offset="0" stop-color="#F6E0C8"/>
+                                <stop offset="1" stop-color="#D3A581"/>
+                            </radialGradient>
+                            <clipPath id="msClip"><circle cx="100" cy="100" r="93"/></clipPath>
+                        </defs>
+                        <circle cx="100" cy="100" r="100" fill="#D8CBB3"/>
+                        <circle cx="100" cy="100" r="93" fill="url(#msBg)"/>
+                        <g clip-path="url(#msClip)">
+                            <!-- coat, shirt and lapels -->
+                            <path d="M28 200 C30 150 58 128 100 128 C142 128 170 150 172 200 Z" fill="url(#msCoat)"/>
+                            <path d="M80 130 L100 172 L120 130 Z" fill="#1E1E1C"/>
+                            <path d="M80 130 L100 172 L82 166 L70 140 Z" fill="#F6F1E7"/>
+                            <path d="M120 130 L100 172 L118 166 L130 140 Z" fill="#EFE7D8"/>
+                            <path d="M100 172 V200" stroke="#D8CBB3" stroke-width="2"/>
+                            <!-- neck and head -->
+                            <path d="M88 104 H112 V130 Q100 142 88 130 Z" fill="#D3A581"/>
+                            <circle cx="68" cy="80" r="6" fill="#D3A581"/>
+                            <circle cx="132" cy="80" r="6" fill="#D3A581"/>
+                            <ellipse cx="100" cy="78" rx="32" ry="36" fill="url(#msSkin)"/>
+                            <!-- hair -->
+                            <path d="M67 80 C60 40 88 30 108 34 C130 36 140 54 133 80 C130 66 126 60 120 56 C104 66 84 66 74 60 C70 66 68 72 67 80 Z" fill="#1E1E1C"/>
+                            <!-- face -->
+                            <g class="ms3d-eyes" fill="#1E1E1C">
+                                <circle cx="88" cy="80" r="3.2"/>
+                                <circle cx="112" cy="80" r="3.2"/>
+                            </g>
+                            <path d="M89 96 Q100 105 111 96" fill="none" stroke="#1E1E1C" stroke-width="2.6" stroke-linecap="round"/>
+                            <!-- medical cross -->
+                            <path d="M38 60 h8 v-8 h8 v8 h8 v8 h-8 v8 h-8 v-8 h-8 Z" fill="#ffffff" opacity=".9"/>
+                        </g>
+                        <!-- glossy highlight -->
+                        <ellipse cx="68" cy="42" rx="40" ry="18" fill="#ffffff" opacity=".18" transform="rotate(-35 68 42)"/>
+                    </svg>
+
+                    <!-- raised layer: the stethoscope -->
+                    <svg class="ms3d-layer ms3d-steth" viewBox="0 0 200 200" aria-hidden="true">
+                        <!-- tube: shadow, body, highlight -->
+                        <g stroke="#1E1E1C" stroke-width="9">
+                            <path class="ms3d-tube" pathLength="100" d="M84 118 C66 132 62 154 70 168 C76 180 92 180 98 170"/>
+                            <path class="ms3d-tube" pathLength="100" d="M116 118 C132 130 138 144 136 156"/>
+                            <path class="ms3d-tube" pathLength="100" d="M122 180 C122 164 128 156 136 156 C144 156 150 164 150 180"/>
+                        </g>
+                        <g stroke="#D8CBB3" stroke-width="2.5">
+                            <path class="ms3d-tube" pathLength="100" d="M84 118 C66 132 62 154 70 168 C76 180 92 180 98 170"/>
+                            <path class="ms3d-tube" pathLength="100" d="M116 118 C132 130 138 144 136 156"/>
+                            <path class="ms3d-tube" pathLength="100" d="M122 180 C122 164 128 156 136 156 C144 156 150 164 150 180"/>
+                        </g>
+                        <!-- ear tips -->
+                        <circle cx="122" cy="182" r="5.5" fill="#1E1E1C"/>
+                        <circle cx="150" cy="182" r="5.5" fill="#1E1E1C"/>
+                        <!-- chest piece with pulse ring -->
+                        <circle class="ms3d-wave" cx="101" cy="165" r="14" fill="none" stroke="#ffffff" stroke-width="2.5"/>
+                        <g class="ms3d-chest">
+                            <circle cx="101" cy="165" r="13" fill="#1E1E1C"/>
+                            <circle cx="101" cy="165" r="9" fill="#D8CBB3"/>
+                            <circle cx="101" cy="165" r="4.5" fill="#2F6BFF"/>
+                            <circle cx="98" cy="161" r="2" fill="#ffffff"/>
+                        </g>
+                    </svg>
+                  </div>
+                </div>
+                <span class="ms3d-chip c1" aria-hidden="true"><i class="bi bi-heart-pulse-fill"></i></span>
+                <span class="ms3d-chip c2" aria-hidden="true"><i class="bi bi-calendar2-check-fill"></i></span>
+                <span class="ms3d-chip c3" aria-hidden="true"><i class="bi bi-plus-lg"></i></span>
+            </div>
             <h2 class="fw-bold text-primary">MediSlot</h2>
             <p class="text-muted">Doctor Portal</p>
         </div>
@@ -506,6 +696,19 @@
         </p>
     </div>
 </div>
+
+<script>
+  /* the 3D logo leans toward the mouse pointer */
+  (function () {
+    var tilt = document.querySelector(".ms3d-tilt");
+    if (!tilt || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    document.addEventListener("mousemove", function (e) {
+      var x = e.clientX / window.innerWidth - 0.5;
+      var y = e.clientY / window.innerHeight - 0.5;
+      tilt.style.transform = "rotateY(" + (x * 20) + "deg) rotateX(" + (-y * 20) + "deg)";
+    });
+  })();
+</script>
 
 </body>
 </html>

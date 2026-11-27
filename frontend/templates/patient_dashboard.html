@@ -8,19 +8,30 @@
         --theme-charcoal: #1E1E1C;
         --theme-beige: #D8CBB3;
         --theme-blue: #2F6BFF;
+        --theme-blue-light: #7EA3FF;
         --theme-muted: rgba(30, 30, 28, 0.68);
         --theme-blue-soft: rgba(47, 107, 255, 0.14);
         --theme-beige-soft: rgba(216, 203, 179, 0.35);
         --theme-border: rgba(30, 30, 28, 0.13);
+        --sidebar-w: 260px;
     }
 
+    /* The sidebar replaces the top navbar on this page */
+    body > nav.navbar,
+    body > header .navbar,
+    .navbar.fixed-top,
+    .navbar.sticky-top {
+        display: none !important;
+    }
+
+    /* ================= PAGE ================= */
     .doctor-search-page {
         position: relative;
         isolation: isolate;
-        min-height: calc(100vh - 6rem);
+        min-height: calc(100vh - 4rem);
         overflow: hidden;
-        padding-top: 1rem;
-        padding-bottom: 2rem;
+        padding-top: 3.4rem;
+        padding-bottom: 1.5rem;
     }
 
     .doctor-search-page::before,
@@ -34,7 +45,7 @@
     }
 
     .doctor-search-page::before {
-        top: 2rem;
+        top: 1rem;
         right: -9rem;
         width: 23rem;
         height: 23rem;
@@ -51,93 +62,446 @@
         animation: driftBeige 17s ease-in-out infinite;
     }
 
-    .search-heading,
-    .doctor-results-heading,
-    .search-card,
-    .doctor-results,
-    .doctor-pagination {
-        position: relative;
-        z-index: 1;
+    /* ================= SIDEBAR ================= */
+    .side-toggle {
+        position: fixed;
+        top: 0.9rem;
+        left: 0.9rem;
+        z-index: 1060;
+        display: grid;
+        place-items: center;
+        width: 2.7rem;
+        height: 2.7rem;
+        padding: 0;
+        border: 0;
+        border-radius: 0.85rem;
+        background: var(--theme-charcoal);
+        box-shadow: 0 8px 20px rgba(30, 30, 28, 0.28);
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.25s ease, box-shadow 0.3s ease;
     }
 
+    .side-toggle:hover {
+        transform: scale(1.06);
+        box-shadow: 0 10px 24px rgba(47, 107, 255, 0.35);
+    }
+
+    .side-toggle .bars {
+        position: relative;
+        width: 1.2rem;
+        height: 0.9rem;
+    }
+
+    .side-toggle .bars span {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        border-radius: 2px;
+        background: var(--theme-beige);
+        transition: transform 0.35s cubic-bezier(.22, 1, .36, 1), opacity 0.2s ease, top 0.35s ease;
+    }
+
+    .side-toggle .bars span:nth-child(1) { top: 0; }
+    .side-toggle .bars span:nth-child(2) { top: 50%; margin-top: -1px; }
+    .side-toggle .bars span:nth-child(3) { top: 100%; margin-top: -2px; }
+
+    body.side-open .side-toggle { background: var(--theme-blue); }
+    body.side-open .side-toggle .bars span:nth-child(1) { top: 50%; margin-top: -1px; transform: rotate(45deg); }
+    body.side-open .side-toggle .bars span:nth-child(2) { opacity: 0; }
+    body.side-open .side-toggle .bars span:nth-child(3) { top: 50%; margin-top: -1px; transform: rotate(-45deg); }
+
+    .side-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 1040;
+        background: rgba(30, 30, 28, 0.45);
+        backdrop-filter: blur(2px);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    body.side-open .side-backdrop {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .side-panel {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        width: var(--sidebar-w);
+        max-width: 84vw;
+        padding: 4.6rem 1rem 1.2rem;
+        overflow: hidden;
+        color: var(--theme-beige);
+        background:
+            radial-gradient(circle at 0% 0%, rgba(47, 107, 255, 0.35), transparent 55%),
+            var(--theme-charcoal);
+        box-shadow: 14px 0 40px rgba(30, 30, 28, 0.35);
+        transform: translateX(-105%);
+        transition: transform 0.45s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    body.side-open .side-panel { transform: translateX(0); }
+
+    .side-link {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.35rem;
+        padding: 0.7rem 0.85rem;
+        border-radius: 0.85rem;
+        color: var(--theme-beige);
+        text-decoration: none;
+        font-weight: 600;
+        transition: background-color 0.25s ease, color 0.25s ease, padding-left 0.25s ease;
+    }
+
+    body.side-open .side-link {
+        animation: linkIn 0.5s cubic-bezier(.22, 1, .36, 1) both;
+        animation-delay: calc(0.12s + var(--n) * 0.07s);
+    }
+
+    .side-link .ico {
+        display: grid;
+        place-items: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.6rem;
+        background: rgba(216, 203, 179, 0.12);
+        font-size: 1rem;
+    }
+
+    .side-link:hover {
+        padding-left: 1.1rem;
+        background: rgba(216, 203, 179, 0.12);
+        color: #fff;
+    }
+
+    .side-link.active {
+        background: var(--theme-blue);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(47, 107, 255, 0.4);
+    }
+
+    .side-link.active .ico { background: rgba(255, 255, 255, 0.2); }
+
+    .side-link.logout { margin-top: 0.6rem; border: 1px solid rgba(216, 203, 179, 0.18); }
+    .side-link.logout:hover { background: rgba(255, 99, 99, 0.18); color: #fff; }
+    .side-link.logout:hover .ico { background: rgba(255, 99, 99, 0.35); }
+
+    .side-foot {
+        margin-top: auto;
+        padding: 0.8rem 0.4rem 0;
+        border-top: 1px solid rgba(216, 203, 179, 0.15);
+        font-size: 0.8rem;
+        color: rgba(216, 203, 179, 0.6);
+    }
+
+    /* ================= HERO + 3D LOGO ================= */
     .search-heading {
+        position: relative;
+        z-index: 1;
+        margin-bottom: 1rem;
         animation: fadeRise 0.65s cubic-bezier(.22, 1, .36, 1) both;
     }
 
-    .search-heading h2,
-    .doctor-results-heading h4 {
+    .search-heading h2 {
         color: var(--theme-charcoal);
-        font-weight: 700;
+        font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+        font-weight: 800;
+        letter-spacing: -0.3px;
     }
 
-    .search-heading p,
-    .doctor-results-heading .text-muted {
+    .search-heading p {
         color: var(--theme-muted) !important;
+        font-size: 0.92rem;
     }
 
+    .logo3d-scene {
+        flex-shrink: 0;
+        width: 104px;
+        height: 104px;
+        perspective: 650px;
+    }
+
+    .logo3d-tilt {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+        transition: transform 0.18s ease-out;
+    }
+
+    .logo3d-spin {
+        position: absolute;
+        inset: 14px;
+        transform-style: preserve-3d;
+        animation: logoSway 7s ease-in-out infinite;
+    }
+
+    .logo3d-spin > div {
+        position: absolute;
+        inset: 0;
+        border-radius: 1.3rem;
+    }
+
+    .logo3d-spin .depth { background: #1a56e6; }
+    .logo3d-spin .depth:nth-child(1) { transform: translateZ(-22px); background: #163fa8; }
+    .logo3d-spin .depth:nth-child(2) { transform: translateZ(-17px); }
+    .logo3d-spin .depth:nth-child(3) { transform: translateZ(-12px); background: #2559e0; }
+    .logo3d-spin .depth:nth-child(4) { transform: translateZ(-7px); background: var(--theme-blue); }
+
+    .logo3d-spin .face {
+        display: grid;
+        place-items: center;
+        transform: translateZ(0);
+        background: linear-gradient(145deg, #3b3b37, var(--theme-charcoal));
+        border: 2px solid var(--theme-beige);
+        box-shadow: inset 0 0 18px rgba(47, 107, 255, 0.35);
+    }
+
+    .logo3d-spin .face svg {
+        width: 62%;
+        height: 62%;
+        transform: translateZ(14px);
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.45));
+    }
+
+    .logo3d-spin .badge3d {
+        inset: auto -10px -10px auto;
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--theme-blue-light), var(--theme-blue));
+        border: 2px solid #fff;
+        box-shadow: 0 6px 14px rgba(47, 107, 255, 0.5);
+        transform: translateZ(40px);
+        animation: badgePulse 2.4s ease-in-out infinite;
+    }
+
+    .logo3d-spin .badge3d svg { width: 16px; height: 16px; fill: #fff; }
+
+    .logo3d-shadow {
+        position: absolute;
+        right: 14px;
+        bottom: -6px;
+        left: 14px;
+        height: 12px;
+        border-radius: 50%;
+        background: radial-gradient(ellipse, rgba(30, 30, 28, 0.35), transparent 70%);
+        animation: shadowSway 7s ease-in-out infinite;
+    }
+
+    .title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+    }
+
+    .anim-title .w {
+        display: inline-block;
+        margin-right: 0.28em;
+        background: linear-gradient(100deg, var(--theme-charcoal) 30%, var(--theme-blue) 50%, var(--theme-charcoal) 70%);
+        background-size: 250% 100%;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+        opacity: 0;
+        animation:
+            wordUp 0.7s cubic-bezier(.22, 1, .36, 1) both,
+            titleShine 5s ease-in-out infinite;
+        animation-delay: calc(0.15s + var(--w) * 0.14s), calc(1s + var(--w) * 0.14s);
+    }
+
+    .title-line {
+        width: 100%;
+        max-width: 11rem;
+        height: 3px;
+        margin-bottom: 0.4rem;
+        border-radius: 3px;
+        background: linear-gradient(90deg, var(--theme-blue), var(--theme-beige));
+        transform-origin: left;
+        animation: lineDraw 0.9s 0.6s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .steth-scene {
+        flex-shrink: 0;
+        position: relative;
+        width: 64px;
+        height: 64px;
+        perspective: 500px;
+        animation: stethPop 0.8s 0.1s cubic-bezier(.34, 1.56, .64, 1) both;
+    }
+
+    .steth-spin {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transform-style: preserve-3d;
+        animation: stethSpin 6s ease-in-out infinite;
+    }
+
+    .steth-spin .sl {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        stroke: var(--theme-charcoal);
+        overflow: visible;
+    }
+
+    .steth-spin .sl-back2 { transform: translateZ(-12px); stroke: #163fa8; filter: brightness(0.7); }
+    .steth-spin .sl-back1 { transform: translateZ(-6px);  stroke: #2559e0; }
+    .steth-spin .sl-front { transform: translateZ(4px); filter: drop-shadow(0 6px 8px rgba(30, 30, 28, 0.35)); }
+
+    @media (max-width: 575.98px) {
+        .steth-scene { width: 48px; height: 48px; }
+        .title-wrap { gap: 0.6rem; }
+    }
+
+    /* ================= SEARCH PANEL ================= */
     .search-card {
+        position: relative;
+        z-index: 1;
+        margin-bottom: 1.1rem;
+        padding: 0.95rem 1rem 1rem !important;
+        overflow: hidden;
         border: 1px solid var(--theme-border) !important;
         border-radius: 1.25rem !important;
-        background: rgba(255, 255, 255, 0.94);
-        box-shadow: 0 12px 30px rgba(30, 30, 28, 0.08) !important;
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(243, 247, 255, 0.96));
+        box-shadow: 0 14px 34px rgba(47, 107, 255, 0.12) !important;
         animation: fadeRise 0.7s 0.08s cubic-bezier(.22, 1, .36, 1) both;
     }
 
-    .search-card .form-label {
-        color: var(--theme-charcoal);
-        font-weight: 600;
+    .search-card::before {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        content: "";
+        background: linear-gradient(90deg, var(--theme-charcoal), var(--theme-blue), var(--theme-beige), var(--theme-blue), var(--theme-charcoal));
+        background-size: 250% 100%;
+        animation: accentFlow 5s linear infinite;
     }
+
+    .search-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.65rem;
+        color: var(--theme-charcoal);
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    .search-title .dot {
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 50%;
+        background: var(--theme-blue);
+        box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.6);
+        animation: dotPing 2s ease-out infinite;
+    }
+
+    .field {
+        position: relative;
+        animation: fieldIn 0.55s cubic-bezier(.22, 1, .36, 1) both;
+    }
+
+    .field:nth-child(1) { animation-delay: 0.20s; }
+    .field:nth-child(2) { animation-delay: 0.28s; }
+    .field:nth-child(3) { animation-delay: 0.36s; }
+    .field:nth-child(4) { animation-delay: 0.44s; }
+    .field:nth-child(5) { animation-delay: 0.52s; }
+
+    .field .form-label {
+        margin-bottom: 0.2rem;
+        color: var(--theme-muted);
+        font-size: 0.74rem;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .field:focus-within .form-label { color: var(--theme-blue); }
+
+    .field .f-ico {
+        position: absolute;
+        bottom: 0.5rem;
+        left: 0.75rem;
+        z-index: 2;
+        font-size: 0.9rem;
+        pointer-events: none;
+        transition: transform 0.3s ease;
+    }
+
+    .field:focus-within .f-ico { transform: scale(1.25) rotate(-8deg); }
 
     .search-card .form-control {
-        border-color: var(--theme-border);
-        border-radius: 0.75rem;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        padding: 0.42rem 0.75rem 0.42rem 2.15rem;
+        border: 1px solid var(--theme-border);
+        border-radius: 0.8rem;
+        background: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+        transition: border-color 0.2s ease, box-shadow 0.25s ease, transform 0.2s ease, background-color 0.2s ease;
     }
 
-    .search-card .form-control:hover {
-        border-color: var(--theme-beige);
-    }
+    .search-card .form-control:hover { border-color: var(--theme-beige); }
 
     .search-card .form-control:focus {
         border-color: var(--theme-blue);
-        box-shadow: 0 0 0 0.22rem var(--theme-blue-soft);
-        transform: translateY(-1px);
+        background: #fff;
+        box-shadow: 0 0 0 0.22rem var(--theme-blue-soft), 0 8px 18px rgba(47, 107, 255, 0.12);
+        transform: translateY(-2px);
     }
 
     .doctor-search-page .btn-primary {
+        position: relative;
+        overflow: hidden;
         border: 0;
+        border-radius: 0.8rem;
+        padding: 0.45rem 1.1rem;
+        font-weight: 600;
         background: linear-gradient(110deg, var(--theme-charcoal), var(--theme-blue)) !important;
         background-size: 200% 100% !important;
-        box-shadow: 0 7px 18px rgba(47, 107, 255, 0.2);
+        box-shadow: 0 7px 18px rgba(47, 107, 255, 0.25);
         transition: background-position 0.4s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .doctor-search-page .btn-primary::after {
+        position: absolute;
+        top: 0;
+        left: -80%;
+        width: 50%;
+        height: 100%;
+        content: "";
+        background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+        transform: skewX(-20deg);
+        animation: btnShine 3.5s ease-in-out infinite;
     }
 
     .doctor-search-page .btn-primary:hover,
     .doctor-search-page .btn-primary:focus-visible {
         background-position: 100% 0 !important;
         transform: translateY(-2px);
-        box-shadow: 0 12px 24px rgba(47, 107, 255, 0.28);
-    }
-
-    .doctor-search-page .btn-outline-primary {
-        --bs-btn-color: var(--theme-blue);
-        --bs-btn-border-color: var(--theme-blue);
-        --bs-btn-hover-bg: var(--theme-blue);
-        --bs-btn-hover-border-color: var(--theme-blue);
-        --bs-btn-hover-color: #FFFFFF;
-        --bs-btn-active-bg: var(--theme-charcoal);
-        --bs-btn-active-border-color: var(--theme-charcoal);
-        border-radius: 0.75rem;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .doctor-search-page .btn-outline-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 18px rgba(47, 107, 255, 0.18);
+        box-shadow: 0 12px 24px rgba(47, 107, 255, 0.32);
     }
 
     .doctor-search-page .btn-light {
         border: 1px solid var(--theme-border);
+        border-radius: 0.8rem;
+        padding: 0.45rem 1rem;
         background: var(--theme-beige-soft);
         color: var(--theme-charcoal);
         transition: background-color 0.2s ease, transform 0.2s ease;
@@ -148,19 +512,47 @@
         transform: translateY(-1px);
     }
 
+    /* ================= RESULTS ================= */
     .doctor-results-heading {
+        position: relative;
+        z-index: 1;
+        margin-bottom: 0.8rem;
         animation: fadeRise 0.65s 0.12s ease both;
+    }
+
+    .doctor-results-heading h4 {
+        margin: 0;
+        color: var(--theme-charcoal);
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    .results-pill {
+        padding: 0.2rem 0.75rem;
+        border-radius: 999px;
+        background: var(--theme-blue-soft);
+        color: var(--theme-blue);
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+
+    .doctor-results {
+        position: relative;
+        z-index: 1;
     }
 
     .doctor-card {
         position: relative;
         overflow: hidden;
-        border: 1px solid var(--theme-border) !important;
-        border-radius: 1.25rem !important;
-        background: rgba(255, 255, 255, 0.96);
-        box-shadow: 0 8px 22px rgba(30, 30, 28, 0.07) !important;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        animation: cardReveal 0.7s cubic-bezier(.22, 1, .36, 1) both;
+        padding: 0.9rem !important;
+        border: 1px solid rgba(47, 107, 255, 0.18) !important;
+        border-radius: 1.1rem !important;
+        background: linear-gradient(160deg, #FFFFFF 0%, #F2F6FF 100%);
+        box-shadow: 0 8px 22px rgba(47, 107, 255, 0.13) !important;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        opacity: 0;
+        animation: cardReveal 0.75s cubic-bezier(.22, 1, .36, 1) both;
+        animation-delay: calc(0.25s + (var(--i, 0) % 9) * 0.075s);
     }
 
     .doctor-card::before {
@@ -168,58 +560,140 @@
         inset: 0 0 auto;
         height: 4px;
         content: "";
-        background: linear-gradient(
-            90deg,
-            var(--theme-charcoal),
-            var(--theme-blue),
-            var(--theme-beige),
-            var(--theme-blue)
-        );
+        background: linear-gradient(90deg, var(--theme-charcoal), var(--theme-blue), var(--theme-beige), var(--theme-blue));
         background-size: 250% 100%;
         animation: accentFlow 6s linear infinite;
     }
 
+    /* light sweep across the card as it appears and on hover */
+    .doctor-card::after {
+        position: absolute;
+        top: 0;
+        left: -70%;
+        width: 45%;
+        height: 100%;
+        content: "";
+        pointer-events: none;
+        background: linear-gradient(100deg, transparent, rgba(126, 163, 255, 0.28), transparent);
+        transform: skewX(-18deg);
+        animation: cardSweep 1.1s ease both;
+        animation-delay: calc(0.55s + (var(--i, 0) % 9) * 0.075s);
+    }
+
+    .doctor-card:hover::after { animation: cardSweep 0.9s ease; }
+
     .doctor-card:hover {
-        transform: translateY(-7px);
-        box-shadow: 0 18px 34px rgba(47, 107, 255, 0.16) !important;
+        transform: translateY(-6px) scale(1.015);
+        border-color: var(--theme-blue) !important;
+        box-shadow: 0 18px 36px rgba(47, 107, 255, 0.28), 0 0 0 3px var(--theme-blue-soft) !important;
+    }
+
+    .doctor-head {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.7rem;
     }
 
     .doctor-avatar {
-        color: var(--theme-charcoal);
-        background: var(--theme-beige) !important;
-        box-shadow: inset 0 0 0 1px var(--theme-border);
+        position: relative;
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 3rem;
+        height: 3rem;
+        padding: 0 !important;
+        font-size: 1.4rem;
+        background: linear-gradient(135deg, var(--theme-beige), #F1E8D6) !important;
+        box-shadow: inset 0 0 0 1px var(--theme-border), 0 6px 14px rgba(216, 203, 179, 0.7);
         animation: iconFloat 3.2s ease-in-out infinite;
     }
 
+    .doctor-avatar::after {
+        position: absolute;
+        inset: -4px;
+        content: "";
+        border: 2px solid var(--theme-blue);
+        border-radius: 50%;
+        opacity: 0;
+        animation: avatarRing 2.8s ease-out infinite;
+    }
+
     .doctor-card h5 {
+        margin: 0;
         color: var(--theme-charcoal);
+        font-size: 1.02rem;
         font-weight: 700;
     }
 
-    .doctor-card .text-muted {
-        color: var(--theme-muted) !important;
+    .exp-badge {
+        display: inline-block;
+        margin-top: 0.2rem;
+        padding: 0.1rem 0.55rem;
+        border-radius: 999px;
+        background: var(--theme-blue);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 600;
+        box-shadow: 0 4px 10px rgba(47, 107, 255, 0.3);
     }
 
-    .doctor-card p {
+    .doctor-info {
+        display: grid;
+        gap: 0.4rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
         color: var(--theme-charcoal);
-        line-height: 1.6;
+        font-size: 0.9rem;
+        line-height: 1.35;
     }
 
-    .doctor-card p strong {
+    .info-row .ico {
+        display: grid;
+        flex-shrink: 0;
+        place-items: center;
+        width: 1.55rem;
+        height: 1.55rem;
+        border-radius: 0.5rem;
+        background: var(--theme-blue-soft);
+        font-size: 0.8rem;
+    }
+
+    .info-row small {
+        display: block;
+        margin-bottom: 0.1rem;
         color: var(--theme-charcoal);
+        font-size: 0.98rem;
+        font-weight: 800;
+        letter-spacing: 0.1px;
     }
 
-    .doctor-card .btn {
+    .doctor-card .btn-outline-primary {
+        --bs-btn-color: var(--theme-blue);
+        --bs-btn-border-color: var(--theme-blue);
+        --bs-btn-hover-bg: var(--theme-blue);
+        --bs-btn-hover-border-color: var(--theme-blue);
+        --bs-btn-hover-color: #FFFFFF;
+        --bs-btn-active-bg: var(--theme-charcoal);
+        --bs-btn-active-border-color: var(--theme-charcoal);
         position: relative;
         z-index: 1;
+        padding: 0.4rem 0.8rem;
+        border-radius: 0.75rem;
+        font-size: 0.88rem;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, background-color 0.2s ease;
     }
 
-    .doctor-result:nth-child(1) .doctor-card { animation-delay: 0.08s; }
-    .doctor-result:nth-child(2) .doctor-card { animation-delay: 0.16s; }
-    .doctor-result:nth-child(3) .doctor-card { animation-delay: 0.24s; }
-    .doctor-result:nth-child(4) .doctor-card { animation-delay: 0.32s; }
-    .doctor-result:nth-child(5) .doctor-card { animation-delay: 0.40s; }
-    .doctor-result:nth-child(6) .doctor-card { animation-delay: 0.48s; }
+    .doctor-card .btn-outline-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(47, 107, 255, 0.28);
+    }
 
     .doctor-search-page .alert-light {
         border: 1px solid var(--theme-border);
@@ -230,6 +704,8 @@
     }
 
     .doctor-pagination {
+        position: relative;
+        z-index: 1;
         animation: fadeRise 0.6s 0.15s ease both;
     }
 
@@ -252,89 +728,120 @@
     }
 
     .doctor-search-page a:focus-visible,
-    .doctor-search-page button:focus-visible {
+    .doctor-search-page button:focus-visible,
+    .side-toggle:focus-visible,
+    .side-link:focus-visible {
         outline: 3px solid var(--theme-blue);
         outline-offset: 3px;
     }
 
+    /* ================= KEYFRAMES ================= */
     @keyframes fadeRise {
-        from {
-            opacity: 0;
-            transform: translateY(16px);
-        }
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
 
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    @keyframes fieldIn {
+        from { opacity: 0; transform: translateY(12px) scale(0.97); }
+        to   { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     @keyframes cardReveal {
-        from {
-            opacity: 0;
-            transform: translateY(24px) scale(0.98);
-        }
+        0%   { opacity: 0; transform: translateY(34px) scale(0.94); filter: brightness(1.3); }
+        60%  { opacity: 1; filter: brightness(1.08); }
+        100% { opacity: 1; transform: translateY(0) scale(1); filter: brightness(1); }
+    }
 
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
+    @keyframes cardSweep {
+        from { left: -70%; }
+        to   { left: 130%; }
     }
 
     @keyframes iconFloat {
-        0%, 100% {
-            transform: translateY(0);
-        }
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-4px); }
+    }
 
-        50% {
-            transform: translateY(-6px);
-        }
+    @keyframes avatarRing {
+        0%   { opacity: 0.7; transform: scale(0.92); }
+        100% { opacity: 0;   transform: scale(1.35); }
     }
 
     @keyframes accentFlow {
-        from {
-            background-position: 0 0;
-        }
+        from { background-position: 0 0; }
+        to   { background-position: 250% 0; }
+    }
 
-        to {
-            background-position: 250% 0;
-        }
+    @keyframes btnShine {
+        0%, 60% { left: -80%; }
+        100%    { left: 140%; }
+    }
+
+    @keyframes dotPing {
+        0%   { box-shadow: 0 0 0 0 rgba(47, 107, 255, 0.55); }
+        100% { box-shadow: 0 0 0 10px rgba(47, 107, 255, 0); }
+    }
+
+    @keyframes logoSway {
+        0%, 100% { transform: rotateY(-28deg) rotateX(8deg) translateY(0); }
+        50%      { transform: rotateY(28deg)  rotateX(-6deg) translateY(-5px); }
+    }
+
+    @keyframes shadowSway {
+        0%, 100% { transform: scaleX(1);    opacity: 0.9; }
+        50%      { transform: scaleX(0.82); opacity: 0.6; }
+    }
+
+    @keyframes badgePulse {
+        0%, 100% { transform: translateZ(40px) scale(1); }
+        50%      { transform: translateZ(46px) scale(1.12); }
     }
 
     @keyframes driftBlue {
-        0%, 100% {
-            transform: translate(0, 0);
-        }
-
-        50% {
-            transform: translate(-32px, 24px);
-        }
+        0%, 100% { transform: translate(0, 0); }
+        50%      { transform: translate(-32px, 24px); }
     }
 
     @keyframes driftBeige {
-        0%, 100% {
-            transform: translate(0, 0);
-        }
-
-        50% {
-            transform: translate(28px, -20px);
-        }
+        0%, 100% { transform: translate(0, 0); }
+        50%      { transform: translate(28px, -20px); }
     }
 
+    @keyframes linkIn {
+        from { opacity: 0; transform: translateX(-18px); }
+        to   { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes wordUp {
+        from { opacity: 0; transform: translateY(22px) rotateX(-50deg); }
+        to   { opacity: 1; transform: translateY(0) rotateX(0); }
+    }
+
+    @keyframes titleShine {
+        0%, 100% { background-position: 100% 0; }
+        50%      { background-position: 0 0; }
+    }
+
+    @keyframes lineDraw {
+        from { transform: scaleX(0); }
+        to   { transform: scaleX(1); }
+    }
+
+    @keyframes stethPop {
+        from { opacity: 0; transform: scale(0.3) rotate(-25deg); }
+        to   { opacity: 1; transform: scale(1) rotate(0); }
+    }
+
+    @keyframes stethSpin {
+        0%, 100% { transform: rotateY(-35deg) rotateX(8deg); }
+        50%      { transform: rotateY(35deg)  rotateX(-6deg) translateY(-3px); }
+    }
+
+    /* ================= RESPONSIVE ================= */
     @media (max-width: 575.98px) {
-        .search-heading {
-            align-items: flex-start !important;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .search-heading > .heading-links {
-            flex-shrink: 0;
-        }
-
-        .search-card {
-            padding: 1rem !important;
-        }
+        .logo3d-scene { width: 82px; height: 82px; transform: scale(0.85); transform-origin: right center; }
+        .search-card { padding: 0.85rem !important; }
+        .search-heading p { font-size: 0.82rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -346,13 +853,13 @@
             animation-delay: 0s !important;
             scroll-behavior: auto !important;
             transition-duration: 0.01ms !important;
+            transition-delay: 0s !important;
         }
 
+        .doctor-card { opacity: 1; }
+        .anim-title .w { opacity: 1; }
         .doctor-card:hover,
-        .doctor-search-page .btn-primary:hover,
-        .doctor-search-page .btn-outline-primary:hover {
-            transform: none;
-        }
+        .doctor-search-page .btn-primary:hover { transform: none; }
     }
 </style>
 {% endblock %}
@@ -474,65 +981,150 @@
 </script>
 <!-- ===== /Page loader ===== -->
 
+<!-- ===== Sidebar (click the button to open, click again to close) ===== -->
+<button type="button" class="side-toggle" id="sideToggle"
+        aria-label="Toggle menu" aria-controls="sidePanel" aria-expanded="false">
+    <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+</button>
+
+<div class="side-backdrop" id="sideBackdrop"></div>
+
+{# Change this to your real logout URL, e.g. {{ url_for('auth.logout') }} #}
+{% set logout_url = url_for('auth.logout') %}
+<aside class="side-panel" id="sidePanel" aria-label="Patient menu">
+    <a class="side-link active" style="--n: 0" href="{{ url_for('patient.dashboard') }}">
+        <span class="ico">🔍</span> Find doctors
+    </a>
+    <a class="side-link" style="--n: 1" href="{{ url_for('patient.appointments') }}">
+        <span class="ico">📅</span> Appointments
+    </a>
+    <a class="side-link" style="--n: 2" href="{{ url_for('patient.refunds') }}">
+        <span class="ico">💳</span> Refunds
+    </a>
+    <a class="side-link" style="--n: 3" href="{{ url_for('patient.profile') }}">
+        <span class="ico">👤</span> Edit profile
+    </a>
+    <form method="post"
+      action="{{ url_for('patient.logout') }}"
+      class="side-link logout"
+      style="--n: 4; margin: 0;">
+    <button type="submit"
+            style="width: 100%; border: 0; background: transparent;
+                   color: inherit; text-align: left; cursor: pointer;
+                   font: inherit; display: flex; align-items: center; gap: 0.75rem;">
+        <span class="ico">🚪</span> Logout
+    </button>
+</form>
+
+    <div class="side-foot">Book trusted doctors in a few taps.</div>
+</aside>
+
 <div class="doctor-search-page">
 
-    <div class="search-heading d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="mb-1">Find your doctor</h2>
-            <p class="text-muted mb-0">
-                Search by doctor, hospital, specialisation or city.
-            </p>
+    <div class="search-heading d-flex justify-content-between align-items-center">
+        <div class="title-wrap">
+            <!-- 3D stethoscope logo -->
+            <div class="steth-scene" id="stethScene" aria-hidden="true">
+                <div class="steth-spin">
+                    <svg class="sl sl-back2" viewBox="0 0 64 64"><use href="#stethShape"/></svg>
+                    <svg class="sl sl-back1" viewBox="0 0 64 64"><use href="#stethShape"/></svg>
+                    <svg class="sl sl-front" viewBox="0 0 64 64"><use href="#stethShape"/></svg>
+                </div>
+                <svg width="0" height="0" style="position:absolute">
+                    <defs>
+                        <g id="stethShape" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 9 V22 a12 12 0 0 0 24 0 V9" stroke-width="4"/>
+                            <path d="M28 34 V46 C28 58 48 58 48 46 V40" stroke-width="4"/>
+                            <circle cx="16" cy="8" r="3.4" fill="#D8CBB3" stroke="none"/>
+                            <circle cx="40" cy="8" r="3.4" fill="#D8CBB3" stroke="none"/>
+                            <circle cx="48" cy="34" r="8" fill="#2F6BFF" stroke="#fff" stroke-width="2.5"/>
+                            <circle cx="48" cy="34" r="3" fill="#D8CBB3" stroke="none"/>
+                        </g>
+                    </defs>
+                </svg>
+            </div>
+
+            <div>
+                <h2 class="mb-1 anim-title">
+                    <span class="w" style="--w:0">Find</span>
+                    <span class="w" style="--w:1">your</span>
+                    <span class="w" style="--w:2">doctor</span>
+                </h2>
+                <div class="title-line"></div>
+                <p class="text-muted mb-0">
+                    Search by doctor, hospital, specialisation or city.
+                </p>
+            </div>
         </div>
 
-        <div class="heading-links d-flex flex-wrap gap-2">
-            <a class="btn btn-outline-primary"
-               href="{{ url_for('patient.appointments') }}">
-                Appointments
-            </a>
-            <a class="btn btn-outline-primary"
-               href="{{ url_for('patient.refunds') }}">
-                Refunds
-            </a>
-            <a class="btn btn-outline-primary"
-               href="{{ url_for('patient.profile') }}">
-                Edit profile
-            </a>
+        <!-- 3D patient logo -->
+        <div class="logo3d-scene" id="logoScene" aria-hidden="true">
+            <div class="logo3d-tilt" id="logoTilt">
+                <div class="logo3d-spin">
+                    <div class="depth"></div>
+                    <div class="depth"></div>
+                    <div class="depth"></div>
+                    <div class="depth"></div>
+                    <div class="face">
+                        <svg viewBox="0 0 64 64">
+                            <defs>
+                                <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0" stop-color="#D8CBB3"/>
+                                    <stop offset="1" stop-color="#7EA3FF"/>
+                                </linearGradient>
+                            </defs>
+                            <circle cx="32" cy="20" r="11" fill="url(#pg)"/>
+                            <path d="M10 56c0-12.2 9.8-20 22-20s22 7.8 22 20z" fill="url(#pg)"/>
+                        </svg>
+                    </div>
+                    <div class="badge3d">
+                        <svg viewBox="0 0 24 24"><path d="M10 3h4v7h7v4h-7v7h-4v-7H3v-4h7z"/></svg>
+                    </div>
+                </div>
+                <div class="logo3d-shadow"></div>
+            </div>
         </div>
     </div>
 
-    <div class="search-card card border-0 shadow-sm p-3 mb-4">
-        <form method="get" class="row g-3">
+    <div class="search-card card border-0 shadow-sm">
+        <div class="search-title"><span class="dot"></span> Search doctors</div>
 
-            <div class="col-md-3">
+        <form method="get" class="row g-2 align-items-end">
+
+            <div class="field col-6 col-lg">
                 <label class="form-label">Doctor name</label>
+                <span class="f-ico">🩺</span>
                 <input class="form-control"
                        name="name"
                        value="{{ filters.name }}"
                        placeholder="e.g. John">
             </div>
 
-            <div class="col-md-3">
+            <div class="field col-6 col-lg">
                 <label class="form-label">Hospital</label>
+                <span class="f-ico">🏥</span>
                 <input class="form-control"
                        name="hospital"
                        value="{{ filters.hospital }}">
             </div>
 
-            <div class="col-md-3">
+            <div class="field col-6 col-lg">
                 <label class="form-label">Specialisation</label>
+                <span class="f-ico">🫀</span>
                 <input class="form-control"
                        name="specialisation"
                        value="{{ filters.specialisation }}">
             </div>
 
-            <div class="col-md-3">
+            <div class="field col-6 col-lg">
                 <label class="form-label">City</label>
+                <span class="f-ico">📍</span>
                 <input class="form-control"
                        name="city"
                        value="{{ filters.city }}">
             </div>
 
-            <div class="col-12">
+            <div class="field col-12 col-lg-auto d-flex gap-2">
                 <button class="btn btn-primary">Search doctors</button>
                 <a class="btn btn-light"
                    href="{{ url_for('patient.dashboard') }}">
@@ -542,36 +1134,48 @@
         </form>
     </div>
 
-    <div class="doctor-results-heading d-flex justify-content-between mb-3">
+    <div class="doctor-results-heading d-flex justify-content-between align-items-center">
         <h4>Available doctors</h4>
-        <span class="text-muted">{{ pagination.total|default(0) }} results</span>
+        <span class="results-pill">{{ pagination.total|default(0) }} results</span>
     </div>
 
     <div class="doctor-results row g-3">
         {% for doctor in doctors %}
-            <div class="doctor-result col-md-6 col-lg-4">
-                <div class="doctor-card card h-100 border-0 shadow-sm p-3">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="doctor-avatar rounded-circle bg-light p-3">👨‍⚕️</div>
+            <div class="doctor-result col-md-6 col-lg-4" style="--i: {{ loop.index0 }}">
+                <div class="doctor-card card h-100 border-0" style="--i: {{ loop.index0 }}">
+                    <div class="doctor-head">
+                        <div class="doctor-avatar rounded-circle">👨‍⚕️</div>
                         <div>
-                            <h5 class="mb-0">{{ doctor.name }}</h5>
-                            <small class="text-muted">
+                            <h5>{{ doctor.name }}</h5>
+                            <span class="exp-badge">
                                 {{ doctor.years_experience or 0 }} years experience
-                            </small>
+                            </span>
                         </div>
                     </div>
 
-                    <p class="mb-1">
-                        <strong>Specialisation:</strong>
-                        {{ doctor.specialisations or 'Not specified' }}
-                    </p>
-
-                    <p class="mb-3">
-                        <strong>Hospital:</strong>
-                        {{ doctor.hospitals or 'Not specified' }}<br>
-                        <strong>City:</strong>
-                        {{ doctor.cities or 'Not specified' }}
-                    </p>
+                    <div class="doctor-info">
+                        <div class="info-row">
+                            <span class="ico">🫀</span>
+                            <div>
+                                <small>Specialisation</small>
+                                {{ doctor.specialisations or 'Not specified' }}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <span class="ico">🏥</span>
+                            <div>
+                                <small>Hospital</small>
+                                {{ doctor.hospitals or 'Not specified' }}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <span class="ico">📍</span>
+                            <div>
+                                <small>City</small>
+                                {{ doctor.cities or 'Not specified' }}
+                            </div>
+                        </div>
+                    </div>
 
                     <a class="btn btn-outline-primary mt-auto"
                        href="{{ url_for('patient.doctor_detail', doctor_id=doctor.doctor_id) }}">
@@ -604,5 +1208,39 @@
     {% endif %}
 
 </div>
+
+<script>
+  (function () {
+    /* ---- sidebar: click button to open, click again (or backdrop / Esc) to close ---- */
+    var body = document.body;
+    var toggle = document.getElementById("sideToggle");
+    var backdrop = document.getElementById("sideBackdrop");
+
+    function setOpen(open) {
+      body.classList.toggle("side-open", open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    toggle.addEventListener("click", function () {
+      setOpen(!body.classList.contains("side-open"));
+    });
+    backdrop.addEventListener("click", function () { setOpen(false); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") setOpen(false);
+    });
+
+    /* ---- 3D logo follows the pointer ---- */
+    var scene = document.getElementById("logoScene");
+    var tilt = document.getElementById("logoTilt");
+    if (scene && tilt && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.addEventListener("mousemove", function (e) {
+        var r = scene.getBoundingClientRect();
+        var dx = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
+        var dy = (e.clientY - (r.top + r.height / 2)) / window.innerHeight;
+        tilt.style.setProperty("--ry", (dx * 40).toFixed(1) + "deg");
+        tilt.style.setProperty("--rx", (-dy * 40).toFixed(1) + "deg");
+      });
+    }
+  })();
+</script>
 
 {% endblock %}
