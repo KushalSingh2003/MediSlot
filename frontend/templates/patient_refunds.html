@@ -1,18 +1,15 @@
 {% extends "base.html" %}
 {% block title %}My Refunds | MediSlot{% endblock %}
 {% block content %}
-<!-- ===== Page loader (paste-anywhere block) ===== -->
+
+<!-- ===== Page loader (single copy) ===== -->
 <style>
   #msLoader {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh; height: 100dvh;
     z-index: 2147483647;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 18px; background: #1E1E1C;
-    margin: 0; padding: 0;
+    gap: 18px; background: #1E1E1C; margin: 0; padding: 0;
     opacity: 1; visibility: visible;
     transition: opacity .6s ease, visibility .6s ease;
   }
@@ -31,10 +28,7 @@
     border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
     animation: ms-ring 1.4s ease-out infinite;
   }
-  .ms-title {
-    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
-    letter-spacing: .3px;
-  }
+  .ms-title { color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif; letter-spacing: .3px; }
   .ms-ecg { width: 210px; height: 42px; }
   .ms-ecg path {
     fill: none; stroke: #2F6BFF; stroke-width: 3;
@@ -42,17 +36,12 @@
     stroke-dasharray: 340; stroke-dashoffset: 340;
     animation: ms-ecg 1.8s linear infinite;
   }
-
   @keyframes ms-beat {
     0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
     30% { transform: scale(1); }     45% { transform: scale(1.08); }
   }
-  @keyframes ms-ring {
-    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
-  }
-  @keyframes ms-ecg {
-    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
-  }
+  @keyframes ms-ring { 0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; } }
+  @keyframes ms-ecg  { 0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; } }
   @media (prefers-reduced-motion: reduce) {
     .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
   }
@@ -76,27 +65,33 @@
   (function () {
     var loader = document.getElementById("msLoader");
     if (!loader) return;
-
-    // Attach directly to <body> so no parent container can trap the fixed overlay.
     document.body.appendChild(loader);
 
-    var MIN_VISIBLE = 2200;               // ms the loader stays up at minimum
-    var startedAt = Date.now();
+    var MIN_VISIBLE = 1500;   /* ms the loader stays up at minimum */
+    var FAILSAFE    = 5000;   /* ms, the loader can never stay longer than this */
+    var startedAt   = Date.now();
+    var hideTimer = null, failTimer = null;
 
     function hide() {
+      clearTimeout(hideTimer);
+      clearTimeout(failTimer);
       var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
-      setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
+      hideTimer = setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
     }
     function show() {
       startedAt = Date.now();
       loader.classList.remove("ms-hide");
+      clearTimeout(failTimer);
+      failTimer = setTimeout(hide, FAILSAFE);
     }
 
-    window.addEventListener("load", hide);
-    setTimeout(hide, 6000);   // safety net
+    if (document.readyState === "complete") hide();
+    else window.addEventListener("load", hide);
+    failTimer = setTimeout(hide, FAILSAFE);
 
-    window.addEventListener("pageshow", function (e) {
-      if (e.persisted) loader.classList.add("ms-hide");
+    window.addEventListener("pageshow", function () {
+      clearTimeout(hideTimer);
+      loader.classList.add("ms-hide");
     });
 
     document.addEventListener("click", function (e) {
@@ -104,17 +99,22 @@
       if (!a || e.defaultPrevented) return;
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
       if (a.target === "_blank" || a.hasAttribute("download")) return;
+      var href = a.getAttribute("href") || "";
+      if (href.charAt(0) === "#" || /^(javascript|mailto|tel):/i.test(href)) return;
       var url = new URL(a.href, location.href);
       if (url.origin !== location.origin) return;
       if (url.pathname === location.pathname && url.search === location.search) return;
       show();
     });
     document.addEventListener("submit", function (e) {
-      if (!e.defaultPrevented) show();
+      if (e.defaultPrevented) return;
+      if (e.target.target === "_blank") return;
+      show();
     });
   })();
 </script>
 <!-- ===== /Page loader ===== -->
+
 <style>
     /* Palette: charcoal #1E1E1C | warm beige #D8CBB3 | vivid blue #2F6BFF */
     :root {
@@ -139,191 +139,215 @@
         background-attachment: fixed !important;
         animation: cpPageFade .9s ease backwards;
     }
-
     body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
+        content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
         background-image: radial-gradient(rgba(30, 30, 28, .08) 1.5px, transparent 1.5px);
         background-size: 30px 30px;
         animation: cpGridDrift 30s linear infinite;
     }
     body::after {
-        content: "";
-        position: fixed;
-        width: 420px; height: 420px;
-        right: -140px; bottom: -140px;
-        border-radius: 50%;
-        background: rgba(47, 107, 255, .25);
-        filter: blur(80px);
-        z-index: -1;
-        pointer-events: none;
+        content: ""; position: fixed; width: 420px; height: 420px;
+        right: -140px; bottom: -140px; border-radius: 50%;
+        background: rgba(47, 107, 255, .25); filter: blur(80px);
+        z-index: -1; pointer-events: none;
         animation: cpOrb 18s ease-in-out infinite;
     }
 
     /* ---------- Back link ---------- */
     .cp-back {
-        position: relative;
-        display: inline-block;
-        color: var(--cp-blue-deep);
-        font-weight: 700;
-        text-decoration: none;
+        position: relative; display: inline-block;
+        color: var(--cp-blue-deep); font-weight: 700; text-decoration: none;
         animation: cpSlideRight .7s var(--cp-ease) backwards;
         transition: transform .35s var(--cp-ease), color .3s ease;
     }
     .cp-back::after {
-        content: "";
-        position: absolute;
-        left: 0; bottom: -2px;
-        width: 100%; height: 2px;
-        background: var(--cp-blue);
-        transform: scaleX(0);
-        transform-origin: left;
+        content: ""; position: absolute; left: 0; bottom: -2px;
+        width: 100%; height: 2px; background: var(--cp-blue);
+        transform: scaleX(0); transform-origin: left;
         transition: transform .4s var(--cp-ease);
     }
     .cp-back:hover { color: var(--cp-blue); transform: translateX(-6px); }
     .cp-back:hover::after { transform: scaleX(1); }
 
-    /* ---------- Card ---------- */
-    .card.border-0.shadow-sm {
-        position: relative;
-        overflow: hidden;
-        background: #FCFAF6;
-        border: 1px solid var(--cp-beige) !important;
-        border-radius: 22px;
-        box-shadow: 0 6px 22px rgba(30, 30, 28, .09) !important;
-        transition: transform .5s var(--cp-ease), box-shadow .5s var(--cp-ease), border-color .4s ease;
-        animation: cpCardIn .9s .2s var(--cp-ease) backwards;
+    /* ---------- Bright "My refunds" hero card (its own card) ---------- */
+    .cp-hero {
+        position: relative; overflow: hidden;
+        display: flex; align-items: center; gap: 28px;
+        margin: 16px 0 22px; padding: 26px 32px;
+        color: #fff;
+        background:
+            radial-gradient(420px 220px at 85% 0%, rgba(255,255,255,.35), transparent 65%),
+            linear-gradient(120deg, var(--cp-blue-light) 0%, var(--cp-blue) 55%, var(--cp-blue-deep) 100%);
+        border: 3px solid #fff;
+        border-radius: 26px;
+        box-shadow: 0 18px 44px rgba(47, 107, 255, .40), inset 0 1px 0 rgba(255,255,255,.5);
+        animation: cpCardIn .9s .1s var(--cp-ease) backwards;
     }
-    .card.border-0.shadow-sm::before {
-        content: "";
-        position: absolute;
-        inset: 0 0 auto 0;
-        height: 5px;
-        background: linear-gradient(90deg, #D8CBB3, #2F6BFF, #1E1E1C, #2F6BFF, #D8CBB3);
-        background-size: 300% 100%;
-        animation: cpGradientSlide 4s linear infinite;
+    .cp-hero::before {
+        content: ""; position: absolute; inset: 0 0 auto 0; height: 5px;
+        background: linear-gradient(90deg, #D8CBB3, #fff, #1E1E1C, #fff, #D8CBB3);
+        background-size: 300% 100%; animation: cpGradientSlide 4s linear infinite;
     }
-    .card.border-0.shadow-sm::after {
-        content: "";
-        position: absolute;
-        width: 220px; height: 220px;
-        right: -90px; bottom: -90px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(47, 107, 255, .20), transparent 70%);
-        transition: transform .8s var(--cp-ease);
+    .cp-hero::after {
+        content: ""; position: absolute; width: 260px; height: 260px;
+        right: -80px; bottom: -120px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(255,255,255,.28), transparent 70%);
         pointer-events: none;
     }
-    .card.border-0.shadow-sm:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 36px rgba(47, 107, 255, .20) !important;
-        border-color: var(--cp-blue-light) !important;
+    .cp-hero-text { position: relative; z-index: 1; flex: 1; min-width: 0; }
+    .cp-hero h2 {
+        margin: 0 0 4px; font-size: 2rem; font-weight: 800; letter-spacing: -.5px; color: #fff;
+        text-shadow: 0 3px 12px rgba(27, 79, 214, .45);
     }
-    .card.border-0.shadow-sm:hover::after { transform: scale(2.2); }
-    .card.border-0.shadow-sm > * { position: relative; z-index: 1; }
+    .cp-hero p { margin: 0; font-size: .98rem; color: rgba(255,255,255,.92); font-weight: 500; }
+    .cp-count {
+        position: relative; z-index: 1; flex: none; text-align: center;
+        padding: 10px 22px; border-radius: 16px;
+        background: rgba(255,255,255,.18); border: 2px solid rgba(255,255,255,.55);
+        backdrop-filter: blur(4px);
+    }
+    .cp-count strong { display: block; font-size: 1.9rem; line-height: 1.1; font-weight: 800; }
+    .cp-count span { font-size: .72rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--cp-beige-pale); }
 
-    /* ---------- Heading ---------- */
-    .card.border-0.shadow-sm h2 {
-        font-weight: 800;
-        letter-spacing: -.5px;
-        color: var(--cp-ink);
-        background: linear-gradient(100deg, #1E1E1C 0%, #1E1E1C 40%, #2F6BFF 50%, #1E1E1C 60%, #1E1E1C 100%);
-        background-size: 250% 100%;
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: cpSlideRight .8s .35s var(--cp-ease) backwards, cpTextSweep 6s 1.5s ease-in-out infinite;
+    /* ---------- 3D refund coin ---------- */
+    .cp-coin-wrap { position: relative; z-index: 1; flex: none; width: 108px; height: 108px; perspective: 600px; }
+    .cp-coin {
+        position: relative; width: 100%; height: 100%;
+        transform-style: preserve-3d;
+        animation: cpCoinSpin 6s ease-in-out infinite;
     }
+    .cp-coin .cp-face, .cp-coin .cp-edge {
+        position: absolute; inset: 0; border-radius: 50%;
+    }
+    .cp-coin .cp-edge { background: #1B4FD6; border: 2px solid #D8CBB3; }
+    .cp-coin .cp-face {
+        display: grid; place-items: center;
+        background:
+            radial-gradient(circle at 32% 28%, #fff 0%, #F6F1E7 35%, #D8CBB3 100%);
+        border: 5px solid var(--cp-ink);
+        box-shadow: inset 0 0 0 4px #fff, inset 0 -8px 14px rgba(30,30,28,.18);
+    }
+    .cp-coin .cp-face svg { width: 62%; height: 62%; }
+    .cp-coin .cp-front { transform: translateZ(7px); }
+    .cp-coin .cp-back  { transform: rotateY(180deg) translateZ(7px); }
+    .cp-coin .cp-edge:nth-child(1) { transform: translateZ(-5px); }
+    .cp-coin .cp-edge:nth-child(2) { transform: translateZ(-3px); }
+    .cp-coin .cp-edge:nth-child(3) { transform: translateZ(-1px); }
+    .cp-coin .cp-edge:nth-child(4) { transform: translateZ(1px); }
+    .cp-coin .cp-edge:nth-child(5) { transform: translateZ(3px); }
+    .cp-coin .cp-edge:nth-child(6) { transform: translateZ(5px); }
+    .cp-coin-shadow {
+        position: absolute; left: 50%; bottom: -14px; width: 76px; height: 12px;
+        margin-left: -38px; border-radius: 50%;
+        background: rgba(27, 79, 214, .55); filter: blur(6px);
+        animation: cpCoinShadow 6s ease-in-out infinite;
+    }
+    .cp-coin-arrow { fill: none; stroke: #2F6BFF; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; }
+    .cp-coin-rupee { fill: #1E1E1C; font: 800 8px "Segoe UI", Arial, sans-serif; }
 
-    /* ---------- Table ---------- */
-    .card .table {
-        --bs-table-bg: transparent;
-        border-collapse: separate;
-        border-spacing: 0;
-        color: var(--cp-ink);
-        margin-bottom: 0;
-    }
-    .card .table thead th {
-        background: var(--cp-ink) !important;
-        color: var(--cp-beige) !important;
-        font-size: .78rem;
-        text-transform: uppercase;
-        letter-spacing: .8px;
-        font-weight: 700;
-        border: none !important;
-        padding: 14px 16px;
-        white-space: nowrap;
-        animation: cpFadeIn .9s .9s ease backwards;
-    }
-    .card .table thead th:first-child { border-top-left-radius: 12px; }
-    .card .table thead th:last-child  { border-top-right-radius: 12px; }
+    /* ---------- Refund cards (horizontal) ---------- */
+    .cp-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
 
-    .card .table tbody tr { animation: cpRowIn .7s var(--cp-ease) backwards; }
-    .card .table tbody tr:nth-child(1) { animation-delay: 1.0s; }
-    .card .table tbody tr:nth-child(2) { animation-delay: 1.1s; }
-    .card .table tbody tr:nth-child(3) { animation-delay: 1.2s; }
-    .card .table tbody tr:nth-child(4) { animation-delay: 1.3s; }
-    .card .table tbody tr:nth-child(5) { animation-delay: 1.4s; }
-    .card .table tbody tr:nth-child(6) { animation-delay: 1.5s; }
-    .card .table tbody tr:nth-child(7) { animation-delay: 1.6s; }
-    .card .table tbody tr:nth-child(8) { animation-delay: 1.7s; }
-    .card .table tbody tr:nth-child(9) { animation-delay: 1.8s; }
-    .card .table tbody tr:nth-child(10) { animation-delay: 1.9s; }
+    .cp-refund {
+        position: relative; overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.6fr) auto auto;
+        align-items: center; gap: 22px;
+        padding: 18px 24px 18px 28px;
+        background: #FCFAF6;
+        border: 1px solid var(--cp-beige);
+        border-radius: 20px;
+        box-shadow: 0 6px 22px rgba(30, 30, 28, .09);
+        transition: transform .45s var(--cp-ease), box-shadow .45s var(--cp-ease), border-color .35s ease;
+        animation: cpRowIn .7s var(--cp-ease) backwards;
+    }
+    .cp-refund::before {
+        content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+        background: linear-gradient(180deg, var(--cp-blue-light), var(--cp-blue), var(--cp-blue-deep));
+    }
+    .cp-refund::after {
+        content: ""; position: absolute; width: 180px; height: 180px;
+        right: -70px; bottom: -90px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(47, 107, 255, .16), transparent 70%);
+        transition: transform .8s var(--cp-ease); pointer-events: none;
+    }
+    .cp-refund:hover {
+        transform: translateY(-4px) translateX(4px);
+        box-shadow: 0 16px 34px rgba(47, 107, 255, .22);
+        border-color: var(--cp-blue-light);
+    }
+    .cp-refund:hover::after { transform: scale(2.2); }
+    .cp-refund > * { position: relative; z-index: 1; min-width: 0; }
 
-    .card .table tbody td {
-        padding: 14px 16px;
-        border-bottom: 1px solid var(--cp-beige) !important;
-        background: transparent;
-        vertical-align: middle;
-        transition: background .25s ease, color .25s ease;
-    }
-    .card .table tbody tr:hover td { background: var(--cp-beige-pale); }
-    .card .table tbody tr:last-child td { border-bottom: none !important; }
-    .card .table tbody td:first-child {
-        border-left: 4px solid var(--cp-blue);
-        font-weight: 700;
-    }
-    .card .table tbody td.cp-amount {
-        font-weight: 700;
-        color: var(--cp-blue-deep);
-        white-space: nowrap;
-    }
-    .card .table tbody td.cp-reason { color: var(--cp-ink-soft); }
-    .card .table tbody td[colspan] {
-        text-align: center;
-        font-style: italic;
-        font-weight: 500;
+    .cp-refund:nth-child(1) { animation-delay: .35s; }
+    .cp-refund:nth-child(2) { animation-delay: .45s; }
+    .cp-refund:nth-child(3) { animation-delay: .55s; }
+    .cp-refund:nth-child(4) { animation-delay: .65s; }
+    .cp-refund:nth-child(5) { animation-delay: .75s; }
+    .cp-refund:nth-child(6) { animation-delay: .85s; }
+    .cp-refund:nth-child(7) { animation-delay: .95s; }
+    .cp-refund:nth-child(8) { animation-delay: 1.05s; }
+    .cp-refund:nth-child(9) { animation-delay: 1.15s; }
+    .cp-refund:nth-child(10) { animation-delay: 1.25s; }
+
+    .cp-label {
+        display: block; margin-bottom: 3px;
+        font-size: .68rem; font-weight: 700; letter-spacing: .9px; text-transform: uppercase;
         color: var(--cp-ink-soft);
-        padding: 30px 16px;
-        border-left: none;
-        animation: cpDashPulse 4s ease-in-out infinite;
+    }
+    .cp-doctor { display: flex; align-items: center; gap: 12px; }
+    .cp-avatar {
+        flex: none; display: grid; place-items: center;
+        width: 44px; height: 44px; border-radius: 14px;
+        background: var(--cp-ink); color: var(--cp-beige);
+        font-weight: 800; font-size: 1.05rem;
+    }
+    .cp-doctor-name { font-weight: 800; font-size: 1.02rem; color: var(--cp-ink); overflow-wrap: anywhere; }
+    .cp-date { font-weight: 700; color: var(--cp-ink); white-space: nowrap; }
+    .cp-reason { color: var(--cp-ink-soft); font-weight: 500; overflow-wrap: anywhere; }
+    .cp-percent {
+        display: inline-block; padding: 5px 14px; border-radius: 999px;
+        background: var(--cp-ink); color: var(--cp-beige);
+        font-size: 12px; font-weight: 700; letter-spacing: .3px; white-space: nowrap;
+    }
+    .cp-amount-box {
+        padding: 10px 18px; border-radius: 14px; text-align: right; white-space: nowrap;
+        background: linear-gradient(135deg, var(--cp-blue-light), var(--cp-blue) 60%, var(--cp-blue-deep));
+        color: #fff; font-weight: 800; font-size: 1.15rem;
+        box-shadow: 0 8px 18px rgba(47, 107, 255, .32);
+    }
+    .cp-amount-box small { display: block; font-size: .62rem; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; opacity: .85; }
+
+    /* empty state */
+    .cp-empty {
+        padding: 38px 20px; text-align: center; font-style: italic; font-weight: 500;
+        color: var(--cp-ink-soft); background: #FCFAF6;
+        border: 2px dashed var(--cp-beige); border-radius: 20px;
+        animation: cpDashPulse 4s ease-in-out infinite, cpCardIn .9s .3s var(--cp-ease) backwards;
     }
 
-    /* percent pill */
-    .cp-percent {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 999px;
-        background: var(--cp-ink);
-        color: var(--cp-beige);
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: .3px;
+    /* ---------- Responsive ---------- */
+    @media (max-width: 991px) {
+        .cp-refund { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
+        .cp-doctor, .cp-reason-box { grid-column: 1 / -1; }
+        .cp-amount-box { text-align: left; }
+    }
+    @media (max-width: 640px) {
+        .cp-hero { flex-direction: column; text-align: center; padding: 22px 18px; gap: 18px; }
+        .cp-hero h2 { font-size: 1.6rem; }
     }
 
     /* ---------- Keyframes ---------- */
     @keyframes cpPageFade     { from { opacity: 0; } to { opacity: 1; } }
-    @keyframes cpFadeIn       { from { opacity: 0; } to { opacity: 1; } }
     @keyframes cpSlideRight   { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
     @keyframes cpCardIn       { from { opacity: 0; transform: translateY(46px) scale(.95); } to { opacity: 1; transform: none; } }
     @keyframes cpRowIn        { from { opacity: 0; transform: translateX(-34px); } to { opacity: 1; transform: none; } }
     @keyframes cpGradientSlide { from { background-position: 0% 0; } to { background-position: 300% 0; } }
-    @keyframes cpTextSweep    { 0%, 20% { background-position: 100% 0; } 80%, 100% { background-position: 0% 0; } }
     @keyframes cpGridDrift    { from { background-position: 0 0; } to { background-position: 60px 60px; } }
     @keyframes cpOrb          { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-80px, -60px); } }
-    @keyframes cpDashPulse    { 0%, 100% { background-color: transparent; } 50% { background-color: rgba(216, 203, 179, .25); } }
+    @keyframes cpDashPulse    { 0%, 100% { background-color: #FCFAF6; } 50% { background-color: rgba(216, 203, 179, .3); } }
+    @keyframes cpCoinSpin     { 0% { transform: rotateX(-12deg) rotateY(0deg); } 50% { transform: rotateX(8deg) rotateY(180deg); } 100% { transform: rotateX(-12deg) rotateY(360deg); } }
+    @keyframes cpCoinShadow   { 0%, 100% { transform: scaleX(1); opacity: .7; } 25%, 75% { transform: scaleX(.35); opacity: .35; } 50% { transform: scaleX(1); opacity: .7; } }
 
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after {
@@ -336,26 +360,72 @@
 </style>
 
 <a href="{{ url_for('patient.dashboard') }}" class="cp-back">← Back to search</a>
-<div class="card border-0 shadow-sm p-4 mt-3 mb-4">
-    <h2>My refunds</h2>
-    <div class="table-responsive mt-3">
-        <table class="table">
-            <thead>
-                <tr><th>Appointment</th><th>Refund %</th><th>Reason</th><th>Refund amount</th></tr>
-            </thead>
-            <tbody>
-            {% for refund in refunds %}
-                <tr>
-                    <td>{{ refund.appointment_id }}</td>
-                    <td><span class="cp-percent">{{ refund.refund_percent }}%</span></td>
-                    <td class="cp-reason">{{ refund.reason }}</td>
-                    <td class="cp-amount">{{ refund.refund_amount }}</td>
-                </tr>
-            {% else %}
-                <tr><td colspan="4">No refunds found.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+
+<!-- Bright hero card with 3D refund logo -->
+<section class="cp-hero">
+    <div class="cp-coin-wrap" aria-hidden="true">
+        <div class="cp-coin">
+            <div class="cp-edge"></div><div class="cp-edge"></div><div class="cp-edge"></div>
+            <div class="cp-edge"></div><div class="cp-edge"></div><div class="cp-edge"></div>
+            <div class="cp-face cp-front">
+                <svg viewBox="0 0 40 40">
+                    <path class="cp-coin-arrow" d="M31 17A12 12 0 1 0 28 29"/>
+                    <path class="cp-coin-arrow" d="M31 8V17H22"/>
+                    <text class="cp-coin-rupee" x="20" y="24" text-anchor="middle">₹</text>
+                </svg>
+            </div>
+            <div class="cp-face cp-back">
+                <svg viewBox="0 0 40 40">
+                    <path class="cp-coin-arrow" d="M31 17A12 12 0 1 0 28 29"/>
+                    <path class="cp-coin-arrow" d="M31 8V17H22"/>
+                    <text class="cp-coin-rupee" x="20" y="24" text-anchor="middle">₹</text>
+                </svg>
+            </div>
+        </div>
+        <div class="cp-coin-shadow"></div>
     </div>
+    <div class="cp-hero-text">
+        <h2>My refunds</h2>
+        <p>Track every refund issued for your cancelled appointments.</p>
+    </div>
+    <div class="cp-count">
+        <strong>{{ refunds|length }}</strong>
+        <span>Total refunds</span>
+    </div>
+</section>
+
+<!-- Refund cards -->
+<div class="cp-list">
+    {% for refund in refunds %}
+    <article class="cp-refund">
+        <div class="cp-doctor">
+            <span class="cp-avatar" aria-hidden="true">{{ (refund.doctor_name or '?')[:1]|upper }}</span>
+            <div>
+                <span class="cp-label">Doctor</span>
+                <div class="cp-doctor-name">{{ refund.doctor_name }}</div>
+            </div>
+        </div>
+        <div>
+            <span class="cp-label">Date</span>
+            <div class="cp-date">
+                {% if refund.created_at.strftime is defined %}{{ refund.created_at.strftime('%d %b %Y') }}{% else %}{{ refund.created_at }}{% endif %}
+            </div>
+        </div>
+        <div class="cp-reason-box">
+            <span class="cp-label">Reason</span>
+            <div class="cp-reason">{{ refund.reason }}</div>
+        </div>
+        <div>
+            <span class="cp-label">Refund %</span>
+            <span class="cp-percent">{{ refund.refund_percent }}%</span>
+        </div>
+        <div class="cp-amount-box">
+            <small>Refund amount</small>
+            {{ refund.refund_amount }}
+        </div>
+    </article>
+    {% else %}
+    <div class="cp-empty">No refunds found.</div>
+    {% endfor %}
 </div>
 {% endblock %}

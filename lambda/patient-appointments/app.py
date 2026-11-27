@@ -756,15 +756,17 @@ def list_appointments(connection, patient_id):
                 a.amount,
                 a.created_at,
                 s.doctor_id,
+                d.name AS doctor_name,
                 s.consultation_type_id,
                 s.slot_date,
                 s.start_time,
                 s.end_time
             FROM appointments a
             JOIN appointment_slot s ON s.slot_id = a.slot_id
+            JOIN doctor d ON d.doctor_id = s.doctor_id
             WHERE a.patient_id = %s
             ORDER BY s.slot_date DESC, s.start_time DESC
-            LIMIT 100
+            LIMIT 10
             """,
             (patient_id,),
         )
@@ -998,18 +1000,26 @@ def cancel_appointment(connection, patient_id, appointment_id):
 def list_refunds(connection, patient_id):
     with connection.cursor() as cursor:
         cursor.execute(
+
             """
-            SELECT
-                r.refund_id,
-                r.appointment_id,
-                r.refund_percent,
-                r.refund_amount,
-                r.reason,
-                r.created_at
-            FROM refund_ledger r
-            WHERE r.patient_id = %s
-            ORDER BY r.created_at DESC
-            LIMIT 100
+                SELECT
+                    r.refund_id,
+                    r.appointment_id,
+                    r.refund_percent,
+                    r.refund_amount,
+                    r.reason,
+                    r.created_at,
+                    d.name AS doctor_name
+                FROM refund_ledger r
+                JOIN appointments a
+                    ON a.appointment_id = r.appointment_id
+                JOIN appointment_slot s
+                    ON s.slot_id = a.slot_id
+                JOIN doctor d
+                    ON d.doctor_id = s.doctor_id
+                WHERE r.patient_id = %s
+                ORDER BY r.created_at DESC
+                LIMIT 100
             """,
             (patient_id,),
         )

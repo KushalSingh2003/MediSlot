@@ -1,114 +1,8 @@
 {% extends "base.html" %}
 {% block title %}Patient Registration | MediSlot{% endblock %}
 {% block content %}
-<!-- ===== Page loader (paste-anywhere block) ===== -->
-<style>
-  #msLoader {
-    position: fixed; inset: 0; z-index: 99999;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 18px; background: #1E1E1C;
-    opacity: 1; visibility: visible;
-    transition: opacity .45s ease, visibility .45s ease;
-  }
-  #msLoader.ms-hide { opacity: 0; visibility: hidden; }
 
-  .ms-logo {
-    position: relative; display: grid; place-items: center;
-    width: 78px; height: 78px; border-radius: 22px;
-    background: linear-gradient(135deg, #7EA3FF, #2F6BFF);
-    box-shadow: 0 10px 30px rgba(47,107,255,.55);
-    animation: ms-beat 1.4s ease-in-out infinite;
-  }
-  .ms-logo svg { width: 38px; height: 38px; fill: #fff; }
-  .ms-logo::after {
-    content: ""; position: absolute; inset: -12px;
-    border: 2px solid rgba(126,163,255,.55); border-radius: 30px;
-    animation: ms-ring 1.4s ease-out infinite;
-  }
-  .ms-title {
-    color: #D8CBB3; font: 700 1.15rem "Segoe UI", -apple-system, Arial, sans-serif;
-    letter-spacing: .3px;
-  }
-  .ms-ecg { width: 210px; height: 42px; }
-  .ms-ecg path {
-    fill: none; stroke: #2F6BFF; stroke-width: 3;
-    stroke-linecap: round; stroke-linejoin: round;
-    stroke-dasharray: 340; stroke-dashoffset: 340;
-    animation: ms-ecg 1.8s linear infinite;
-  }
-
-  @keyframes ms-beat {
-    0%,100% { transform: scale(1); } 15% { transform: scale(1.12); }
-    30% { transform: scale(1); }     45% { transform: scale(1.08); }
-  }
-  @keyframes ms-ring {
-    0% { transform: scale(.85); opacity: .9; } 100% { transform: scale(1.35); opacity: 0; }
-  }
-  @keyframes ms-ecg {
-    0% { stroke-dashoffset: 340; } 70%,100% { stroke-dashoffset: 0; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .ms-logo, .ms-logo::after, .ms-ecg path { animation-duration: 2.4s; }
-  }
-</style>
-
-<noscript><style>#msLoader { display: none !important; }</style></noscript>
-
-<div id="msLoader" aria-live="polite" aria-label="Loading">
-  <div class="ms-logo">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-    </svg>
-  </div>
-  <div class="ms-title">MediSlot</div>
-  <svg class="ms-ecg" viewBox="0 0 220 44" aria-hidden="true">
-    <path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/>
-  </svg>
-</div>
-
-<script>
-  (function () {
-    var loader = document.getElementById("msLoader");
-    if (!loader) return;
-    var MIN_VISIBLE = 600;                 // ms, so it never just flashes
-    var startedAt = Date.now();
-
-    function hide() {
-      var wait = Math.max(0, MIN_VISIBLE - (Date.now() - startedAt));
-      setTimeout(function () { loader.classList.add("ms-hide"); }, wait);
-    }
-    function show() {
-      startedAt = Date.now();
-      loader.classList.remove("ms-hide");
-    }
-
-    // hide when the page finishes loading (safety timeout included)
-    window.addEventListener("load", hide);
-    setTimeout(hide, 6000);
-
-    // back/forward cache can restore the page with the loader stuck on
-    window.addEventListener("pageshow", function (e) {
-      if (e.persisted) loader.classList.add("ms-hide");
-    });
-
-    // show it again when leaving for another page
-    document.addEventListener("click", function (e) {
-      var a = e.target.closest("a[href]");
-      if (!a || e.defaultPrevented) return;
-      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-      if (a.target === "_blank" || a.hasAttribute("download")) return;
-      var url = new URL(a.href, location.href);
-      if (url.origin !== location.origin) return;
-      if (url.pathname === location.pathname && url.search === location.search) return;
-      show();
-    });
-    document.addEventListener("submit", function (e) {
-      if (!e.defaultPrevented) show();   // respects a cancelled confirm()
-    });
-  })();
-</script>
-<!-- ===== /Page loader ===== -->
-<!-- ===== Page loader (paste-anywhere block) ===== -->
+<!-- ===== Page loader (single copy) ===== -->
 <style>
   #msLoader {
     position: fixed; inset: 0; z-index: 99999;
@@ -197,21 +91,18 @@
       startedAt = Date.now();
       loader.classList.remove("ms-hide");
       clearTimeout(failTimer);
-      failTimer = setTimeout(hide, FAILSAFE);   /* if navigation never happens, hide again */
+      failTimer = setTimeout(hide, FAILSAFE);
     }
 
-    /* hide when the page has loaded (works even if "load" already fired) */
     if (document.readyState === "complete") hide();
     else window.addEventListener("load", hide);
     failTimer = setTimeout(hide, FAILSAFE);
 
-    /* back/forward cache can restore the page with the loader still on */
     window.addEventListener("pageshow", function () {
       clearTimeout(hideTimer);
       loader.classList.add("ms-hide");
     });
 
-    /* show it only for links that really leave this page */
     document.addEventListener("click", function (e) {
       var a = e.target.closest("a[href]");
       if (!a || e.defaultPrevented) return;
@@ -225,9 +116,8 @@
       show();
     });
 
-    /* show it for form submits that actually go through */
     document.addEventListener("submit", function (e) {
-      if (e.defaultPrevented) return;            /* respects a cancelled confirm() */
+      if (e.defaultPrevented) return;
       if (e.target.target === "_blank") return;
       show();
     });
@@ -235,9 +125,64 @@
 </script>
 <!-- ===== /Page loader ===== -->
 
+<style>
+    :root {
+        --pr-ink: #1E1E1C;
+        --pr-ink-soft: #5b574d;
+        --pr-beige: #D8CBB3;
+        --pr-beige-pale: #F6F1E7;
+        --pr-blue: #2F6BFF;
+        --pr-blue-light: #7EA3FF;
+        --pr-blue-deep: #1B4FD6;
+        --pr-ease: cubic-bezier(.22, 1, .36, 1);
+    }
+
+    /* ---------- Page background ---------- */
+    .pr-bg {
+        position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+        background: linear-gradient(135deg, #E9E0CD, #D8CBB3);
+    }
+    .pr-watermark {
+        position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+        font-size: clamp(5rem, 18vw, 16rem); font-weight: 900; letter-spacing: -.02em;
+        color: rgba(30,30,28,.06); white-space: nowrap; user-select: none;
+    }
+    .pr-ecg {
+        position: absolute; left: 0; top: 42%; width: 100%; height: 160px; opacity: .35;
+    }
+    .pr-ecg path {
+        fill: none; stroke: var(--pr-blue); stroke-width: 3;
+        stroke-linecap: round; stroke-linejoin: round;
+        stroke-dasharray: 100; stroke-dashoffset: 100;
+        vector-effect: non-scaling-stroke;
+        animation: prEcg 5s linear infinite;
+    }
+    .pr-float {
+        position: absolute; display: flex; align-items: center; gap: 8px;
+        font-weight: 800; font-size: 1.05rem; color: rgba(30,30,28,.28);
+        animation: prDrift 9s ease-in-out infinite;
+    }
+    .pr-float .pr-mark { width: 34px; height: 34px; border-radius: 10px; animation: prSpin3d 6s ease-in-out infinite; }
+    .pr-float .pr-mark svg { width: 18px; height: 18px; }
+
+    /* Brand mark (heart + pulse) */
+    .pr-mark {
+        position: relative; display: inline-grid; place-items: center; flex: none;
+        width: 46px; height: 46px; border-radius: 14px;
+        background: linear-gradient(135deg, var(--pr-blue-light), var(--pr-blue));
+        box-shadow: 0 8px 18px rgba(47,107,255,.4);
+    }
+    .pr-mark svg { width: 24px; height: 24px; overflow: visible; }
+    .pr-mark svg > path:first-child { fill: #fff; }
+    .pr-pulse {
+        fill: none; stroke: var(--pr-blue-deep); stroke-width: 1.6;
+        stroke-linecap: round; stroke-linejoin: round;
+        stroke-dasharray: 40; animation: prEcg 2s linear infinite;
+    }
+
     /* ---------- Card: scene on the left, form on the right ---------- */
     .pr-card {
-        position: relative; overflow: hidden;
+        position: relative; z-index: 1; overflow: hidden;
         display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1fr);
         max-width: 1040px; margin: 16px auto;
         background: #FCFAF6;
