@@ -11,6 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
+    <script>document.documentElement.classList.add("js");</script>
+
     <style>
         :root {
             --beige: #D8CBB3;
@@ -18,6 +20,7 @@
             --blue: #2F6BFF;
             --blue-soft: #7EA3FF;
             --blue-deep: #1F4FCC;
+            --blue-tint: #EAF0FF;
             --dark: #1E1E1C;
             --muted: rgba(30, 30, 28, 0.65);
             --shadow: 0 8px 24px rgba(47, 107, 255, 0.12);
@@ -36,18 +39,14 @@
         .topbar {
             position: sticky; top: 0; z-index: 20;
             display: flex; align-items: center; justify-content: space-between; gap: 16px;
-            padding: 12px 24px;
-            background: rgba(255, 255, 255, .9); backdrop-filter: blur(8px);
-            border-bottom: 1px solid var(--beige);
-            box-shadow: 0 4px 16px rgba(47, 107, 255, .12);
+            padding: 12px 24px; background: rgba(255, 255, 255, .9); backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--beige); box-shadow: 0 4px 16px rgba(47, 107, 255, .12);
             animation: dropIn .5s var(--ease) both;
         }
         .topbar-left { display: flex; align-items: center; gap: 14px; }
         .menu-btn {
-            display: inline-flex; align-items: center; gap: 8px;
-            padding: 9px 16px; border: none; border-radius: 12px; cursor: pointer;
-            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff;
-            font-weight: 600; font-size: .92rem;
+            display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border: none; border-radius: 12px; cursor: pointer;
+            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff; font-weight: 600; font-size: .92rem;
             box-shadow: 0 6px 14px rgba(47, 107, 255, .28); transition: transform .25s ease, box-shadow .25s ease;
         }
         .menu-btn i { font-size: 1.25rem; }
@@ -68,18 +67,15 @@
             position: fixed; top: 0; left: 0; bottom: 0; z-index: 1050; width: 270px;
             display: flex; flex-direction: column; padding: 22px 16px; overflow-y: auto;
             background: linear-gradient(180deg, #FFFFFF 0%, #D8CBB3 100%);
-            border-right: 1px solid var(--beige);
-            box-shadow: 8px 0 30px rgba(47, 107, 255, .25);
+            border-right: 1px solid var(--beige); box-shadow: 8px 0 30px rgba(47, 107, 255, .25);
             transform: translateX(-105%); visibility: hidden;
             transition: transform .4s var(--ease), visibility 0s .4s;
         }
         .nav-open .sidebar { transform: none; visibility: visible; transition-delay: 0s; }
-
         .sidebar .brand { display: flex; align-items: center; gap: 10px; font-size: 1.35rem; font-weight: 700; color: var(--blue); padding: 4px 8px 18px; }
         .sidebar .brand i {
             width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
-            border-radius: 12px; color: #fff; font-size: 1.15rem;
-            background: linear-gradient(135deg, var(--dark), var(--blue));
+            border-radius: 12px; color: #fff; font-size: 1.15rem; background: linear-gradient(135deg, var(--dark), var(--blue));
             box-shadow: 0 6px 14px rgba(47, 107, 255, .3);
         }
         .close-nav {
@@ -104,28 +100,23 @@
         .nav-open .sidebar a.nav-item:nth-of-type(6) { transition-delay: .35s; }
         .sidebar .nav-item i { color: var(--blue); font-size: 1.1rem; }
         .sidebar a.nav-item:hover, .sidebar .logout-btn:hover { background: var(--beige); border-color: var(--beige); color: var(--blue); transition-delay: 0s; }
-        .sidebar a.nav-item.active {
-            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff;
-            box-shadow: 0 8px 18px rgba(47, 107, 255, .25);
-        }
+        .sidebar a.nav-item.active { background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff; box-shadow: 0 8px 18px rgba(47, 107, 255, .25); }
         .sidebar a.nav-item.active i { color: #fff; }
         .sidebar-bottom { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--beige); }
 
         /* ---------- Page ---------- */
-        .page { max-width: 880px; margin: 0 auto; padding: 22px 20px 48px; }
+        .page { max-width: 1180px; margin: 0 auto; padding: 22px 20px 48px; }
 
         /* Hero banner with 3D logo */
         .hero {
-            display: flex; align-items: center; gap: 22px;
+            display: flex; align-items: center; gap: 22px; min-height: 150px;
             padding: 16px 30px; border-radius: 20px; color: #fff; position: relative; overflow: hidden;
             background: linear-gradient(120deg, var(--dark) 0%, var(--dark) 45%, var(--blue) 140%);
-            box-shadow: 0 16px 36px rgba(30, 30, 28, .28);
-            animation: cardIn .8s .1s var(--ease) both;
+            box-shadow: 0 16px 36px rgba(30, 30, 28, .28); animation: cardIn .8s .1s var(--ease) both;
         }
         .hero::after {
             content: ""; position: absolute; right: -60px; top: -60px; width: 240px; height: 240px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(126, 163, 255, .45), rgba(126, 163, 255, 0) 70%);
-            animation: drift 9s ease-in-out infinite;
+            background: radial-gradient(circle, rgba(126, 163, 255, .45), rgba(126, 163, 255, 0) 70%); animation: drift 9s ease-in-out infinite;
         }
         .hero-text { position: relative; z-index: 1; }
         .hero-text small { color: var(--blue-soft); font-weight: 600; letter-spacing: .5px; }
@@ -137,7 +128,7 @@
             stroke-dasharray: 340; stroke-dashoffset: 340; animation: ecg 3s 1s linear infinite;
         }
 
-        /* 3D caduceus: stacked layers give real depth while it swings */
+        /* 3D caduceus */
         .cadu { position: relative; z-index: 1; width: 92px; height: 116px; flex-shrink: 0; perspective: 700px; }
         .cadu-spin { position: absolute; inset: 0; transform-style: preserve-3d; animation: swing 7s ease-in-out infinite; }
         .cadu-spin svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
@@ -151,96 +142,207 @@
             background: radial-gradient(ellipse, rgba(0, 0, 0, .5), transparent 70%); animation: shadowPulse 7s ease-in-out infinite;
         }
 
-        /* Avatar above the card */
-        .avatar-block { position: relative; z-index: 2; margin-top: -58px; text-align: center; animation: fadeUp .7s .3s var(--ease) both; }
-        .avatar-ring { position: relative; width: 128px; height: 128px; margin: 0 auto; }
+        /* Bigger avatar above the cards */
+        .avatar-block { position: relative; z-index: 2; margin-top: -104px; text-align: center; animation: fadeUp .7s .3s var(--ease) both; }
+        .avatar-ring { position: relative; width: 208px; height: 208px; margin: 0 auto; }
         .avatar-ring::before {
             content: ""; position: absolute; inset: 0; border-radius: 50%;
             background: conic-gradient(var(--blue), var(--beige), var(--blue-soft), var(--blue));
-            animation: spin 6s linear infinite; box-shadow: 0 10px 26px rgba(47, 107, 255, .35);
+            animation: spin 6s linear infinite; box-shadow: 0 14px 34px rgba(47, 107, 255, .4);
+        }
+        .avatar-ring::after {
+            content: ""; position: absolute; inset: -10px; border-radius: 50%; border: 2px solid rgba(47, 107, 255, .35);
+            animation: ringPulse 3s ease-out infinite;
         }
         .profile-picture-preview {
-            position: absolute; inset: 5px; border-radius: 50%; overflow: hidden;
-            border: 4px solid #fff; background: var(--beige); animation: popIn .8s .45s var(--ease) both;
+            position: absolute; inset: 6px; border-radius: 50%; overflow: hidden; z-index: 1;
+            border: 5px solid #fff; background: var(--beige); animation: popIn .8s .45s var(--ease) both;
         }
         #profilePreview { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s var(--ease); }
         .avatar-ring:hover #profilePreview { transform: scale(1.1); }
         #profilePreview.photo-updated { animation: photoPop .7s var(--ease); }
 
-        .doc-name { margin: 12px 0 4px; font-size: 1.45rem; font-weight: 700; }
-        .badge-reg {
-            display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: 999px;
-            background: var(--beige); color: var(--dark); font-size: .78rem; font-weight: 600; border: 1px solid var(--beige);
-        }
-        .badge-reg i { color: var(--blue); }
-
+        .doc-name { margin: 16px 0 2px; font-size: 1.7rem; font-weight: 700; }
         .photo-controls { margin-top: 10px; }
         #choosePhotoBtn, #uploadPhotoBtn {
-            display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px; border-radius: 999px;
-            font-size: .82rem; font-weight: 600; cursor: pointer; margin: 0 3px; transition: all .25s ease;
+            display: inline-flex; align-items: center; gap: 6px; padding: 7px 18px; border-radius: 999px;
+            font-size: .85rem; font-weight: 600; cursor: pointer; margin: 0 3px; transition: all .25s ease;
         }
         #choosePhotoBtn { background: #fff; color: var(--blue); border: 1.5px solid var(--blue); }
         #choosePhotoBtn:hover { background: var(--beige); transform: translateY(-2px); }
-        #uploadPhotoBtn {
-            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff; border: 1.5px solid transparent;
-            box-shadow: 0 6px 14px rgba(47, 107, 255, .28);
-        }
+        #uploadPhotoBtn { background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff; border: 1.5px solid transparent; box-shadow: 0 6px 14px rgba(47, 107, 255, .28); }
         #uploadPhotoBtn:hover:not(:disabled) { transform: translateY(-2px); }
         #uploadPhotoBtn:disabled { background: var(--beige); color: var(--dark); box-shadow: none; cursor: not-allowed; opacity: .75; }
         #photoUploadStatus { margin: 6px 0 0; min-height: 1.1em; font-size: .8rem; font-weight: 600; color: var(--blue); }
 
-        /* ---------- Single details card ---------- */
-        .info-card {
-            margin-top: 14px; padding: 22px 24px 20px; background: #fff;
-            border: 1px solid var(--beige); border-top: 4px solid var(--blue); border-radius: 20px;
-            box-shadow: var(--shadow); animation: cardIn .8s .5s var(--ease) both;
-        }
-        .card-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 16px; }
-        .card-title h5 { margin: 0; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .card-title h5 i {
-            width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
-            border-radius: 10px; background: var(--beige); color: var(--blue); font-size: .95rem;
-        }
-        .card-title span { font-size: .8rem; color: var(--muted); }
+        /* ---------- Section cards ---------- */
+        .section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 22px 4px 0; animation: fadeUp .6s .5s var(--ease) both; }
+        .section-head h5 { margin: 0; font-weight: 700; }
+        .section-head span { font-size: .82rem; color: var(--muted); }
 
-        .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-        .tile {
-            display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px;
-            background: var(--beige-light); border: 1px solid transparent;
-            animation: fadeUp .55s var(--ease) both; transition: transform .25s ease, box-shadow .25s ease;
+        .sections { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+        .sc {
+            position: relative; overflow: hidden; grid-column: span 4; padding: 13px 15px 15px;
+            background: #fff; border: 1px solid var(--beige); border-radius: 18px; box-shadow: var(--shadow);
+            transition: transform .3s var(--ease), box-shadow .3s ease;
         }
-        .tile:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(47, 107, 255, .14); }
-        .tile:nth-child(1) { animation-delay: .70s; } .tile:nth-child(2) { animation-delay: .76s; }
-        .tile:nth-child(3) { animation-delay: .82s; } .tile:nth-child(4) { animation-delay: .88s; }
-        .tile:nth-child(5) { animation-delay: .94s; } .tile:nth-child(6) { animation-delay: 1s; }
-        .tile:nth-child(7) { animation-delay: 1.06s; } .tile:nth-child(8) { animation-delay: 1.12s; }
-        .tile:nth-child(9) { animation-delay: 1.18s; }
-        .tile > i {
-            flex-shrink: 0; width: 34px; height: 34px; display: grid; place-items: center;
-            border-radius: 10px; background: #fff; color: var(--blue); font-size: 1rem;
+        .sc.span12 { grid-column: span 12; }
+        .sc.span3 { grid-column: span 3; }
+        .sc > *:not(.wm) { position: relative; z-index: 1; }
+        .wm {
+            position: absolute; right: -8px; bottom: -14px; font-size: 5.2rem; line-height: 1; z-index: 0;
+            color: rgba(47, 107, 255, .09); pointer-events: none; animation: wmFloat 6s ease-in-out infinite;
+            transition: color .3s ease, transform .5s var(--ease);
         }
-        .tile-body { min-width: 0; flex: 1; }
-        .tile .lbl { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
-        .tile .val { margin: 0; font-weight: 600; word-break: break-word; font-size: .95rem; }
+        .sc:hover .wm { color: rgba(47, 107, 255, .2); transform: scale(1.12) rotate(-8deg); }
+        .sc::before {
+            content: ""; position: absolute; left: 0; top: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, var(--dark), var(--blue), var(--blue-soft));
+            transform-origin: left; animation: barGrow 1s .6s var(--ease) both;
+        }
+        .sc::after {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .7) 50%, transparent 65%);
+            transform: translateX(-130%); transition: transform .8s ease;
+        }
+        .sc:hover { transform: translateY(-5px); box-shadow: 0 18px 38px rgba(47, 107, 255, .24); }
+        .sc:hover::after { transform: translateX(130%); }
 
-        .tile.edit { background: #fff; border: 1.5px solid var(--blue-soft); box-shadow: 0 4px 14px rgba(47, 107, 255, .10); }
-        .tile.edit > i { background: var(--blue); color: #fff; }
-        .tile.edit .lbl { color: var(--blue); display: flex; justify-content: space-between; align-items: center; }
-        .pill { font-size: .62rem; padding: 2px 8px; border-radius: 999px; background: rgba(47, 107, 255, .12); color: var(--blue); letter-spacing: .3px; }
-        .tile.edit .form-control {
-            border: 1.5px solid var(--beige); border-radius: 10px; padding: 6px 10px; font-weight: 600; font-size: .92rem;
+        .tone-blue  { background: linear-gradient(160deg, #FFFFFF 0%, var(--blue-tint) 100%); }
+        .tone-beige { background: linear-gradient(160deg, #FFFFFF 0%, var(--beige-light) 100%); }
+        .tone-edit  { background: linear-gradient(160deg, #FFFFFF 0%, var(--blue-tint) 100%); border: 1.5px solid var(--blue-soft); animation: glow 3.2s ease-in-out infinite; }
+
+        .js .sc { opacity: 0; }
+        .js .sc.in-view { opacity: 1; animation: cardRise .75s var(--ease) backwards; animation-delay: var(--d, 0s); }
+
+        .sc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .medal {
+            flex-shrink: 0; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px;
+            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff; font-size: 1.05rem;
+            box-shadow: 0 8px 16px rgba(47, 107, 255, .35); transition: transform .4s var(--ease);
+        }
+        .sc:hover .medal { transform: rotate(-8deg) scale(1.1); }
+        .medal.alt { background: linear-gradient(135deg, var(--blue-soft), var(--blue)); }
+        .medal.sand { background: linear-gradient(135deg, var(--beige), #BFAE8C); color: var(--dark); box-shadow: 0 8px 16px rgba(30, 30, 28, .18); }
+        .sc-head h6 { margin: 0; font-weight: 700; font-size: .95rem; }
+        .medal i { display: inline-block; }
+        .sc-head small { display: block; color: var(--muted); font-size: .72rem; }
+        .count {
+            margin-left: auto; min-width: 24px; height: 24px; padding: 0 8px; display: grid; place-items: center;
+            border-radius: 999px; background: var(--dark); color: #fff; font-size: .74rem; font-weight: 700;
+        }
+        .pill { margin-left: auto; font-size: .62rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: rgba(47, 107, 255, .14); color: var(--blue); white-space: nowrap; }
+
+        /* identity tiles */
+        .kv-grid { display: grid; grid-template-columns: 1fr 1.25fr 1fr 1.6fr; gap: 10px; }
+        .kv {
+            position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 9px;
+            padding: 12px 14px 13px 17px; border-radius: 14px; background: #fff; border: 1px solid var(--beige);
+            animation: slideIn .55s var(--ease) backwards;
+            transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+        }
+        .kv::before {
+            content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+            background: linear-gradient(180deg, var(--blue), var(--blue-soft));
+            transform: scaleY(0); transform-origin: top; animation: barDown .7s .9s var(--ease) forwards;
+        }
+        .kv:hover { transform: translateY(-3px); border-color: var(--blue-soft); box-shadow: 0 10px 22px rgba(47, 107, 255, .16); }
+        .kv:nth-child(1) { animation-delay: .70s; } .kv:nth-child(2) { animation-delay: .78s; }
+        .kv:nth-child(3) { animation-delay: .86s; } .kv:nth-child(4) { animation-delay: .94s; }
+        .kv-top { display: flex; align-items: center; gap: 9px; }
+        .kv-top > i {
+            flex-shrink: 0; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%;
+            background: linear-gradient(135deg, var(--dark), var(--blue)); color: #fff; font-size: .85rem;
+            box-shadow: 0 5px 10px rgba(47, 107, 255, .3); transition: transform .4s var(--ease);
+        }
+        .kv:hover .kv-top > i { transform: rotate(-10deg) scale(1.12); }
+        .kv .lbl { font-size: .68rem; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; color: var(--muted); }
+        .kv .val { margin: 0; font-weight: 700; font-size: 1.05rem; line-height: 1.25; overflow-wrap: anywhere; }
+        .kv .sub { display: flex; align-items: center; gap: 6px; margin-top: -3px; font-size: .8rem; color: var(--muted); font-weight: 600; }
+        .kv .sub i { color: var(--blue); }
+        .id-row { display: flex; align-items: center; gap: 8px; }
+        .kv .val.mono {
+            flex: 1; min-width: 0; padding: 7px 10px; border-radius: 9px; background: var(--beige-light);
+            font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .8rem; font-weight: 600;
+            letter-spacing: .2px; word-break: break-all;
+        }
+        .copy-btn {
+            flex-shrink: 0; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%;
+            border: 1.5px solid var(--blue-soft); background: #fff; color: var(--blue); cursor: pointer; transition: all .25s ease;
+        }
+        .copy-btn:hover, .copy-btn.copied { background: var(--blue); color: #fff; transform: scale(1.1); }
+        .copy-btn.copied { animation: pop .4s var(--ease); }
+
+        /* specialisations: centred and bold */
+        .sc.spec { display: flex; flex-direction: column; }
+        .spec-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 0 10px; text-align: center; }
+        .spec-body .empty { width: 100%; }
+        .chips.center { justify-content: center; margin-top: 0; gap: 10px; }
+        .chip.big {
+            font-size: 1.05rem; font-weight: 800; letter-spacing: .4px; padding: 9px 24px;
+            background: linear-gradient(135deg, var(--dark), var(--blue)); box-shadow: 0 8px 18px rgba(47, 107, 255, .3);
+            animation: pop .5s var(--ease) backwards, chipFloat 3.2s ease-in-out 1s infinite;
+        }
+        .chip.big:hover { transform: translateY(-4px) scale(1.06); background: linear-gradient(135deg, var(--blue), var(--blue-soft)); }
+
+        /* editable inputs */
+        .edit-input { width: 100%; }
+        .sc .form-control {
+            border: 1.5px solid var(--beige); border-radius: 10px; padding: 6px 12px; font-weight: 700; font-size: 1.02rem;
             color: var(--dark); background: #fff; transition: all .2s ease;
         }
-        .tile.edit .form-control:hover { border-color: var(--blue-soft); }
-        .tile.edit .form-control:focus {
-            border-color: var(--blue); outline: none; box-shadow: 0 0 0 .22rem rgba(47, 107, 255, .25); transform: translateY(-1px);
-        }
-        .tile.edit .form-control::placeholder { color: rgba(30, 30, 28, .4); font-weight: 400; }
-        .lang-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
-        .lang-chips span { padding: 2px 10px; border-radius: 999px; background: var(--dark); color: #fff; font-size: .72rem; animation: pop .4s var(--ease) both; }
+        .sc .form-control:hover { border-color: var(--blue-soft); }
+        .sc .form-control:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 .25rem rgba(47, 107, 255, .25); transform: translateY(-1px); }
+        .sc .form-control::placeholder { color: rgba(30, 30, 28, .4); font-weight: 400; font-size: .95rem; }
         .hint { display: block; margin-top: 4px; font-size: .7rem; color: var(--muted); }
 
-        .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--beige); }
+        /* chips */
+        .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; min-height: 4px; }
+        .chip {
+            display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 999px;
+            background: var(--dark); color: #fff; font-size: .78rem; animation: pop .45s var(--ease) backwards;
+            transition: background .25s ease, transform .25s ease;
+        }
+        .chip:hover { background: var(--blue); transform: translateY(-3px); }
+        .chip:nth-child(2) { animation-delay: .08s; } .chip:nth-child(3) { animation-delay: .16s; }
+        .chip:nth-child(4) { animation-delay: .24s; } .chip:nth-child(n+5) { animation-delay: .32s; }
+        .chip.light { background: #fff; color: var(--dark); border: 1px solid var(--blue-soft); }
+        .chip.light:hover { background: var(--blue); color: #fff; }
+
+        /* list items: hospitals, addresses, licences */
+        .list {
+            display: flex; flex-direction: row; gap: 8px; overflow-x: auto; padding-bottom: 6px;
+            scroll-snap-type: x proximity; scrollbar-width: thin; scrollbar-color: var(--blue-soft) transparent;
+        }
+        .list::-webkit-scrollbar { height: 5px; }
+        .list::-webkit-scrollbar-thumb { background: var(--blue-soft); border-radius: 6px; }
+        .item {
+            flex: 1 0 215px; scroll-snap-align: start; display: flex; gap: 10px; align-items: flex-start; padding: 9px 11px; border-radius: 12px;
+            background: #fff; border: 1px solid var(--beige); animation: slideIn .55s var(--ease) backwards;
+            transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+        }
+        .item:hover { transform: translateY(-3px); border-color: var(--blue-soft); box-shadow: 0 6px 16px rgba(47, 107, 255, .14); }
+        .item:nth-child(2) { animation-delay: .1s; } .item:nth-child(3) { animation-delay: .2s; } .item:nth-child(n+4) { animation-delay: .3s; }
+        .item > i { flex-shrink: 0; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--blue); color: #fff; }
+        .item-body { min-width: 0; flex: 1; }
+        .item-title { margin: 0; font-weight: 700; font-size: .9rem; word-break: break-word; }
+        .item-sub { margin: 1px 0 0; font-size: .8rem; color: var(--muted); }
+        .meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+        .tag { font-size: .68rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--beige-light); color: var(--dark); }
+        .tag.blue { background: var(--blue-tint); color: var(--blue-deep); }
+
+        .status { display: inline-flex; align-items: center; gap: 5px; font-size: .68rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--beige); color: var(--dark); white-space: nowrap; }
+        .status.verified { background: var(--blue); color: #fff; box-shadow: 0 0 0 0 rgba(47, 107, 255, .5); animation: verifiedPulse 2.4s ease-out infinite; }
+        .empty { margin: 0; padding: 9px 12px; border: 1.5px dashed var(--beige); border-radius: 14px; color: var(--muted); font-size: .88rem; text-align: center; }
+
+        /* Save bar */
+        .actions {
+            grid-column: 1 / -1; display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+            padding: 14px 20px; background: rgba(255, 255, 255, .94); border: 1px solid var(--beige); border-radius: 18px;
+            box-shadow: var(--shadow); position: sticky; bottom: 14px; z-index: 5; backdrop-filter: blur(8px);
+            animation: fadeUp .7s 1.2s var(--ease) both;
+        }
+        .actions .note { margin-right: auto; font-size: .82rem; color: var(--muted); }
         .btn { border-radius: 12px; padding: 9px 22px; font-weight: 600; transition: all .25s ease; }
         .btn-primary {
             position: relative; overflow: hidden;
@@ -269,38 +371,76 @@
         @keyframes dropIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
         @keyframes cardIn { from { opacity: 0; transform: translateY(26px) scale(.98); } to { opacity: 1; transform: none; } }
+        @keyframes cardRise { from { opacity: 0; transform: translateY(34px) scale(.95); } to { opacity: 1; transform: none; } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-18px); } to { opacity: 1; transform: none; } }
         @keyframes popIn { from { opacity: 0; transform: scale(.6) rotate(-10deg); } to { opacity: 1; transform: none; } }
         @keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+        @keyframes barGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
         @keyframes photoPop { 0% { transform: scale(.8); filter: blur(6px); opacity: .4; } 100% { transform: scale(1); filter: none; opacity: 1; } }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes ringPulse { 0% { transform: scale(.96); opacity: .8; } 100% { transform: scale(1.18); opacity: 0; } }
+        @keyframes glow { 0%, 100% { box-shadow: 0 8px 24px rgba(47, 107, 255, .12); } 50% { box-shadow: 0 10px 32px rgba(47, 107, 255, .34); } }
+        @keyframes verifiedPulse { 0% { box-shadow: 0 0 0 0 rgba(47, 107, 255, .55); } 70%, 100% { box-shadow: 0 0 0 10px rgba(47, 107, 255, 0); } }
         @keyframes heartbeat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.18); } 30% { transform: scale(1); } 45% { transform: scale(1.1); } }
         @keyframes drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-26px, 22px); } }
         @keyframes ecg { 0% { stroke-dashoffset: 340; } 60%, 100% { stroke-dashoffset: 0; } }
         @keyframes swing {
             0%, 100% { transform: rotateY(-38deg) rotateX(4deg) translateY(0); }
-            25%      { transform: rotateY(0deg) rotateX(0deg) translateY(-6px); }
-            50%      { transform: rotateY(38deg) rotateX(4deg) translateY(0); }
-            75%      { transform: rotateY(0deg) rotateX(0deg) translateY(-6px); }
+            25% { transform: rotateY(0deg) rotateX(0deg) translateY(-6px); }
+            50% { transform: rotateY(38deg) rotateX(4deg) translateY(0); }
+            75% { transform: rotateY(0deg) rotateX(0deg) translateY(-6px); }
         }
         @keyframes shadowPulse { 0%, 100% { transform: scaleX(.8); opacity: .6; } 25%, 75% { transform: scaleX(1); opacity: .35; } 50% { transform: scaleX(.8); opacity: .6; } }
 
+        .js .sc.tone-edit.in-view { animation: cardRise .75s var(--ease) var(--d, 0s) backwards, glow 3.2s ease-in-out 1.2s infinite; }
+
+        @keyframes barDown { to { transform: scaleY(1); } }
+        @keyframes chipFloat { 0%, 100% { translate: 0 0; } 50% { translate: 0 -5px; } }
+
+        /* logo (icon) animations */
+        .ico-ring  { animation: icoRing 3s ease-in-out infinite; transform-origin: 50% 80%; }
+        .ico-bounce{ animation: icoBounce 2.6s ease-in-out infinite; }
+        .ico-flip  { animation: icoFlip 4s ease-in-out infinite; }
+        .ico-beat  { animation: heartbeat 1.8s ease-in-out infinite; }
+        .ico-glow  { animation: icoGlow 2.6s ease-in-out infinite; }
+        .ico-drop  { animation: icoDrop 2.4s ease-in-out infinite; }
+        .ico-spin  { animation: icoSpin 5s ease-in-out infinite; }
+        .ico-tilt  { animation: icoTilt 3.4s ease-in-out infinite; }
+        @keyframes wmFloat { 0%, 100% { translate: 0 0; rotate: 0deg; } 50% { translate: -6px -8px; rotate: 6deg; } }
+        @keyframes icoRing { 0%, 55%, 100% { transform: rotate(0); } 60% { transform: rotate(-18deg); } 66% { transform: rotate(16deg); } 72% { transform: rotate(-12deg); } 78% { transform: rotate(10deg); } 84% { transform: rotate(0); } }
+        @keyframes icoBounce { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px); } 60% { transform: translateY(0); } 75% { transform: translateY(-2px); } }
+        @keyframes icoFlip { 0%, 70%, 100% { transform: rotateY(0); } 85% { transform: rotateY(180deg); } }
+        @keyframes icoGlow { 0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 255, 255, 0)); transform: scale(1); } 50% { filter: drop-shadow(0 0 6px rgba(255, 255, 255, .95)); transform: scale(1.12); } }
+        @keyframes icoDrop { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } 50% { transform: translateY(0); } 62% { transform: translateY(-2px); } }
+        @keyframes icoSpin { 0%, 60%, 100% { transform: rotate(0) scale(1); } 80% { transform: rotate(360deg) scale(1.18); } }
+        @keyframes icoTilt { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+
         /* ---------- Responsive ---------- */
-        @media (max-width: 860px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ecg { display: none; } }
+        @media (max-width: 1000px) {
+            .sc, .sc.span3 { grid-column: span 6; }
+            .sc.span12, .sc:last-of-type { grid-column: span 12; }
+            .kv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 860px) { .ecg { display: none; } }
         @media (max-width: 720px) {
-            .hero { justify-content: center; padding: 16px 20px 70px; }
+            .hero { justify-content: center; padding: 16px 20px 120px; }
             .hero-text { display: none; }
         }
         @media (max-width: 575.98px) {
             .topbar { padding: 10px 14px; }
             .topbar-left small, .top-brand span { display: none; }
             .page { padding: 16px 12px 40px; }
-            .grid { grid-template-columns: minmax(0, 1fr); }
-            .actions { flex-direction: column-reverse; }
-            .actions .btn { width: 100%; }
+            .sc, .sc.span3, .sc.span12 { grid-column: span 12; }
+            .kv-grid { grid-template-columns: minmax(0, 1fr); }
+            .avatar-ring { width: 176px; height: 176px; }
+            .avatar-block { margin-top: -92px; }
+            .actions { flex-direction: column-reverse; align-items: stretch; position: static; }
+            .actions .note { margin: 0; text-align: center; }
         }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; animation-delay: 0s !important; transition-duration: .01ms !important; transition-delay: 0s !important; }
             .cadu-spin { transform: rotateY(-20deg); }
+            .js .sc { opacity: 1; }
         }
     </style>
 </head>
@@ -389,16 +529,13 @@
         </linearGradient>
 
         <g id="cadu">
-            <!-- wings -->
             <g id="wingL">
                 <path d="M104 64 C82 40 40 36 4 56 C30 56 50 60 62 66 C42 66 26 70 14 78 C40 76 62 80 76 86 C58 88 46 92 38 98 C62 96 84 98 104 106 Z" fill="url(#gWing)"/>
                 <path d="M100 70 C80 58 50 58 24 64 M98 80 C78 72 52 72 30 78 M98 92 C80 86 62 86 48 90" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.6" stroke-linecap="round"/>
             </g>
             <use href="#wingL" transform="translate(220 0) scale(-1 1)"/>
-            <!-- staff -->
             <rect x="104" y="30" width="12" height="244" rx="6" fill="url(#gStaff)"/>
             <circle cx="110" cy="22" r="13" fill="url(#gBall)"/>
-            <!-- snakes -->
             <g id="snake">
                 <path d="M152 72 C178 76 176 100 110 110 C44 120 44 148 110 156 C176 164 176 190 110 198 C62 204 66 232 110 242" fill="none" stroke="#1F4FCC" stroke-width="15" stroke-linecap="round"/>
                 <path d="M152 72 C178 76 176 100 110 110 C44 120 44 148 110 156 C176 164 176 190 110 198 C62 204 66 232 110 242" fill="none" stroke="url(#gSnake)" stroke-width="11" stroke-linecap="round"/>
@@ -411,6 +548,10 @@
 </svg>
 
 {% set langs = profile.get('languagesSpoken') or [] %}
+{% set hospitals = profile.get('hospitals') or [] %}
+{% set specs = profile.get('specialisations') or [] %}
+{% set addrs = profile.get('addresses') or [] %}
+{% set lics = profile.get('licences') or [] %}
 
 <!-- Sidebar drawer (hidden until the menu button is used) -->
 <div class="scrim" id="scrim"></div>
@@ -418,10 +559,7 @@
 <aside class="sidebar" id="sidebar" aria-label="Main navigation" aria-hidden="true">
     <button type="button" class="close-nav" id="closeNav" aria-label="Close menu"><i class="bi bi-x-lg"></i></button>
 
-    <div class="brand">
-        <i class="bi bi-heart-pulse-fill"></i>
-        <span>MediSlot</span>
-    </div>
+    <div class="brand"><i class="bi bi-heart-pulse-fill"></i><span>MediSlot</span></div>
 
     <div class="sidebar-label">MAIN MENU</div>
 
@@ -474,7 +612,7 @@
         <div class="hero-text">
             <small>MEDISLOT</small>
             <h1>Doctor Profile</h1>
-            <p>Your registered information.</p>
+            <p>Your details at a glance.</p>
         </div>
 
         <svg class="ecg" viewBox="0 0 220 44" aria-hidden="true"><path d="M0 22 H60 L72 6 L88 38 L100 22 H125 L135 14 L145 22 H220"/></svg>
@@ -494,7 +632,7 @@
     {% endwith %}
 
 
-    <!-- Profile picture, above the card -->
+    <!-- Bigger profile picture, above the cards -->
     <section class="avatar-block">
         <div class="avatar-ring">
             <div class="profile-picture-preview">
@@ -505,7 +643,6 @@
         </div>
 
         <h2 class="doc-name">{{ profile.get('fullName', 'Doctor') }}</h2>
-        <span class="badge-reg"><i class="bi bi-patch-check-fill"></i>Registered Doctor</span>
 
         <div class="photo-controls">
             <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" hidden>
@@ -516,90 +653,203 @@
     </section>
 
 
-    <!-- One card with every detail -->
-    <form method="POST" action="{{ url_for('profile.index') }}" class="info-card">
+    <div class="section-head">
+        <h5>Doctor Details</h5>
+        <span>Cards marked <b>Editable</b> can be updated.</span>
+    </div>
+
+    <form method="POST" action="{{ url_for('profile.index') }}">
 
         <!-- Kept so the route still receives the (non-editable) full name -->
         <input type="hidden" name="fullName" value="{{ profile.get('fullName', '') }}">
 
-        <div class="card-title">
-            <h5><i class="bi bi-person-vcard"></i>Doctor Details</h5>
-            <span>Fields marked <b>Editable</b> can be updated.</span>
-        </div>
+        <div class="sections">
 
-        <div class="grid">
-
-            <div class="tile">
-                <i class="bi bi-person"></i>
-                <div class="tile-body"><span class="lbl">Full Name</span><p class="val">{{ profile.get('fullName', 'N/A') }}</p></div>
-            </div>
-
-            <div class="tile">
-                <i class="bi bi-hash"></i>
-                <div class="tile-body"><span class="lbl">Doctor ID</span><p class="val">{{ profile.get('doctorId', 'N/A') }}</p></div>
-            </div>
-
-            <div class="tile">
-                <i class="bi bi-envelope"></i>
-                <div class="tile-body"><span class="lbl">Email</span><p class="val">{{ profile.get('email', 'N/A') }}</p></div>
-            </div>
-
-            <div class="tile">
-                <i class="bi bi-calendar-event"></i>
-                <div class="tile-body"><span class="lbl">Account Created</span><p class="val">{{ profile.get('createdAt', 'N/A') }}</p></div>
-            </div>
-
-            <div class="tile">
-                <i class="bi bi-shield-check"></i>
-                <div class="tile-body"><span class="lbl">Account Status</span><p class="val">Registered</p></div>
-            </div>
-
-            <div class="tile">
-                <i class="bi bi-image"></i>
-                <div class="tile-body"><span class="lbl">Profile Photo</span><p class="val">{{ 'Uploaded' if profile.get('photoKey') else 'Not uploaded' }}</p></div>
-            </div>
-
-            <!-- Editable: phone -->
-            <div class="tile edit">
-                <i class="bi bi-telephone"></i>
-                <div class="tile-body">
-                    <label class="lbl" for="phone">Phone Number <span class="pill"><i class="bi bi-pencil"></i> Editable</span></label>
-                    <input type="tel" id="phone" name="phone" class="form-control"
-                           value="{{ profile.get('phone', '') }}" required>
+            <!-- Identity: fullName, doctorId, email, createdAt, photoKey -->
+            <section class="sc span12 tone-beige" style="--d:.05s">
+                <i class="bi bi-person-vcard wm" aria-hidden="true"></i>
+                <div class="sc-head">
+                    <span class="medal"><i class="bi bi-person-vcard ico-tilt"></i></span>
+                    <div><h6>Identity</h6><small>Your registered details</small></div>
                 </div>
-            </div>
+                {% set ca = (profile.get('createdAt') or 'N/A') | string | replace('T', ' ') %}
+                {% set ca_parts = ca.split(' ') %}
+                <div class="kv-grid">
+                    <div class="kv">
+                        <div class="kv-top"><i class="bi bi-person-fill"></i><span class="lbl">Full Name</span></div>
+                        <p class="val">{{ profile.get('fullName', 'N/A') }}</p>
+                    </div>
 
-            <!-- Editable: experience -->
-            <div class="tile edit">
-                <i class="bi bi-briefcase"></i>
-                <div class="tile-body">
-                    <label class="lbl" for="yearsExperience">Experience (Years) <span class="pill"><i class="bi bi-pencil"></i> Editable</span></label>
-                    <input type="number" id="yearsExperience" name="yearsExperience" class="form-control"
-                           value="{{ profile.get('yearsExperience', 0) }}" min="0" max="80" step="1" required>
-                </div>
-            </div>
+                    <div class="kv">
+                        <div class="kv-top"><i class="bi bi-envelope-fill"></i><span class="lbl">Email</span></div>
+                        <p class="val">{{ profile.get('email', 'N/A') }}</p>
+                    </div>
 
-            <!-- Editable: languages -->
-            <div class="tile edit">
-                <i class="bi bi-translate"></i>
-                <div class="tile-body">
-                    <label class="lbl" for="languagesSpoken">Languages Spoken <span class="pill"><i class="bi bi-pencil"></i> Editable</span></label>
-                    <input type="text" id="languagesSpoken" name="languagesSpoken" class="form-control"
-                           value="{{ langs | join(', ') }}" placeholder="English, Hindi, Telugu">
-                    <span class="hint">Separate languages with commas.</span>
-                    <div class="lang-chips" id="langChips">
-                        {% for l in langs %}<span>{{ l }}</span>{% endfor %}
+                    <div class="kv">
+                        <div class="kv-top"><i class="bi bi-calendar-event-fill"></i><span class="lbl">Created At</span></div>
+                        <p class="val">{{ ca_parts[0] }}</p>
+                        {% if ca_parts | length > 1 %}<span class="sub"><i class="bi bi-clock"></i>{{ ca_parts[1][:8] }}</span>{% endif %}
+                    </div>
+
+                    <div class="kv">
+                        <div class="kv-top"><i class="bi bi-hash"></i><span class="lbl">Doctor ID</span></div>
+                        <div class="id-row">
+                            <p class="val mono">{{ profile.get('doctorId', 'N/A') }}</p>
+                            <button type="button" class="copy-btn" data-copy="{{ profile.get('doctorId', '') }}" aria-label="Copy doctor ID" title="Copy"><i class="bi bi-clipboard"></i></button>
+                        </div>
                     </div>
                 </div>
+            </section>
+
+            <!-- Editable: phone -->
+            <section class="sc span3 tone-edit" style="--d:.15s">
+                <i class="bi bi-telephone wm" aria-hidden="true"></i>
+                <div class="sc-head">
+                    <span class="medal"><i class="bi bi-telephone ico-ring"></i></span>
+                    <div><h6>Phone</h6><small>Patients reach you here</small></div>
+                    <span class="pill"><i class="bi bi-pencil"></i> Editable</span>
+                </div>
+                <input type="tel" id="phone" name="phone" class="form-control edit-input" aria-label="Phone number"
+                       value="{{ profile.get('phone', '') }}" required>
+            </section>
+
+            <!-- Editable: years of experience -->
+            <section class="sc span3 tone-edit" style="--d:.22s">
+                <i class="bi bi-briefcase wm" aria-hidden="true"></i>
+                <div class="sc-head">
+                    <span class="medal alt"><i class="bi bi-briefcase ico-bounce"></i></span>
+                    <div><h6>Experience</h6><small>Years of practice</small></div>
+                    <span class="pill"><i class="bi bi-pencil"></i> Editable</span>
+                </div>
+                <input type="number" id="yearsExperience" name="yearsExperience" class="form-control edit-input" aria-label="Years of experience"
+                       value="{{ profile.get('yearsExperience', 0) }}" min="0" max="80" step="1" required>
+            </section>
+
+            <!-- Editable: languages -->
+            <section class="sc span3 tone-edit" style="--d:.29s">
+                <i class="bi bi-translate wm" aria-hidden="true"></i>
+                <div class="sc-head">
+                    <span class="medal"><i class="bi bi-translate ico-flip"></i></span>
+                    <div><h6>Languages</h6><small>Languages you speak</small></div>
+                    <span class="pill"><i class="bi bi-pencil"></i> Editable</span>
+                </div>
+                <input type="text" id="languagesSpoken" name="languagesSpoken" class="form-control edit-input" aria-label="Languages spoken"
+                       value="{{ langs | join(', ') }}" placeholder="English, Hindi">
+                <span class="hint">Separate languages with commas.</span>
+                <div class="chips" id="langChips">
+                    {% for l in langs %}<span class="chip">{{ l }}</span>{% endfor %}
+                </div>
+            </section>
+
+            <!-- Specialisations -->
+            <section class="sc span3 tone-blue spec" style="--d:.1s">
+                <i class="bi bi-heart-pulse wm" aria-hidden="true"></i>
+                <div class="sc-head">
+                    <span class="medal alt"><i class="bi bi-heart-pulse ico-beat"></i></span>
+                    <div><h6>Specialisations</h6><small>Your areas of expertise</small></div>
+                    <span class="count">{{ specs | length }}</span>
+                </div>
+                {% if specs %}
+                    <div class="spec-body"><div class="chips center">{% for s in specs %}<span class="chip big">{{ s }}</span>{% endfor %}</div></div>
+                {% else %}
+                    <div class="spec-body"><p class="empty">No specialisations added.</p></div>
+                {% endif %}
+            </section>
+
+            <!-- Hospitals -->
+            <section class="sc" style="--d:.18s">
+                <i class="bi bi-hospital wm" aria-hidden="true"></i>
+                <div class="sc-head">
+                    <span class="medal"><i class="bi bi-hospital ico-glow"></i></span>
+                    <div><h6>Hospitals</h6><small>Where you practise</small></div>
+                    <span class="count">{{ hospitals | length }}</span>
+                </div>
+                {% if hospitals %}
+                    <div class="list">
+                        {% for h in hospitals %}
+                        <div class="item"><i class="bi bi-building"></i>
+                            <div class="item-body">
+                                <p class="item-title">{{ h.get('hospitalName', 'N/A') }}</p>
+                                <div class="meta">
+                                    <span class="tag blue"><i class="bi bi-diagram-3 me-1"></i>{{ h.get('department', 'N/A') }}</span>
+                                    <span class="tag">ID {{ h.get('hospitalId', '-') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty">No hospitals added.</p>
+                {% endif %}
+            </section>
+
+            <!-- Addresses -->
+            <section class="sc tone-beige" style="--d:.26s">
+                <i class="bi bi-geo-alt wm" aria-hidden="true"></i>
+                <div class="sc-head">
+                    <span class="medal sand"><i class="bi bi-geo-alt ico-drop"></i></span>
+                    <div><h6>Addresses</h6><small>Where patients find you</small></div>
+                    <span class="count">{{ addrs | length }}</span>
+                </div>
+                {% if addrs %}
+                    <div class="list">
+                        {% for a in addrs %}
+                        <div class="item"><i class="bi bi-geo-alt-fill"></i>
+                            <div class="item-body">
+                                <p class="item-title">{{ a.get('addressLine1', 'N/A') }}</p>
+                                {% if a.get('addressLine2') %}<p class="item-sub">{{ a.get('addressLine2') }}</p>{% endif %}
+                                <div class="meta">
+                                    <span class="tag blue"><i class="bi bi-buildings me-1"></i>{{ a.get('city', 'N/A') }}</span>
+                                    <span class="tag"><i class="bi bi-mailbox me-1"></i>{{ a.get('postalCode', 'N/A') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty">No addresses added.</p>
+                {% endif %}
+            </section>
+
+            <!-- Licences -->
+            <section class="sc tone-blue" style="--d:.34s">
+                <i class="bi bi-patch-check wm" aria-hidden="true"></i>
+                <div class="sc-head">
+                    <span class="medal alt"><i class="bi bi-patch-check ico-spin"></i></span>
+                    <div><h6>Licences</h6><small>Your medical registrations</small></div>
+                    <span class="count">{{ lics | length }}</span>
+                </div>
+                {% if lics %}
+                    <div class="list">
+                        {% for l in lics %}
+                        {% set st = (l.get('verificationStatus') or 'N/A') %}
+                        <div class="item"><i class="bi bi-card-checklist"></i>
+                            <div class="item-body">
+                                <p class="item-title">{{ l.get('licenceNumber', 'N/A') }}</p>
+                                <p class="item-sub">{{ l.get('authority', 'N/A') }}</p>
+                                <div class="meta">
+                                    <span class="tag"><i class="bi bi-calendar-range me-1"></i>{{ l.get('dates', 'N/A') }}</span>
+                                    <span class="status {{ 'verified' if st == 'VERIFIED' else '' }}">
+                                        <i class="bi {{ 'bi-check-circle-fill' if st == 'VERIFIED' else 'bi-hourglass-split' }}"></i>{{ st | replace('_', ' ') | title }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty">No licences added.</p>
+                {% endif %}
+            </section>
+
+            <!-- Action bar -->
+            <div class="actions">
+                <span class="note"><i class="bi bi-info-circle me-1"></i>Phone, experience and languages can be updated.</span>
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Save Changes</button>
             </div>
 
         </div>
-
-        <div class="actions">
-            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-2"></i>Save Changes</button>
-        </div>
-
     </form>
 
 </main>
@@ -649,10 +899,38 @@
         chips.innerHTML = "";
         input.value.split(",").map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (l) {
           var c = document.createElement("span");
+          c.className = "chip";
           c.textContent = l;
           chips.appendChild(c);
         });
       });
+    }
+
+    /* ---- Copy doctor ID ---- */
+    document.querySelectorAll("[data-copy]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var done = function () {
+          btn.classList.add("copied");
+          btn.innerHTML = '<i class="bi bi-check2"></i>';
+          setTimeout(function () { btn.classList.remove("copied"); btn.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 1500);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(btn.getAttribute("data-copy")).then(done, done);
+        } else { done(); }
+      });
+    });
+
+    /* ---- Cards rise into view as they scroll in ---- */
+    var cards = document.querySelectorAll(".sc");
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { en.target.classList.add("in-view"); io.unobserve(en.target); }
+        });
+      }, { threshold: 0.08 });
+      cards.forEach(function (c) { io.observe(c); });
+    } else {
+      cards.forEach(function (c) { c.classList.add("in-view"); });
     }
   })();
 </script>

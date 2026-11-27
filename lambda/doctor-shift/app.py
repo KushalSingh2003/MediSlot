@@ -61,12 +61,12 @@ def get_parameter(name):
     return result["Parameter"]["Value"]
 def invoke_slot_materializer(doctor_id):
     function_name = os.environ.get(
-        "SLOT_MATERIALIZER_FUNCTION_NAME"
+        "SLOT_MATERIALIZER_FUNCTION_ARN"
     )
 
     if not function_name:
         raise RuntimeError(
-            "SLOT_MATERIALIZER_FUNCTION_NAME is not configured"
+            "SLOT_MATERIALIZER_FUNCTION_ARN is not configured"
         )
 
     result = lambda_client.invoke(
